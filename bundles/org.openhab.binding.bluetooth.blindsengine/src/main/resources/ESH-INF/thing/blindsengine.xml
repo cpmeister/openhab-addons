@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="bluetooth"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+<!-- Sample Thing Type -->
+	<thing-type id="blinds_engine_device">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="bluegiga" />
+			<bridge-type-ref id="bluez" />
+		</supported-bridge-type-refs>
+
+		<label>BlindsEngine Device</label>
+		<description>A BlindsEngine device</description>
+		<category>Blinds</category>
+
+		<channels>
+			<channel id="rssi" typeId="rssi" />
+			<channel id="direction" typeId="blindengine_direction" />
+			<channel id="topLimitSet" typeId="blindengine_topLimitSet" />
+			<channel id="bottomLimitSet" typeId="blindengine_bottomLimitSet" />
+			<channel id="hasLightSensor" typeId="blindengine_hasLightSensor" />
+			<channel id="operationSwitch" typeId="blindengine_operationSwitch" />
+			<channel id="deviceSpeed" typeId="blindengine_deviceSpeed" />
+			<channel id="deviceElectric" typeId="system.battery-level" />
+			<channel id="devicePercentPosition" typeId="blindengine_devicePercentPosition" />
+			<channel id="deviceLength" typeId="blindengine_deviceLength" />
+			<channel id="deviceDiameter" typeId="blindengine_deviceDiameter" />
+			<channel id="deviceType" typeId="blindengine_deviceType" />
+			<channel id="lightLevel" typeId="blindengine_lightLevel" />
+		</channels>
+
+		<config-description>
+			<parameter name="address" type="text">
+				<label>Address</label>
+				<description>Bluetooth address in XX:XX:XX:XX:XX:XX format</description>
+			</parameter>
+		</config-description>
+
+	</thing-type>
+
+	<channel-type id="blindengine_direction">
+		<item-type>String</item-type>
+		<label>Direction</label>
+		<state readOnly="false">
+			<options>
+				<option value="Forward">Forward</option>
+				<option value="Reverse">Reverse</option>
+			</options>
+		</state>
+	</channel-type>
+	
+	<channel-type id="blindengine_topLimitSet">
+		<item-type>Switch</item-type>
+		<label>Top Limit is Set</label>
+		<state readOnly="false"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_bottomLimitSet">
+		<item-type>Switch</item-type>
+		<label>Bottom Limit is Set</label>
+		<state readOnly="false"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_hasLightSensor">
+		<item-type>Switch</item-type>
+		<label>Has Light Sensor</label>
+		<state readOnly="true"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_operationSwitch">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Operation Mode</label>
+		<state readOnly="false">
+			<options>
+				<option value="Inching">Inching</option>
+				<option value="Continuous">Continuous</option>
+			</options>
+		</state>
+	</channel-type>
+	
+	<channel-type id="blindengine_deviceSpeed">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Speed</label>
+		<state readOnly="true" pattern="%.0f"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_devicePercentPosition">
+		<item-type>Rollershutter</item-type>
+		<label>Position of blinds</label>
+<!--		<description>The percent value of the blinds</description> -->
+		<state readOnly="false" pattern="%.3f" min="0" max="100" />
+	</channel-type>
+
+	<channel-type id="blindengine_deviceLength">
+		<item-type>Number:Length</item-type>
+		<label>Length</label>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_deviceDiameter">
+		<item-type>Number:Length</item-type>
+		<label>Diameter</label>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_deviceType">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Device Type</label>
+		<state readOnly="true" pattern="%.0f"/>
+	</channel-type>
+	
+	<channel-type id="blindengine_lightLevel">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Light Level</label>
+		<state readOnly="true" pattern="%.0f"/>
+	</channel-type>
+	
+
+
+</thing:thing-descriptions>
