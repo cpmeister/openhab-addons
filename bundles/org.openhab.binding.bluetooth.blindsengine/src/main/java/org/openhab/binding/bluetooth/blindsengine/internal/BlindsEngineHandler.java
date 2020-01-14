@@ -87,42 +87,9 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 sendFindLightLevelCommand();
             }
         }, 10, 60, TimeUnit.SECONDS);
-        // reenableNotifyJob = scheduler.scheduleWithFixedDelay(() -> {
-        //
-        // if (device.getConnectionState() == ConnectionState.CONNECTED) {
-        // device.discoverServices();
-        // // try {
-        // // deviceLock.lock();
-        // // if (device != null) {
-        // // device.removeListener(this);
-        // // device.disconnect();
-        // // device.addListener(this);
-        // // device.connect();
-        // // }
-        // // } finally {
-        // // deviceLock.unlock();
-        // // }
-        // }
-        // // if (resolved) {
-        // //
-        // // device.disconnect();
-        // // device.connect();
-        // // BluetoothCharacteristic characteristic =
-        // // device.getCharacteristic(BlindsEngineConstants.RX_CHAR_UUID);
-        // // if (characteristic != null) {
-        // // device.enableNotifications(characteristic);
-        // // if (isAnyChannelLinked()) {
-        // // sendFindSetCommand();
-        // // }
-        // // } else {
-        // // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-        // // "Failed to find service with characteristic: " + BlindsEngineConstants.RX_CHAR_UUID);
-        // // }
-        // // }
-        // }, 500, 500, TimeUnit.SECONDS);
     }
 
-    private void clearMotorSettingsJob() {
+    private void cancelMotorSettingsJob() {
         if (motorSettingsJob != null) {
             motorSettingsJob.cancel(true);
             motorSettingsJob = null;
@@ -131,7 +98,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
 
     @Override
     public void dispose() {
-        clearMotorSettingsJob();
+        cancelMotorSettingsJob();
         if (refreshBatteryJob != null) {
             refreshBatteryJob.cancel(true);
             refreshBatteryJob = null;
@@ -140,10 +107,6 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
             refreshLightLevelJob.cancel(true);
             refreshLightLevelJob = null;
         }
-        // if (reenableNotifyJob != null) {
-        // reenableNotifyJob.cancel(true);
-        // reenableNotifyJob = null;
-        // }
         super.dispose();
     }
 
@@ -348,7 +311,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 updateDiameter(data[8]);
                 updateDeviceType(Math.abs(data[9] >> 4));
 
-                clearMotorSettingsJob();
+                cancelMotorSettingsJob();
                 break;
             }
             case BlindsEngineConstants.Command_Notify_Head_Type_Find_Timing: {
@@ -607,21 +570,6 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
         byte[] data = { (byte) percent };
         sendBleCommand(BlindsEngineConstants.Command_Head_Type_Control_percent, data);
     }
-
-    // private void sendLimitStateOrResetCommand(byte b, int i, boolean z) {
-    // int i2;
-    // int i3;
-    // if (!z) {
-    // i3 = 1 << i;
-    // i2 = 0;
-    // } else {
-    // b = 0;
-    // i3 = 0;
-    // i2 = 1;
-    // }
-    // byte[] data = { b, (byte) i3, (byte) i2 };
-    // sendChangeLimitStateCommand(data);
-    // }
 
     private void sendChangeLimitStateCommand(byte limitType, int limitMode) {
         byte[] data = { limitType, (byte) (1 << limitMode), 0 };
