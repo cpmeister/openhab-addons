@@ -41,6 +41,7 @@ import org.openhab.binding.bluetooth.BluetoothCharacteristic;
 import org.openhab.binding.bluetooth.BluetoothCompletionStatus;
 import org.openhab.binding.bluetooth.BluetoothDevice.ConnectionState;
 import org.openhab.binding.bluetooth.ConnectedBluetoothHandler;
+import org.openhab.binding.bluetooth.notification.BluetoothConnectionStatusNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,8 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
 
     private final Logger logger = LoggerFactory.getLogger(BlindsEngineHandler.class);
 
+    protected volatile Boolean enabledNotifications = false;
+
     private ScheduledFuture<?> motorSettingsJob;
     private ScheduledFuture<?> refreshBatteryJob;
     private ScheduledFuture<?> refreshLightLevelJob;
@@ -72,17 +75,20 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
     public void initialize() {
         super.initialize();
         motorSettingsJob = scheduler.scheduleWithFixedDelay(() -> {
+            enableNotifications();
             if (isReadyForCommand()) {
                 sendFindSetCommand();
             }
         }, 0, 60, TimeUnit.SECONDS);
         refreshBatteryJob = scheduler.scheduleWithFixedDelay(() -> {
+            enableNotifications();
             if (isReadyForCommand()) {
                 sendFindElectricCommand();
             }
         }, 5, 60, TimeUnit.SECONDS);
 
         refreshLightLevelJob = scheduler.scheduleWithFixedDelay(() -> {
+            enableNotifications();
             if (isReadyForCommand()) {
                 sendFindLightLevelCommand();
             }
@@ -112,19 +118,38 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
 
     @Override
     public void onServicesDiscovered() {
-        boolean resolved = this.resolved;
         super.onServicesDiscovered();
-        if (!resolved) {
-            BluetoothCharacteristic characteristic = device.getCharacteristic(BlindsEngineConstants.RX_CHAR_UUID);
-            if (characteristic != null) {
-                device.enableNotifications(characteristic);
+        enableNotifications();
+    }
+
+    private void enableNotifications() {
+        if (!resolved || !isConnected() || enabledNotifications) {
+            return;
+        }
+
+        BluetoothCharacteristic characteristic = device.getCharacteristic(BlindsEngineConstants.RX_CHAR_UUID);
+        if (characteristic != null) {
+            if (!device.enableNotifications(characteristic)) {
+                logger.debug("failed to enable notifications for characteristic: {}",
+                        BlindsEngineConstants.RX_CHAR_UUID);
+            } else {
+                enabledNotifications = true;
                 if (isAnyChannelLinked()) {
                     sendFindSetCommand();
                 }
-            } else {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                        "Failed to find service with characteristic: " + BlindsEngineConstants.RX_CHAR_UUID);
             }
+        } else {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                    "Failed to find service with characteristic: " + BlindsEngineConstants.RX_CHAR_UUID);
+            device.disconnect();
+        }
+    }
+
+    @Override
+    public void onConnectionStateChange(BluetoothConnectionStatusNotification connectionNotification) {
+        super.onConnectionStateChange(connectionNotification);
+        if (enabledNotifications && connectionNotification.getConnectionState() != ConnectionState.CONNECTED) {
+            enabledNotifications = false;
         }
     }
 
@@ -137,8 +162,12 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
         return false;
     }
 
+    private boolean isConnected() {
+        return device != null && device.getConnectionState() == ConnectionState.CONNECTED;
+    }
+
     private boolean isReadyForCommand() {
-        return device != null && device.getConnectionState() == ConnectionState.CONNECTED && resolved;
+        return isConnected() && enabledNotifications;
     }
 
     @Override
@@ -232,6 +261,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
             case ERROR:
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to set characteristic "
                         + characteristic.getUuid() + " to value " + HexUtils.bytesToHex(characteristic.getByteValue()));
+                device.disconnect();
                 return;
             case SUCCESS:
                 return;
@@ -268,7 +298,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                     return;
                 }
                 updateBatteryLevel(data[7]);
-                break;
+                return;
             }
             case BlindsEngineConstants.Command_Notify_Head_Type_Light_Level: {
                 if (data.length < 6) {

@@ -75,7 +75,8 @@ public class BlindsEngineDiscoveryParticipant implements BluetoothDiscoveryParti
     @Override
     public @Nullable ThingUID getThingUID(BluetoothDevice device) {
         if ((device.getManufacturerId() == null || device.getManufacturerId() == BLINDSENGINE_ID)
-                && device.supportsService(BlindsEngineConstants.RX_SERVICE_UUID)) {
+        // && device.supportsService(BlindsEngineConstants.RX_SERVICE_UUID)
+        ) {
             return new ThingUID(BlindsEngineBindingConstants.THING_TYPE_BLINDS, device.getAdapter().getUID(),
                     device.getAddress().toString().toLowerCase().replace(":", ""));
         }
