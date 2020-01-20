@@ -198,8 +198,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
 
                 // Close all transactions
                 BlueGigaCommand command = new BlueGigaGetConnectionsCommand();
-                BlueGigaGetConnectionsResponse connectionsResponse = (BlueGigaGetConnectionsResponse) bgh
-                        .sendTransaction(command);
+                BlueGigaGetConnectionsResponse connectionsResponse = bgh.sendTransaction(command,
+                        BlueGigaGetConnectionsResponse.class);
                 if (connectionsResponse != null) {
                     maxConnections = connectionsResponse.getMaxconn();
                 }
@@ -211,7 +211,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
 
                 // Get our Bluetooth address
                 command = new BlueGigaAddressGetCommand();
-                BlueGigaAddressGetResponse addressResponse = (BlueGigaAddressGetResponse) bgh.sendTransaction(command);
+                BlueGigaAddressGetResponse addressResponse = bgh.sendTransaction(command,
+                        BlueGigaAddressGetResponse.class);
                 if (addressResponse != null) {
                     address = new BluetoothAddress(addressResponse.getAddress());
                     updateStatus(ThingStatus.ONLINE);
@@ -220,7 +221,7 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
                 }
 
                 command = new BlueGigaGetInfoCommand();
-                BlueGigaGetInfoResponse infoResponse = (BlueGigaGetInfoResponse) bgh.sendTransaction(command);
+                BlueGigaGetInfoResponse infoResponse = bgh.sendTransaction(command, BlueGigaGetInfoResponse.class);
 
                 // Set mode to non-discoverable etc.
                 // Not doing this will cause connection failures later
@@ -460,8 +461,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         connect.setConnIntervalMax(connIntervalMax);
         connect.setLatency(latency);
         connect.setTimeout(timeout);
-        BlueGigaConnectDirectResponse connectResponse = (BlueGigaConnectDirectResponse) getBgHandler()
-                .sendTransaction(connect);
+        BlueGigaConnectDirectResponse connectResponse = getBgHandler().sendTransaction(connect,
+                BlueGigaConnectDirectResponse.class);
         if (connectResponse.getResult() != BgApiResponse.SUCCESS) {
             return false;
         }
@@ -478,7 +479,7 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
     public boolean bgDisconnect(int connectionHandle) {
         BlueGigaDisconnectCommand command = new BlueGigaDisconnectCommand();
         command.setConnection(connectionHandle);
-        BlueGigaDisconnectResponse response = (BlueGigaDisconnectResponse) getBgHandler().sendTransaction(command);
+        BlueGigaDisconnectResponse response = getBgHandler().sendTransaction(command, BlueGigaDisconnectResponse.class);
 
         return response.getResult() == BgApiResponse.SUCCESS;
     }
@@ -507,8 +508,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         command.setStart(1);
         command.setEnd(65535);
         command.setUuid(UUID.fromString("00002800-0000-0000-0000-000000000000"));
-        BlueGigaReadByGroupTypeResponse response = (BlueGigaReadByGroupTypeResponse) getBgHandler()
-                .sendTransaction(command);
+        BlueGigaReadByGroupTypeResponse response = getBgHandler().sendTransaction(command,
+                BlueGigaReadByGroupTypeResponse.class);
         return response.getResult() == BgApiResponse.SUCCESS;
     }
 
@@ -524,8 +525,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         command.setConnection(connectionHandle);
         command.setStart(1);
         command.setEnd(65535);
-        BlueGigaFindInformationResponse response = (BlueGigaFindInformationResponse) getBgHandler()
-                .sendTransaction(command);
+        BlueGigaFindInformationResponse response = getBgHandler().sendTransaction(command,
+                BlueGigaFindInformationResponse.class);
 
         return response.getResult() == BgApiResponse.SUCCESS;
     }
@@ -542,7 +543,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         BlueGigaReadByHandleCommand command = new BlueGigaReadByHandleCommand();
         command.setConnection(connectionHandle);
         command.setChrHandle(handle);
-        BlueGigaReadByHandleResponse response = (BlueGigaReadByHandleResponse) getBgHandler().sendTransaction(command);
+        BlueGigaReadByHandleResponse response = getBgHandler().sendTransaction(command,
+                BlueGigaReadByHandleResponse.class);
 
         return response.getResult() == BgApiResponse.SUCCESS;
     }
@@ -561,8 +563,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         command.setConnection(connectionHandle);
         command.setAttHandle(handle);
         command.setData(value);
-        BlueGigaAttributeWriteResponse response = (BlueGigaAttributeWriteResponse) getBgHandler()
-                .sendTransaction(command);
+        BlueGigaAttributeWriteResponse response = getBgHandler().sendTransaction(command,
+                BlueGigaAttributeWriteResponse.class);
 
         return response.getResult() == BgApiResponse.SUCCESS;
     }
@@ -572,7 +574,8 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
      */
     private boolean bgStopProcedure() {
         BlueGigaCommand command = new BlueGigaEndProcedureCommand();
-        BlueGigaEndProcedureResponse response = (BlueGigaEndProcedureResponse) getBgHandler().sendTransaction(command);
+        BlueGigaEndProcedureResponse response = getBgHandler().sendTransaction(command,
+                BlueGigaEndProcedureResponse.class);
 
         return response.getResult() == BgApiResponse.SUCCESS;
     }
@@ -581,7 +584,7 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         BlueGigaSetModeCommand command = new BlueGigaSetModeCommand();
         command.setConnect(GapConnectableMode.GAP_NON_CONNECTABLE);
         command.setDiscover(GapDiscoverableMode.GAP_NON_DISCOVERABLE);
-        BlueGigaSetModeResponse response = (BlueGigaSetModeResponse) getBgHandler().sendTransaction(command);
+        BlueGigaSetModeResponse response = getBgHandler().sendTransaction(command, BlueGigaSetModeResponse.class);
 
         return response.getResult() == BgApiResponse.SUCCESS;
     }
@@ -596,11 +599,11 @@ public class BlueGigaBridgeHandler extends BaseBridgeHandler
         scanCommand.setActiveScanning(active);
         scanCommand.setScanInterval(interval);
         scanCommand.setScanWindow(window);
-        getBgHandler().sendTransaction(scanCommand);
+        getBgHandler().sendTransaction(scanCommand, BlueGigaResponse.class);
 
         BlueGigaDiscoverCommand discoverCommand = new BlueGigaDiscoverCommand();
         discoverCommand.setMode(GapDiscoverMode.GAP_DISCOVER_OBSERVATION);
-        getBgHandler().sendTransaction(discoverCommand);
+        getBgHandler().sendTransaction(discoverCommand, BlueGigaResponse.class);
     }
 
     /**

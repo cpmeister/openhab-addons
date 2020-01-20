@@ -362,9 +362,9 @@ public class BlueGigaSerialHandler {
      * @param bleCommand {@link BlueGigaCommand}
      * @return response {@link BlueGigaResponse}
      */
-    public BlueGigaResponse sendTransaction(BlueGigaCommand bleCommand) {
+    public <R extends BlueGigaResponse> R sendTransaction(BlueGigaCommand bleCommand, Class<R> clazz) {
         checkIfAlive();
-        Future<BlueGigaResponse> futureResponse = sendBleRequestAsync(bleCommand, BlueGigaResponse.class);
+        Future<R> futureResponse = sendBleRequestAsync(bleCommand, clazz);
 
         try {
             return futureResponse.get();
