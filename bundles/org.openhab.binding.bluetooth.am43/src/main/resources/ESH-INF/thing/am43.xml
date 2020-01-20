@@ -83,7 +83,7 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 	<channel-type id="am43_speed">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Speed</label>
-        <description>The speed value in RPMs set for this motor</description>
+		<description>The speed value in RPMs set for this motor</description>
 		<state readOnly="true" pattern="%.0f"/>
 	</channel-type>
 	
@@ -97,28 +97,28 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 	<channel-type id="am43_length">
 		<item-type>Number:Length</item-type>
 		<label>Length</label>
-        <description>The distance the blinds travel from full open and close (not really important)</description>
+		<description>The distance the blinds travel from full open and close (not really important)</description>
 		<state readOnly="true" pattern="%.0f %unit%"/>
 	</channel-type>
 	
 	<channel-type id="am43_diameter">
 		<item-type>Number:Length</item-type>
 		<label>Diameter</label>
-        <description>The diameter of the pulley of this motor (not really important)</description>
+		<description>The diameter of the pulley of this motor (not really important)</description>
 		<state readOnly="true" pattern="%.0f %unit%"/>
 	</channel-type>
 	
 	<channel-type id="am43_type">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Device Type</label>
-        <description>The type of blinds this motor is operating. (not really important)</description>
+		<description>The type of blinds this motor is operating. (not really important)</description>
 		<state readOnly="true" pattern="%.0f"/>
 	</channel-type>
 	
 	<channel-type id="am43_lightLevel">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Light Level</label>
-        <description>Light level detected by the solar sensor. Will range from 0-10</description>
+		<description>Light level detected by the solar sensor. Will range from 0-10</description>
 		<state readOnly="true" pattern="%.0f"/>
 	</channel-type>
 	
