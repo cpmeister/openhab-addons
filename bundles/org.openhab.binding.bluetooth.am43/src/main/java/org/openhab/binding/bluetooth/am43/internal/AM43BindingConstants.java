@@ -40,7 +40,7 @@ public class AM43BindingConstants {
     public static final String CHANNEL_ID_TOP_LIMIT_SET = "topLimitSet";
     public static final String CHANNEL_ID_BOTTOM_LIMIT_SET = "bottomLimitSet";
     public static final String CHANNEL_ID_HAS_LIGHT_SENSOR = "hasLightSensor";
-    public static final String CHANNEL_ID_OPERATION_MODE = "operationSwitch";
+    public static final String CHANNEL_ID_OPERATION_MODE = "operationMode";
     public static final String CHANNEL_ID_SPEED = "speed";
     public static final String CHANNEL_ID_ELECTRIC = "electric";
     public static final String CHANNEL_ID_POSITION = "position";

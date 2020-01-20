@@ -21,7 +21,7 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 			<channel id="topLimitSet" typeId="am43_topLimitSet" />
 			<channel id="bottomLimitSet" typeId="am43_bottomLimitSet" />
 			<channel id="hasLightSensor" typeId="am43_hasLightSensor" />
-			<channel id="operationSwitch" typeId="am43_operationSwitch" />
+			<channel id="operationMode" typeId="am43_operationMode" />
 			<channel id="speed" typeId="am43_speed" />
 			<channel id="electric" typeId="system.battery-level" />
 			<channel id="position" typeId="am43_position" />
@@ -69,7 +69,7 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 		<state readOnly="true"/>
 	</channel-type>
 	
-	<channel-type id="am43_operationSwitch">
+	<channel-type id="am43_operationMode">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Operation Mode</label>
 		<state readOnly="false">
