@@ -10,29 +10,29 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.blindsengine.internal;
+package org.openhab.binding.bluetooth.am43.internal;
 
 /**
- * This is an enum representing possible motor modes settings
+ * This is an enum representing possible motor direction settings
  *
  * @author Connor Petty - Initial contribution
  */
-public enum OperationMode {
-    Inching,
-    Continuous;
+public enum Direction {
+    Forward,
+    Reverse;
 
     public byte toByte() {
         switch (this) {
-            case Inching:
+            case Forward:
                 return 1;
-            case Continuous:
+            case Reverse:
                 return 0;
         }
         return -1;
     }
 
-    public static OperationMode valueOf(boolean bitValue) {
-        return bitValue ? Inching : Continuous;
+    public static Direction valueOf(boolean bitValue) {
+        return bitValue ? Forward : Reverse;
     }
 
 }

@@ -5,30 +5,30 @@ xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 <!-- Sample Thing Type -->
-	<thing-type id="blinds_engine_device">
+	<thing-type id="am43">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="bluegiga" />
 			<bridge-type-ref id="bluez" />
 		</supported-bridge-type-refs>
 
-		<label>BlindsEngine Device</label>
-		<description>A BlindsEngine device</description>
+		<label>AM43 Blind Drive Motor</label>
+		<description>A AM43 Blind Drive Motor</description>
 		<category>Blinds</category>
 
 		<channels>
 			<channel id="rssi" typeId="rssi" />
-			<channel id="direction" typeId="blindengine_direction" />
-			<channel id="topLimitSet" typeId="blindengine_topLimitSet" />
-			<channel id="bottomLimitSet" typeId="blindengine_bottomLimitSet" />
-			<channel id="hasLightSensor" typeId="blindengine_hasLightSensor" />
-			<channel id="operationSwitch" typeId="blindengine_operationSwitch" />
-			<channel id="deviceSpeed" typeId="blindengine_deviceSpeed" />
-			<channel id="deviceElectric" typeId="system.battery-level" />
-			<channel id="devicePercentPosition" typeId="blindengine_devicePercentPosition" />
-			<channel id="deviceLength" typeId="blindengine_deviceLength" />
-			<channel id="deviceDiameter" typeId="blindengine_deviceDiameter" />
-			<channel id="deviceType" typeId="blindengine_deviceType" />
-			<channel id="lightLevel" typeId="blindengine_lightLevel" />
+			<channel id="direction" typeId="am43_direction" />
+			<channel id="topLimitSet" typeId="am43_topLimitSet" />
+			<channel id="bottomLimitSet" typeId="am43_bottomLimitSet" />
+			<channel id="hasLightSensor" typeId="am43_hasLightSensor" />
+			<channel id="operationSwitch" typeId="am43_operationSwitch" />
+			<channel id="speed" typeId="am43_speed" />
+			<channel id="electric" typeId="system.battery-level" />
+			<channel id="position" typeId="am43_position" />
+			<channel id="length" typeId="am43_length" />
+			<channel id="diameter" typeId="am43_diameter" />
+			<channel id="type" typeId="am43_type" />
+			<channel id="lightLevel" typeId="am43_lightLevel" />
 		</channels>
 
 		<config-description>
@@ -40,7 +40,7 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 
 	</thing-type>
 
-	<channel-type id="blindengine_direction">
+	<channel-type id="am43_direction">
 		<item-type>String</item-type>
 		<label>Direction</label>
 		<state readOnly="false">
@@ -51,25 +51,25 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 		</state>
 	</channel-type>
 	
-	<channel-type id="blindengine_topLimitSet">
+	<channel-type id="am43_topLimitSet">
 		<item-type>Switch</item-type>
 		<label>Top Limit is Set</label>
 		<state readOnly="false"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_bottomLimitSet">
+	<channel-type id="am43_bottomLimitSet">
 		<item-type>Switch</item-type>
 		<label>Bottom Limit is Set</label>
 		<state readOnly="false"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_hasLightSensor">
+	<channel-type id="am43_hasLightSensor">
 		<item-type>Switch</item-type>
 		<label>Has Light Sensor</label>
 		<state readOnly="true"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_operationSwitch">
+	<channel-type id="am43_operationSwitch">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Operation Mode</label>
 		<state readOnly="false">
@@ -80,40 +80,45 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 		</state>
 	</channel-type>
 	
-	<channel-type id="blindengine_deviceSpeed">
+	<channel-type id="am43_speed">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Speed</label>
+        <description>The speed value in RPMs set for this motor</description>
 		<state readOnly="true" pattern="%.0f"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_devicePercentPosition">
+	<channel-type id="am43_position">
 		<item-type>Rollershutter</item-type>
-		<label>Position of blinds</label>
-<!--		<description>The percent value of the blinds</description> -->
-		<state readOnly="false" pattern="%.3f" min="0" max="100" />
+		<label>Position</label>
+		<description>The percent value of the blind position</description>
+		<state readOnly="false" pattern="%.0f %%" min="0" max="100" />
 	</channel-type>
 
-	<channel-type id="blindengine_deviceLength">
+	<channel-type id="am43_length">
 		<item-type>Number:Length</item-type>
 		<label>Length</label>
+        <description>The distance the blinds travel from full open and close (not really important)</description>
 		<state readOnly="true" pattern="%.0f %unit%"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_deviceDiameter">
+	<channel-type id="am43_diameter">
 		<item-type>Number:Length</item-type>
 		<label>Diameter</label>
+        <description>The diameter of the pulley of this motor (not really important)</description>
 		<state readOnly="true" pattern="%.0f %unit%"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_deviceType">
+	<channel-type id="am43_type">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Device Type</label>
+        <description>The type of blinds this motor is operating. (not really important)</description>
 		<state readOnly="true" pattern="%.0f"/>
 	</channel-type>
 	
-	<channel-type id="blindengine_lightLevel">
+	<channel-type id="am43_lightLevel">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Light Level</label>
+        <description>Light level detected by the solar sensor. Will range from 0-10</description>
 		<state readOnly="true" pattern="%.0f"/>
 	</channel-type>
 	

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.blindsengine.internal;
+package org.openhab.binding.bluetooth.am43.internal;
 
 /**
  * The {@link MotorSettings} is responsible for containing the basic

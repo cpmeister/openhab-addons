@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.blindsengine.internal;
+package org.openhab.binding.bluetooth.am43.internal;
 
-import static org.openhab.binding.bluetooth.blindsengine.internal.BlindsEngineBindingConstants.THING_TYPE_BLINDS;
+import static org.openhab.binding.bluetooth.am43.internal.AM43BindingConstants.THING_TYPE_AM43;
 
 import java.util.Collections;
 import java.util.Set;
@@ -27,16 +27,16 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * The {@link BlindsEngineHandlerFactory} is responsible for creating things and thing
+ * The {@link AM43HandlerFactory} is responsible for creating things and thing
  * handlers.
  *
  * @author Connor Petty - Initial contribution
  */
 @NonNullByDefault
-@Component(configurationPid = "binding.bluetooth.blindsengine", service = ThingHandlerFactory.class)
-public class BlindsEngineHandlerFactory extends BaseThingHandlerFactory {
+@Component(configurationPid = "binding.bluetooth.am43", service = ThingHandlerFactory.class)
+public class AM43HandlerFactory extends BaseThingHandlerFactory {
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_BLINDS);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_AM43);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -47,8 +47,8 @@ public class BlindsEngineHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (THING_TYPE_BLINDS.equals(thingTypeUID)) {
-            return new BlindsEngineHandler(thing);
+        if (THING_TYPE_AM43.equals(thingTypeUID)) {
+            return new AM43Handler(thing);
         }
 
         return null;

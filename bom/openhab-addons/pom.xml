@@ -76,7 +76,7 @@
     </dependency>
     <dependency>
       <groupId>org.openhab.addons.bundles</groupId>
-      <artifactId>org.openhab.binding.bluetooth.blindsengine</artifactId>
+      <artifactId>org.openhab.binding.bluetooth.am43</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -10,17 +10,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.blindsengine.internal;
+package org.openhab.binding.bluetooth.am43.internal;
 
 import java.util.UUID;
 
 /**
- * The {@link BlindsEngineConstants} class defines common constants, which are used to communicate
- * with the blindsengine devices.
+ * The {@link AM43Constants} class defines common constants, which are used to communicate
+ * with AM43 blinds drive motor
  *
  * @author Connor Petty - Initial contribution
  */
-public class BlindsEngineConstants {
+public class AM43Constants {
 
     public static final int Baiye_TYPE = 1;
 

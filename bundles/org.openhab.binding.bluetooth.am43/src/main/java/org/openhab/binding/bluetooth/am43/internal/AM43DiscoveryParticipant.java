@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.blindsengine.internal;
+package org.openhab.binding.bluetooth.am43.internal;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,18 +37,11 @@ import org.osgi.service.component.annotations.Component;
  */
 @NonNullByDefault
 @Component(immediate = true)
-public class BlindsEngineDiscoveryParticipant implements BluetoothDiscoveryParticipant {
-
-    /*
-     * Yep, they are actually using 0 for their ID.
-     * They were too lazy to even make up a manufacturer id.
-     * I feel sorry for Ericsson Technology Licensing.
-     */
-    private static final int BLINDSENGINE_ID = 0;
+public class AM43DiscoveryParticipant implements BluetoothDiscoveryParticipant {
 
     @Override
     public Set<ThingTypeUID> getSupportedThingTypeUIDs() {
-        return Collections.singleton(BlindsEngineBindingConstants.THING_TYPE_BLINDS);
+        return Collections.singleton(AM43BindingConstants.THING_TYPE_AM43);
     }
 
     @Override
@@ -74,10 +67,10 @@ public class BlindsEngineDiscoveryParticipant implements BluetoothDiscoveryParti
 
     @Override
     public @Nullable ThingUID getThingUID(BluetoothDevice device) {
-        if ((device.getManufacturerId() == null || device.getManufacturerId() == BLINDSENGINE_ID)
+        if (device.getManufacturerId() == null && "A-OK".equals(device.getName())
         // && device.supportsService(BlindsEngineConstants.RX_SERVICE_UUID)
         ) {
-            return new ThingUID(BlindsEngineBindingConstants.THING_TYPE_BLINDS, device.getAdapter().getUID(),
+            return new ThingUID(AM43BindingConstants.THING_TYPE_AM43, device.getAdapter().getUID(),
                     device.getAddress().toString().toLowerCase().replace(":", ""));
         }
         return null;

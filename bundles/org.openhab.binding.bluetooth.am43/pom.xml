@@ -9,9 +9,9 @@
     <version>2.5.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.openhab.binding.bluetooth.blindsengine</artifactId>
+  <artifactId>org.openhab.binding.bluetooth.am43</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: bluetooth.BlindsEngine Binding</name>
+  <name>openHAB Add-ons :: Bundles :: AM43 Bluetooth Adapter</name>
 
 <dependencies>
     <dependency>

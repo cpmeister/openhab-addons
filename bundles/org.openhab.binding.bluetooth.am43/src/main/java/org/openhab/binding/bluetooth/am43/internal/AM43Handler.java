@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.blindsengine.internal;
+package org.openhab.binding.bluetooth.am43.internal;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -48,16 +48,16 @@ import org.slf4j.LoggerFactory;
 import tec.uom.se.unit.MetricPrefix;
 
 /**
- * The {@link BlindsEngineHandler} is responsible for handling commands, which are
+ * The {@link AM43Handler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author Connor Petty - Initial contribution
  */
 @NonNullByDefault({ DefaultLocation.PARAMETER, DefaultLocation.RETURN_TYPE, DefaultLocation.ARRAY_CONTENTS,
         DefaultLocation.TYPE_ARGUMENT, DefaultLocation.TYPE_BOUND, DefaultLocation.TYPE_PARAMETER })
-public class BlindsEngineHandler extends ConnectedBluetoothHandler {
+public class AM43Handler extends ConnectedBluetoothHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(BlindsEngineHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(AM43Handler.class);
 
     protected volatile Boolean enabledNotifications = false;
 
@@ -65,7 +65,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
     private ScheduledFuture<?> refreshBatteryJob;
     private ScheduledFuture<?> refreshLightLevelJob;
 
-    public BlindsEngineHandler(Thing thing) {
+    public AM43Handler(Thing thing) {
         super(thing);
     }
 
@@ -127,11 +127,10 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
             return;
         }
 
-        BluetoothCharacteristic characteristic = device.getCharacteristic(BlindsEngineConstants.RX_CHAR_UUID);
+        BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.RX_CHAR_UUID);
         if (characteristic != null) {
             if (!device.enableNotifications(characteristic)) {
-                logger.debug("failed to enable notifications for characteristic: {}",
-                        BlindsEngineConstants.RX_CHAR_UUID);
+                logger.debug("failed to enable notifications for characteristic: {}", AM43Constants.RX_CHAR_UUID);
             } else {
                 enabledNotifications = true;
                 if (isAnyChannelLinked()) {
@@ -140,7 +139,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
             }
         } else {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                    "Failed to find service with characteristic: " + BlindsEngineConstants.RX_CHAR_UUID);
+                    "Failed to find service with characteristic: " + AM43Constants.RX_CHAR_UUID);
             device.disconnect();
         }
     }
@@ -154,7 +153,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
     }
 
     private boolean isAnyChannelLinked() {
-        for (String channelId : BlindsEngineBindingConstants.getAllChannels()) {
+        for (String channelId : AM43BindingConstants.getAllChannels()) {
             if (isLinked(channelId)) {
                 return true;
             }
@@ -177,10 +176,10 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
         }
         if (command instanceof RefreshType) {
             switch (channelUID.getId()) {
-                case BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_ELECTRIC:
+                case AM43BindingConstants.CHANNEL_ID_ELECTRIC:
                     sendFindElectricCommand();
                     return;
-                case BlindsEngineBindingConstants.CHANNEL_ID_LIGHT_LEVEL:
+                case AM43BindingConstants.CHANNEL_ID_LIGHT_LEVEL:
                     sendFindLightLevelCommand();
                     return;
             }
@@ -188,7 +187,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
             return;
         }
         switch (channelUID.getId()) {
-            case BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_PERCENT_POSITION:
+            case AM43BindingConstants.CHANNEL_ID_POSITION:
                 if (command instanceof PercentType) {
                     PercentType percent = (PercentType) command;
                     sendControlPercentCommand(percent.intValue());
@@ -197,7 +196,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 if (command instanceof StopMoveType) {
                     switch ((StopMoveType) command) {
                         case STOP:
-                            sendControlCommand(BlindsEngineConstants.Command_Send_Content_Control_Stop);
+                            sendControlCommand(AM43Constants.Command_Send_Content_Control_Stop);
                             return;
                         case MOVE:
                             // do nothing
@@ -207,19 +206,19 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 if (command instanceof UpDownType) {
                     switch ((UpDownType) command) {
                         case UP:
-                            sendControlCommand(BlindsEngineConstants.Command_Send_Content_Control_Open);
+                            sendControlCommand(AM43Constants.Command_Send_Content_Control_Open);
                             return;
                         case DOWN:
-                            sendControlCommand(BlindsEngineConstants.Command_Send_Content_Control_Close);
+                            sendControlCommand(AM43Constants.Command_Send_Content_Control_Close);
                             return;
                     }
                 }
                 break;
-            case BlindsEngineBindingConstants.CHANNEL_ID_TOP_LIMIT_SET:
+            case AM43BindingConstants.CHANNEL_ID_TOP_LIMIT_SET:
                 if (command instanceof OnOffType) {
                     switch ((OnOffType) command) {
                         case ON:
-                            sendChangeLimitStateCommand(BlindsEngineConstants.Command_Send_Content_saveLimit, 0);
+                            sendChangeLimitStateCommand(AM43Constants.Command_Send_Content_saveLimit, 0);
                             return;
                         case OFF:
                             sendResetLimitStateCommand();
@@ -228,11 +227,11 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                     }
                 }
                 break;
-            case BlindsEngineBindingConstants.CHANNEL_ID_BOTTOM_LIMIT_SET:
+            case AM43BindingConstants.CHANNEL_ID_BOTTOM_LIMIT_SET:
                 if (command instanceof OnOffType) {
                     switch ((OnOffType) command) {
                         case ON:
-                            sendChangeLimitStateCommand(BlindsEngineConstants.Command_Send_Content_saveLimit, 1);
+                            sendChangeLimitStateCommand(AM43Constants.Command_Send_Content_saveLimit, 1);
                             return;
                         case OFF:
                             sendResetLimitStateCommand();
@@ -241,7 +240,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                     }
                 }
                 break;
-            case BlindsEngineBindingConstants.CHANNEL_ID_DIRECTION:
+            case AM43BindingConstants.CHANNEL_ID_DIRECTION:
                 if (command instanceof StringType) {
                     motorSettings.setDirection(Direction.valueOf(command.toString()));
                     sendMotorSettingsCommand();
@@ -271,21 +270,21 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
     @Override
     public void onCharacteristicUpdate(BluetoothCharacteristic characteristic) {
         super.onCharacteristicUpdate(characteristic);
-        if (!characteristic.getUuid().equals(BlindsEngineConstants.RX_CHAR_UUID)) {
+        if (!characteristic.getUuid().equals(AM43Constants.RX_CHAR_UUID)) {
             return;
         }
         byte[] data = characteristic.getByteValue();
         byte headType = data[1];
 
         switch (headType) {
-            case BlindsEngineConstants.Command_Head_Type_Control_direct: {
+            case AM43Constants.Command_Head_Type_Control_direct: {
                 logger.debug("received control ack");
-                if (data[3] == BlindsEngineConstants.Command_Notify_Content_Succese) {
+                if (data[3] == AM43Constants.Command_Notify_Content_Succese) {
                     // direct command was successful
                 }
                 return;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Move: {
+            case AM43Constants.Command_Notify_Head_Type_Move: {
                 logger.debug("received movement notify");
                 if (data.length < 5) {
                     return;
@@ -293,14 +292,14 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 updatePosition(data[4]);
                 break;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Battery_Level: {
+            case AM43Constants.Command_Notify_Head_Type_Battery_Level: {
                 if (data.length < 9) {
                     return;
                 }
                 updateBatteryLevel(data[7]);
-                return;
+                break;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Light_Level: {
+            case AM43Constants.Command_Notify_Head_Type_Light_Level: {
                 if (data.length < 6) {
                     return;
                 }
@@ -310,9 +309,9 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 // if (hasLightSensor) {
                 updateLightLevel(data[4]);
                 // }
-                return;
+                break;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Speed: {
+            case AM43Constants.Command_Notify_Head_Type_Speed: {
                 if (data.length < 5) {
                     return;
                 }
@@ -323,7 +322,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 updateSpeed(data[4]);
                 break;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Find_Normal: {
+            case AM43Constants.Command_Notify_Head_Type_Find_Normal: {
                 if (data.length < 10) {
                     return;
                 }
@@ -344,7 +343,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 cancelMotorSettingsJob();
                 break;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Find_Timing: {
+            case AM43Constants.Command_Notify_Head_Type_Find_Timing: {
                 // if (data[2] == 0) {
                 // bleSetNormalBean.getTimingList().clear();
                 // return;
@@ -373,7 +372,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 // }
                 return;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Find_Season: {
+            case AM43Constants.Command_Notify_Head_Type_Find_Season: {
                 // if (data.length < 20) {
                 // StringBuilder sb = new StringBuilder();
                 // sb.append("错误的数据为：");
@@ -402,7 +401,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
                 // bleSetNormalBean2.setWinterLightEndMinute(data[18]);
                 return;
             }
-            case BlindsEngineConstants.Command_Notify_Head_Type_Fault: {
+            case AM43Constants.Command_Notify_Head_Type_Fault: {
                 // sendBleNotifyAck(header);
                 break;
             }
@@ -416,7 +415,7 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
         motorSettings.setDirection(direction);
         StringType directionType = new StringType(direction.toString());
         logger.debug("updating direction to: {}", directionType);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DIRECTION, directionType);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_DIRECTION, directionType);
     }
 
     private void updateOperationMode(boolean bitValue) {
@@ -424,42 +423,42 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
         motorSettings.setOperationMode(opMode);
         StringType mode = new StringType(opMode.toString());
         logger.debug("updating operationMode to: {}", mode);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_OPERATION_MODE, mode);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_OPERATION_MODE, mode);
     }
 
     private void updateTopLimitSet(boolean bitValue) {
         OnOffType limitSet = bitValue ? OnOffType.ON : OnOffType.OFF;
         logger.debug("updating topLimitSet to: {}", bitValue);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_TOP_LIMIT_SET, limitSet);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_TOP_LIMIT_SET, limitSet);
     }
 
     private void updateBottomLimitSet(boolean bitValue) {
         OnOffType limitSet = bitValue ? OnOffType.ON : OnOffType.OFF;
         logger.debug("updating bottomLimitSet to: {}", bitValue);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_BOTTOM_LIMIT_SET, limitSet);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_BOTTOM_LIMIT_SET, limitSet);
     }
 
     private void updateHasLightSensor(boolean bitValue) {
         OnOffType hasSensor = bitValue ? OnOffType.ON : OnOffType.OFF;
         logger.debug("updating hasLightSensor to: {}", bitValue);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_HAS_LIGHT_SENSOR, hasSensor);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_HAS_LIGHT_SENSOR, hasSensor);
     }
 
     private void updateSpeed(byte value) {
         motorSettings.setSpeed(value);
         DecimalType speed = new DecimalType(value);
         logger.debug("updating speed to: {}", speed);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_SPEED, speed);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_SPEED, speed);
     }
 
     private void updatePosition(byte value) {
         if (value >= 0 && value <= 100) {
-            DecimalType position = new DecimalType(value);
+            PercentType position = new PercentType(value);
             logger.debug("updating position to: {}", position);
-            updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_PERCENT_POSITION, position);
+            updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_POSITION, position);
         } else {
             logger.debug("updating position to: undef");
-            updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_PERCENT_POSITION, UnDefType.UNDEF);
+            updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_POSITION, UnDefType.UNDEF);
         }
     }
 
@@ -468,33 +467,38 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
         QuantityType<Length> length = QuantityType.valueOf(motorSettings.getLength(),
                 MetricPrefix.MILLI(SIUnits.METRE));
         logger.debug("updating length to: {}", length);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_LENGTH, length);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_LENGTH, length);
     }
 
     private void updateDiameter(byte value) {
         motorSettings.setDiameter(value);
         QuantityType<Length> diameter = QuantityType.valueOf(value, MetricPrefix.MILLI(SIUnits.METRE));
         logger.debug("updating diameter to: {}", diameter);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_DIAMETER, diameter);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_DIAMETER, diameter);
     }
 
     private void updateDeviceType(int value) {
         motorSettings.setType(value);
         DecimalType type = new DecimalType(value);
         logger.debug("updating deviceType to: {}", type);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_TYPE, type);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_TYPE, type);
     }
 
     private void updateLightLevel(byte value) {
         DecimalType lightLevel = new DecimalType(value);
         logger.debug("updating lightLevel to: {}", lightLevel);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_LIGHT_LEVEL, lightLevel);
+        updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_LIGHT_LEVEL, lightLevel);
     }
 
     private void updateBatteryLevel(int value) {
-        DecimalType deviceElectric = new DecimalType(value & 0xFF);
-        logger.debug("updating deviceElectric to: {}", deviceElectric);
-        updateStateIfLinked(BlindsEngineBindingConstants.CHANNEL_ID_DEVICE_ELECTRIC, deviceElectric);
+        if (value >= 0 && value <= 100) {
+            PercentType deviceElectric = new PercentType(value & 0xFF);
+            logger.debug("updating battery lebel to: {}", deviceElectric);
+            updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_ELECTRIC, deviceElectric);
+        } else {
+            logger.debug("Received battery value {}. Updating battery lebel: undef", value);
+            updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_ELECTRIC, UnDefType.UNDEF);
+        }
     }
 
     /**
@@ -513,39 +517,35 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
     }
 
     private void sendBleNotifyAck(byte commandType) {
-        byte[] data = { BlindsEngineConstants.Command_Notify_Content_Succese };
+        byte[] data = { AM43Constants.Command_Notify_Content_Succese };
+        // sendBleCommand(commandType, data);
         sendBleCommandWithoutCrc(commandType, data, true);
     }
 
     private void sendBleCommandWithoutCrc(byte commandType, byte[] contentByteArray, boolean z) {
-        byte[] value = BlindsEngineConstants.Command_Head_Tag;
-        value = ArrayUtils.add(value, BlindsEngineConstants.Command_Head_Value);
+        byte[] value = AM43Constants.Command_Head_Tag;
+        value = ArrayUtils.add(value, AM43Constants.Command_Head_Value);
         value = ArrayUtils.add(value, commandType);
         value = ArrayUtils.add(value, (byte) contentByteArray.length);
         value = ArrayUtils.addAll(value, contentByteArray);
         value = ArrayUtils.add(value, (byte) (z ? 49 : 206));
 
-        BluetoothCharacteristic characteristic = device
-                // .getServices(BlindsEngineConstants.RX_SERVICE_UUID)
-                .getCharacteristic(BlindsEngineConstants.TX_CHAR_UUID);
+        BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.TX_CHAR_UUID);
         characteristic.setValue(value);
         device.writeCharacteristic(characteristic);
     }
 
     private void sendBleCommand(byte commandType, byte[] contentByteArray) {
-        byte[] header = BlindsEngineConstants.Command_Head_Tag;
+        byte[] header = AM43Constants.Command_Head_Tag;
         byte[] value = ArrayUtils.EMPTY_BYTE_ARRAY;
-        value = ArrayUtils.add(value, BlindsEngineConstants.Command_Head_Value);
+        value = ArrayUtils.add(value, AM43Constants.Command_Head_Value);
         value = ArrayUtils.add(value, commandType);
         value = ArrayUtils.add(value, (byte) contentByteArray.length);
         value = ArrayUtils.addAll(value, contentByteArray);
         value = ArrayUtils.add(value, computeCrc(value));
         value = ArrayUtils.addAll(header, value);
 
-        BluetoothCharacteristic characteristic = device
-                // .getServices(BlindsEngineConstants.RX_SERVICE_UUID)
-                .getCharacteristic(BlindsEngineConstants.TX_CHAR_UUID);
-
+        BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.TX_CHAR_UUID);
         characteristic.setValue(value);
         device.writeCharacteristic(characteristic);
     }
@@ -574,31 +574,31 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
 
         byte[] data = { (byte) dataHead, (byte) deviceSpeed, 0, (byte) ((deviceLength & 0xFF00) >> 8),
                 (byte) (deviceLength & 0xFF), (byte) deviceDiameter };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Setting_Frequently, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Setting_Frequently, data);
     }
 
     private void sendPasswordCommand(int i) {
         int i2 = (i & 0xFF00) >> 8;
         int i3 = i & 0xFF;
         byte[] data = { (byte) i2, (byte) i3 };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_PassWord, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_PassWord, data);
     }
 
     private void sendChangedPasswordCommand(int i) {
         int i2 = (i & 0xFF00) >> 8;
         int i3 = i & 0xFF;
         byte[] data = { (byte) i2, (byte) i3 };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_PassWord_Change, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_PassWord_Change, data);
     }
 
     private void sendControlCommand(byte command) {
         byte[] data = { command };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Control_direct, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Control_direct, data);
     }
 
     private void sendControlPercentCommand(int percent) {
         byte[] data = { (byte) percent };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Control_percent, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Control_percent, data);
     }
 
     private void sendChangeLimitStateCommand(byte limitType, int limitMode) {
@@ -612,24 +612,24 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
     }
 
     private void sendChangeLimitStateCommand(byte[] data) {
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_LimitOrReset, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_LimitOrReset, data);
     }
 
     private void sendNewNameCommand(byte[] data) {
-        sendBleCommand(BlindsEngineConstants.Command_Notify_Head_Type_NewName, data);
+        sendBleCommand(AM43Constants.Command_Notify_Head_Type_NewName, data);
     }
 
     private void sendChangeSeasonCommand(byte[] data) {
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Season, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Season, data);
     }
 
     private void sendTimingCommand(byte[] data) {
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Timing, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Timing, data);
     }
 
     private void sendTimingSwitchCommand(int i, boolean z) {
         byte[] data = { (byte) i, 0, z ? (byte) 1 : 0, 0, 0, 0, 0 };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Timing, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Timing, data);
     }
 
     private void sendCurrentTimeCommand() {
@@ -638,17 +638,17 @@ public class BlindsEngineHandler extends ConnectedBluetoothHandler {
 
     private void sendFindElectricCommand() {
         byte[] data = { (byte) 1 };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Battery_Level, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Battery_Level, data);
     }
 
     private void sendFindSetCommand() {
-        byte[] data = { BlindsEngineConstants.Command_Send_content_Type_Setting_findAll };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Setting_findAll, data);
+        byte[] data = { AM43Constants.Command_Send_content_Type_Setting_findAll };
+        sendBleCommand(AM43Constants.Command_Head_Type_Setting_findAll, data);
     }
 
     private void sendFindLightLevelCommand() {
-        byte[] data = { BlindsEngineConstants.Command_Send_Content_findLightLevel };
-        sendBleCommand(BlindsEngineConstants.Command_Head_Type_Light_Level, data);
+        byte[] data = { AM43Constants.Command_Send_Content_findLightLevel };
+        sendBleCommand(AM43Constants.Command_Head_Type_Light_Level, data);
     }
 
 }
