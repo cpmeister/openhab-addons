@@ -72,9 +72,13 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private MotorSettings motorSettings = null;
 
+    private boolean inverse = false;
+
     @Override
     public void initialize() {
         super.initialize();
+
+        inverse = (Boolean) getConfig().get(AM43BindingConstants.PROPERTY_INVERSE);
 
         Number intervalInMin = (Number) getConfig().get(AM43BindingConstants.PROPERTY_INTERVAL);
         long intervalInSec = TimeUnit.MINUTES.toSeconds(intervalInMin.intValue());
@@ -190,6 +194,10 @@ public class AM43Handler extends ConnectedBluetoothHandler {
             case AM43BindingConstants.CHANNEL_ID_POSITION:
                 if (command instanceof PercentType) {
                     PercentType percent = (PercentType) command;
+                    int value = percent.intValue();
+                    if (inverse) {
+                        value = 100 - value;
+                    }
                     sendControlPercentCommand(percent.intValue());
                     return;
                 }
@@ -462,7 +470,11 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private void updatePosition(byte value) {
         if (value >= 0 && value <= 100) {
-            PercentType position = new PercentType(value);
+            int percentValue = value;
+            if (inverse) {
+                percentValue = 100 - percentValue;
+            }
+            PercentType position = new PercentType(percentValue);
             logger.debug("updating position to: {}", position);
             updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_POSITION, position);
         } else {
@@ -605,11 +617,13 @@ public class AM43Handler extends ConnectedBluetoothHandler {
         sendBleCommand(AM43Constants.Command_Head_Type_Control_percent, (byte) percent);
     }
 
+    @SuppressWarnings("unused")
     private void sendChangeLimitStateCommand(byte limitType, int limitMode) {
         byte[] data = { limitType, (byte) (1 << limitMode), 0 };
         sendBleCommand(AM43Constants.Command_Head_Type_LimitOrReset, data);
     }
 
+    @SuppressWarnings("unused")
     private void sendResetLimitStateCommand() {
         byte[] data = { 0, 0, 1 };
         sendBleCommand(AM43Constants.Command_Head_Type_LimitOrReset, data);

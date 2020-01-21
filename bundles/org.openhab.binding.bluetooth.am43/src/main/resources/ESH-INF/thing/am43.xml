@@ -41,6 +41,11 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 				<description>Refresh interval for battery and light sensor data in minutes.</description>
 				<default>1</default>
 			</parameter>
+			<parameter name="inverse" type="boolean">
+				<label>Inverse Percentage</label>
+				<description>Inverts the blinds percentages such that 0 becomes 100 and 100 becomes 0</description>
+				<default>false</default>
+			</parameter>
 		</config-description>
 
 	</thing-type>
