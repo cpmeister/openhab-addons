@@ -78,10 +78,10 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     public void initialize() {
         super.initialize();
 
-        inverse = (Boolean) getConfig().get(AM43BindingConstants.PROPERTY_INVERSE);
+        inverse = (Boolean) getConfig().get(AM43BindingConstants.PROPERTY_INVERT_POSITION);
 
-        Number intervalInMin = (Number) getConfig().get(AM43BindingConstants.PROPERTY_INTERVAL);
-        long intervalInSec = TimeUnit.MINUTES.toSeconds(intervalInMin.intValue());
+        Number intervalInMin = (Number) getConfig().get(AM43BindingConstants.PROPERTY_REFRESH_INTERVAL);
+        long intervalInSec = intervalInMin.intValue();
 
         motorSettingsJob = scheduler.scheduleWithFixedDelay(() -> {
             if (enableNotifications()) {

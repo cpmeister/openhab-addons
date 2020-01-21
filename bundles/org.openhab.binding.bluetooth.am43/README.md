@@ -1,56 +1,73 @@
-# AM43 Blind Motor Binding
+# AM43
 
-_Give some details about what this binding is meant for - a protocol, system, specific device._
-
-_If possible, provide some resources like pictures, a YouTube video, etc. to give an impression of what can be done with this binding. You can place such resources into a `doc` folder next to this README.md._
+This extension adds support for AM43 Blind Drive Motors.
 
 ## Supported Things
 
-_Please describe the different supported things / devices within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+Following thing types are supported by this extension:
+
+| Thing Type ID | Description                   |
+|---------------|-------------------------------|
+| am43          | AM43 Blind Drive Motor        |
+
 
 ## Discovery
 
-_Describe the available auto-discovery features here. Mention for what it works and what needs to be kept in mind when using it._
-
-## Binding Configuration
-
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it. In this section, you should link to this file and provide some information about the options. The file could e.g. look like:_
-
-```
-# Configuration for the Philips Hue Binding
-#
-# Default secret key for the pairing of the Philips Hue Bridge.
-# It has to be between 10-40 (alphanumeric) characters
-# This may be changed by the user for security reasons.
-secret=openHABSecret
-```
-
-_Note that it is planned to generate some part of this based on the information that is available within ```src/main/resources/ESH-INF/binding``` of your binding._
-
-_If your binding does not offer any generic configurations, you can remove this section completely._
+As any other Bluetooth device, AM43 Blind Drive Motors are discovered automatically by the corresponding bridge.
 
 ## Thing Configuration
 
-_Describe what is needed to manually configure a thing, either through the (Paper) UI or via a thing-file. This should be mainly about its mandatory and optional configuration parameters. A short example entry for a thing file can help!_
+Supported configuration parameters `AM43 Blind Drive Motor` thing:
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+| Property                        | Type    | Default | Required | Description                                                              |
+|---------------------------------|---------|---------|----------|--------------------------------------------------------------------------|
+| address                         | String  |         | Yes      | Bluetooth address of the device (in format "XX:XX:XX:XX:XX:XX")          |
+| refreshInterval                 | Integer | 60      | No       | How often a refresh shall occur in seconds                               |
+| invertPosition                  | Boolean | false   | No       | Inverts the blinds percentages such that 0 becomes 100 and 100 becomes 0 |
 
 ## Channels
 
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
+Following channels are supported for `AM43 Blind Drive Motor` thing:
 
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+| Channel ID     | Item Type            | Description                                                                               |
+|----------------|----------------------|-------------------------------------------------------------------------------------------|
+| direction      | String               | The direction of the motor for UP/DOWN controls. Is either 'Forward' or 'Reverse'         |
+| topLimitSet    | Switch               | Whether or not the top limit of the blinds has been set                                   |
+| bottomLimitSet | Switch               | Whether or not the bottom limit of the blinds has been set                                |
+| hasLightSensor | Switch               | Whether or not the solar sensor was detected                                              |
+| operationMode  | String               | Controls behavior of motor on manual button presses. Is either 'Inching' or 'Continuous'  |
+| position       | Rollershutter        | Main rollershutter controls                                                               |
+| speed          | Number:Dimensionless | The speed, in RPMs, that the motor will move the blinds                                   |
+| length         | Number:Length        | The length of the blinds in millimeters. (Mostly useless)                                 |
+| diameter       | Number:Length        | The diameter of the motor pulley. (Mostly useless)                                        |
+| type           | Number:Dimensionless | The type of blinds that the motor is connected to. (Mostly useless)                       |
+| lightLevel     | Number:Dimensionless | The light level detected by the solar sensor. Will range from 0-10                        |
+| electric       | Number:Dimensionless | The current percent charge of the motor's battery                                         |
 
-| channel  | type   | description                  |
-|----------|--------|------------------------------|
-| control  | Switch | This is the control channel  |
+## Example
 
-## Full Example
+am43.things (assuming you have a Bluetooth bridge with the ID `bluetooth:bluegiga:adapter1`:
 
-_Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
+```
+bluetooth:am43:adapter1:motor1  "AM43 Blind Drive Motor 1" (bluetooth:bluegiga:adapter1) [ address="12:34:56:78:9A:BC", refreshInterval=300, invertPosition=false ]
+```
 
-## Any custom content here!
+am43.items:
 
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+```
+String                  direction       "Direction [%s]"            { channel="bluetooth:am43:adapter1:motor1:direction" }
+Switch                  topLimitSet     "Top Limit Set"             { channel="bluetooth:am43:adapter1:motor1:topLimitSet" }
+Switch                  bottomLimitSet  "Bottom Limit Set"          { channel="bluetooth:am43:adapter1:motor1:bottomLimitSet" }
+Switch                  hasLightSensor  "Has Light Sensor"          { channel="bluetooth:am43:adapter1:motor1:hasLightSensor" }
+String                  operationMode   "Operation Mode [%s]"       { channel="bluetooth:am43:adapter1:motor1:operationMode" }
+Rollershutter           position        "Position [%.0f %%]"        { channel="bluetooth:am43:adapter1:motor1:position" }
+Number:Dimensionless    speed           "Speed [%.0f RPM]"          { channel="bluetooth:am43:adapter1:motor1:speed" }
+Number:Length           length          "Length [%.0f %unit%]"      { channel="bluetooth:am43:adapter1:motor1:length" }
+Number:Length           diameter        "Diameter [%.0f %unit%]"    { channel="bluetooth:am43:adapter1:motor1:diameter" }
+Number:Dimensionless    type            "Type [%.0f]"               { channel="bluetooth:am43:adapter1:motor1:type" }
+Number:Dimensionless    light_level     "Light Level [%.0f]"        { channel="bluetooth:am43:adapter1:motor1:lightLevel" }
+Number:Dimensionless    battery_level   "Battery Level [%.0f %%]"   { channel="bluetooth:am43:adapter1:motor1:electric" }
+```
+
+
+
