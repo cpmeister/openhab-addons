@@ -514,10 +514,10 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     private void updateBatteryLevel(int value) {
         if (value >= 0 && value <= 100) {
             DecimalType deviceElectric = new DecimalType(value & 0xFF);
-            logger.debug("updating battery lebel to: {}", deviceElectric);
+            logger.debug("updating battery level to: {}", deviceElectric);
             updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_ELECTRIC, deviceElectric);
         } else {
-            logger.debug("Received battery value {}. Updating battery lebel: undef", value);
+            logger.debug("Received invalid battery value {}. Updating battery level: undef", value);
             updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_ELECTRIC, UnDefType.UNDEF);
         }
     }
