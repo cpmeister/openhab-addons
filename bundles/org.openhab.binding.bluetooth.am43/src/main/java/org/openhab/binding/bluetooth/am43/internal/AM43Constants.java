@@ -116,6 +116,8 @@ public class AM43Constants {
 
     public static final byte Command_Send_Content_findLightLevel = (byte) 1;
 
+    public static final byte Command_Send_Content_findBatteryLevel = (byte) 1;
+
     public static final byte Command_Send_Content_initLimit = 0;
 
     public static final byte Command_Send_Content_saveLimit = ((byte) 32);

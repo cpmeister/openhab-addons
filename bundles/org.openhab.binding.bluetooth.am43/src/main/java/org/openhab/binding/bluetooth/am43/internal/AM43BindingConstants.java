@@ -49,6 +49,8 @@ public class AM43BindingConstants {
     public static final String CHANNEL_ID_TYPE = "type";
     public static final String CHANNEL_ID_LIGHT_LEVEL = "lightLevel";
 
+    public static final String PROPERTY_INTERVAL = "interval";
+
     public static List<String> getAllChannels() {
         return Arrays.asList(CHANNEL_ID_DIRECTION, CHANNEL_ID_TOP_LIMIT_SET, CHANNEL_ID_BOTTOM_LIMIT_SET,
                 CHANNEL_ID_HAS_LIGHT_SENSOR, CHANNEL_ID_OPERATION_MODE, CHANNEL_ID_SPEED, CHANNEL_ID_ELECTRIC,

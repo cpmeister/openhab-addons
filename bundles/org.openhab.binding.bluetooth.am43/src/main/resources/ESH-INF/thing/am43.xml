@@ -36,6 +36,11 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 				<label>Address</label>
 				<description>Bluetooth address in XX:XX:XX:XX:XX:XX format</description>
 			</parameter>
+			<parameter name="interval" type="integer" min="1" max="86400">
+                <label>Polling Interval</label>
+                <description>Refresh interval for battery and light sensor data in minutes.</description>
+                <default>1</default>
+            </parameter>
 		</config-description>
 
 	</thing-type>
@@ -54,18 +59,19 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 	<channel-type id="am43_topLimitSet">
 		<item-type>Switch</item-type>
 		<label>Top Limit is Set</label>
-		<state readOnly="false"/>
+		<state readOnly="true"/>
 	</channel-type>
 	
 	<channel-type id="am43_bottomLimitSet">
 		<item-type>Switch</item-type>
 		<label>Bottom Limit is Set</label>
-		<state readOnly="false"/>
+		<state readOnly="true"/>
 	</channel-type>
 	
 	<channel-type id="am43_hasLightSensor">
 		<item-type>Switch</item-type>
-		<label>Has Light Sensor</label>
+		<label>Light Sensor Present</label>
+		<description>Whether or not a light sensor is attached to the motor</description>
 		<state readOnly="true"/>
 	</channel-type>
 	
@@ -84,7 +90,7 @@ xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https:/
 		<item-type>Number:Dimensionless</item-type>
 		<label>Speed</label>
 		<description>The speed value in RPMs set for this motor</description>
-		<state readOnly="true" pattern="%.0f"/>
+		<state readOnly="false" pattern="%.0f RPM"/>
 	</channel-type>
 	
 	<channel-type id="am43_position">

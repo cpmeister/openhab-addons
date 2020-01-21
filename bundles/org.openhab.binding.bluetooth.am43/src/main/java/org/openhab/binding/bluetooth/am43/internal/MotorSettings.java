@@ -12,14 +12,20 @@
  */
 package org.openhab.binding.bluetooth.am43.internal;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * The {@link MotorSettings} is responsible for containing the basic
  * immutable settings of the motor which shouldn't change after initial setup.
  *
  * @author Connor Petty - Initial contribution
  */
+@NonNullByDefault
 public class MotorSettings {
+    @Nullable
     private Direction direction;
+    @Nullable
     private OperationMode operationMode;
     private int type = 0;
     // speed by rpm
@@ -29,6 +35,7 @@ public class MotorSettings {
     // diameter in mm
     private int diameter;
 
+    @Nullable
     public Direction getDirection() {
         return direction;
     }
@@ -37,6 +44,7 @@ public class MotorSettings {
         this.direction = direction;
     }
 
+    @Nullable
     public OperationMode getOperationMode() {
         return operationMode;
     }

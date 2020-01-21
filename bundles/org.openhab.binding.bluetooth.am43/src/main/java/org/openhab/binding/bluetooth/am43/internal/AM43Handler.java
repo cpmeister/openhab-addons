@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.bluetooth.am43.internal;
 
+import java.util.Calendar;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -74,25 +75,27 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     @Override
     public void initialize() {
         super.initialize();
+
+        Integer intervalInMin = (Integer) getConfig().get(AM43BindingConstants.PROPERTY_INTERVAL);
+        long intervalInSec = TimeUnit.MINUTES.toSeconds(intervalInMin);
+
         motorSettingsJob = scheduler.scheduleWithFixedDelay(() -> {
-            enableNotifications();
-            if (isReadyForCommand()) {
+            if (enableNotifications()) {
                 sendFindSetCommand();
             }
         }, 0, 60, TimeUnit.SECONDS);
+
         refreshBatteryJob = scheduler.scheduleWithFixedDelay(() -> {
-            enableNotifications();
-            if (isReadyForCommand()) {
+            if (enableNotifications()) {
                 sendFindElectricCommand();
             }
-        }, 5, 60, TimeUnit.SECONDS);
+        }, 5, intervalInSec, TimeUnit.SECONDS);
 
         refreshLightLevelJob = scheduler.scheduleWithFixedDelay(() -> {
-            enableNotifications();
-            if (isReadyForCommand()) {
+            if (enableNotifications()) {
                 sendFindLightLevelCommand();
             }
-        }, 10, 60, TimeUnit.SECONDS);
+        }, 10, intervalInSec, TimeUnit.SECONDS);
     }
 
     private void cancelMotorSettingsJob() {
@@ -102,46 +105,60 @@ public class AM43Handler extends ConnectedBluetoothHandler {
         }
     }
 
-    @Override
-    public void dispose() {
-        cancelMotorSettingsJob();
+    private void cancelRefreshBatteryJob() {
         if (refreshBatteryJob != null) {
             refreshBatteryJob.cancel(true);
             refreshBatteryJob = null;
         }
+    }
+
+    private void cancelRefreshLightLevelJob() {
         if (refreshLightLevelJob != null) {
             refreshLightLevelJob.cancel(true);
             refreshLightLevelJob = null;
         }
+    }
+
+    @Override
+    public void dispose() {
+        cancelMotorSettingsJob();
+        cancelRefreshBatteryJob();
+        cancelRefreshLightLevelJob();
         super.dispose();
     }
 
     @Override
     public void onServicesDiscovered() {
         super.onServicesDiscovered();
-        enableNotifications();
+        if (enableNotifications()) {
+            sendFindSetCommand();
+        }
     }
 
-    private void enableNotifications() {
-        if (!resolved || !isConnected() || enabledNotifications) {
-            return;
-        }
+    private boolean isConnected() {
+        return device != null && device.getConnectionState() == ConnectionState.CONNECTED;
+    }
 
+    private boolean enableNotifications() {
+        if (!resolved || !isConnected()) {
+            return false;
+        }
+        if (enabledNotifications) {
+            return true;
+        }
         BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.RX_CHAR_UUID);
-        if (characteristic != null) {
-            if (!device.enableNotifications(characteristic)) {
-                logger.debug("failed to enable notifications for characteristic: {}", AM43Constants.RX_CHAR_UUID);
-            } else {
-                enabledNotifications = true;
-                if (isAnyChannelLinked()) {
-                    sendFindSetCommand();
-                }
-            }
-        } else {
+        if (characteristic == null) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
                     "Failed to find service with characteristic: " + AM43Constants.RX_CHAR_UUID);
             device.disconnect();
+            return false;
         }
+        if (!device.enableNotifications(characteristic)) {
+            logger.debug("failed to enable notifications for characteristic: {}", AM43Constants.RX_CHAR_UUID);
+            return false;
+        }
+        enabledNotifications = true;
+        return true;
     }
 
     @Override
@@ -152,26 +169,9 @@ public class AM43Handler extends ConnectedBluetoothHandler {
         }
     }
 
-    private boolean isAnyChannelLinked() {
-        for (String channelId : AM43BindingConstants.getAllChannels()) {
-            if (isLinked(channelId)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isConnected() {
-        return device != null && device.getConnectionState() == ConnectionState.CONNECTED;
-    }
-
-    private boolean isReadyForCommand() {
-        return isConnected() && enabledNotifications;
-    }
-
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (!isReadyForCommand()) {
+        if (!enableNotifications()) {
             return;
         }
         if (command instanceof RefreshType) {
@@ -215,29 +215,37 @@ public class AM43Handler extends ConnectedBluetoothHandler {
                 }
                 break;
             case AM43BindingConstants.CHANNEL_ID_TOP_LIMIT_SET:
-                if (command instanceof OnOffType) {
-                    switch ((OnOffType) command) {
-                        case ON:
-                            sendChangeLimitStateCommand(AM43Constants.Command_Send_Content_saveLimit, 0);
-                            return;
-                        case OFF:
-                            sendResetLimitStateCommand();
-                            updateBottomLimitSet(false);
-                            return;
-                    }
-                }
+                // if (command instanceof OnOffType) {
+                // switch ((OnOffType) command) {
+                // case ON:
+                // sendChangeLimitStateCommand(AM43Constants.Command_Send_Content_saveLimit, 0);
+                // return;
+                // case OFF:
+                // sendResetLimitStateCommand();
+                // updateBottomLimitSet(false);
+                // return;
+                // }
+                // }
                 break;
             case AM43BindingConstants.CHANNEL_ID_BOTTOM_LIMIT_SET:
-                if (command instanceof OnOffType) {
-                    switch ((OnOffType) command) {
-                        case ON:
-                            sendChangeLimitStateCommand(AM43Constants.Command_Send_Content_saveLimit, 1);
-                            return;
-                        case OFF:
-                            sendResetLimitStateCommand();
-                            updateTopLimitSet(false);
-                            return;
-                    }
+                // if (command instanceof OnOffType) {
+                // switch ((OnOffType) command) {
+                // case ON:
+                // sendChangeLimitStateCommand(AM43Constants.Command_Send_Content_saveLimit, 1);
+                // return;
+                // case OFF:
+                // sendResetLimitStateCommand();
+                // updateTopLimitSet(false);
+                // return;
+                // }
+                // }
+                break;
+            case AM43BindingConstants.CHANNEL_ID_SPEED:
+                if (command instanceof DecimalType) {
+                    DecimalType speedType = (DecimalType) command;
+                    motorSettings.setSpeed(speedType.intValue());
+                    sendMotorSettingsCommand();
+                    return;
                 }
                 break;
             case AM43BindingConstants.CHANNEL_ID_DIRECTION:
@@ -246,6 +254,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
                     sendMotorSettingsCommand();
                     return;
                 }
+                break;
         }
 
         super.handleCommand(channelUID, command);
@@ -338,7 +347,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
                 updatePosition(data[5]);
                 updateLength(data[6], data[7]);
                 updateDiameter(data[8]);
-                updateDeviceType(Math.abs(data[9] >> 4));
+                updateType(Math.abs(data[9] >> 4));
 
                 cancelMotorSettingsJob();
                 break;
@@ -477,10 +486,10 @@ public class AM43Handler extends ConnectedBluetoothHandler {
         updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_DIAMETER, diameter);
     }
 
-    private void updateDeviceType(int value) {
+    private void updateType(int value) {
         motorSettings.setType(value);
         DecimalType type = new DecimalType(value);
-        logger.debug("updating deviceType to: {}", type);
+        logger.debug("updating type to: {}", type);
         updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_TYPE, type);
     }
 
@@ -535,7 +544,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
         device.writeCharacteristic(characteristic);
     }
 
-    private void sendBleCommand(byte commandType, byte[] contentByteArray) {
+    private void sendBleCommand(byte commandType, byte... contentByteArray) {
         byte[] header = AM43Constants.Command_Head_Tag;
         byte[] value = ArrayUtils.EMPTY_BYTE_ARRAY;
         value = ArrayUtils.add(value, AM43Constants.Command_Head_Value);
@@ -563,7 +572,9 @@ public class AM43Handler extends ConnectedBluetoothHandler {
             throw new IllegalStateException("settings have not yet been retrieved from the motor");
         }
 
+        @SuppressWarnings("null")
         int direction = motorSettings.getDirection().toByte();
+        @SuppressWarnings("null")
         int operationMode = motorSettings.getOperationMode().toByte();
         int deviceType = motorSettings.getType();
         int deviceLength = motorSettings.getLength();
@@ -572,83 +583,85 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
         int dataHead = ((direction & 1) << 1) | ((operationMode & 1) << 2) | (deviceType << 4);
 
-        byte[] data = { (byte) dataHead, (byte) deviceSpeed, 0, (byte) ((deviceLength & 0xFF00) >> 8),
-                (byte) (deviceLength & 0xFF), (byte) deviceDiameter };
-        sendBleCommand(AM43Constants.Command_Head_Type_Setting_Frequently, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Setting_Frequently, (byte) dataHead, (byte) deviceSpeed,
+                (byte) 0, (byte) ((deviceLength & 0xFF00) >> 8), (byte) (deviceLength & 0xFF), (byte) deviceDiameter);
     }
 
+    @SuppressWarnings("unused")
     private void sendPasswordCommand(int i) {
-        int i2 = (i & 0xFF00) >> 8;
-        int i3 = i & 0xFF;
-        byte[] data = { (byte) i2, (byte) i3 };
-        sendBleCommand(AM43Constants.Command_Head_Type_PassWord, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_PassWord, (byte) ((i & 0xFF00) >> 8), (byte) (i & 0xFF));
     }
 
+    @SuppressWarnings("unused")
     private void sendChangedPasswordCommand(int i) {
-        int i2 = (i & 0xFF00) >> 8;
-        int i3 = i & 0xFF;
-        byte[] data = { (byte) i2, (byte) i3 };
-        sendBleCommand(AM43Constants.Command_Head_Type_PassWord_Change, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_PassWord_Change, (byte) ((i & 0xFF00) >> 8), (byte) (i & 0xFF));
     }
 
     private void sendControlCommand(byte command) {
-        byte[] data = { command };
-        sendBleCommand(AM43Constants.Command_Head_Type_Control_direct, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Control_direct, command);
     }
 
     private void sendControlPercentCommand(int percent) {
-        byte[] data = { (byte) percent };
-        sendBleCommand(AM43Constants.Command_Head_Type_Control_percent, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Control_percent, (byte) percent);
     }
 
     private void sendChangeLimitStateCommand(byte limitType, int limitMode) {
         byte[] data = { limitType, (byte) (1 << limitMode), 0 };
-        sendChangeLimitStateCommand(data);
+        sendBleCommand(AM43Constants.Command_Head_Type_LimitOrReset, data);
     }
 
     private void sendResetLimitStateCommand() {
         byte[] data = { 0, 0, 1 };
-        sendChangeLimitStateCommand(data);
-    }
-
-    private void sendChangeLimitStateCommand(byte[] data) {
         sendBleCommand(AM43Constants.Command_Head_Type_LimitOrReset, data);
     }
 
+    @SuppressWarnings("unused")
     private void sendNewNameCommand(byte[] data) {
         sendBleCommand(AM43Constants.Command_Notify_Head_Type_NewName, data);
     }
 
+    @SuppressWarnings("unused")
     private void sendChangeSeasonCommand(byte[] data) {
         sendBleCommand(AM43Constants.Command_Head_Type_Season, data);
     }
 
+    @SuppressWarnings("unused")
     private void sendTimingCommand(byte[] data) {
         sendBleCommand(AM43Constants.Command_Head_Type_Timing, data);
     }
 
+    @SuppressWarnings("unused")
     private void sendTimingSwitchCommand(int i, boolean z) {
         byte[] data = { (byte) i, 0, z ? (byte) 1 : 0, 0, 0, 0, 0 };
         sendBleCommand(AM43Constants.Command_Head_Type_Timing, data);
     }
 
+    @SuppressWarnings("unused")
     private void sendCurrentTimeCommand() {
-
+        Calendar instance = Calendar.getInstance();
+        int hour = instance.get(Calendar.HOUR);
+        if (instance.get(Calendar.AM_PM) != 0) {
+            hour += 12;
+        }
+        int minute = instance.get(Calendar.MINUTE);
+        int second = instance.get(Calendar.SECOND);
+        int dayOfWeek = instance.get(Calendar.DAY_OF_WEEK) - 1;
+        sendBleCommand(AM43Constants.Command_Head_Type_SendTime, (byte) dayOfWeek, (byte) hour, (byte) minute,
+                (byte) second);
     }
 
     private void sendFindElectricCommand() {
-        byte[] data = { (byte) 1 };
-        sendBleCommand(AM43Constants.Command_Head_Type_Battery_Level, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Battery_Level,
+                AM43Constants.Command_Send_Content_findBatteryLevel);
     }
 
     private void sendFindSetCommand() {
-        byte[] data = { AM43Constants.Command_Send_content_Type_Setting_findAll };
-        sendBleCommand(AM43Constants.Command_Head_Type_Setting_findAll, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Setting_findAll,
+                AM43Constants.Command_Send_content_Type_Setting_findAll);
     }
 
     private void sendFindLightLevelCommand() {
-        byte[] data = { AM43Constants.Command_Send_Content_findLightLevel };
-        sendBleCommand(AM43Constants.Command_Head_Type_Light_Level, data);
+        sendBleCommand(AM43Constants.Command_Head_Type_Light_Level, AM43Constants.Command_Send_Content_findLightLevel);
     }
 
 }
