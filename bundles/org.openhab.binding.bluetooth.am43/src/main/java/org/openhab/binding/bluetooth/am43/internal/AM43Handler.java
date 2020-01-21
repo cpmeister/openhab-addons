@@ -76,8 +76,8 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     public void initialize() {
         super.initialize();
 
-        Integer intervalInMin = (Integer) getConfig().get(AM43BindingConstants.PROPERTY_INTERVAL);
-        long intervalInSec = TimeUnit.MINUTES.toSeconds(intervalInMin);
+        Number intervalInMin = (Number) getConfig().get(AM43BindingConstants.PROPERTY_INTERVAL);
+        long intervalInSec = TimeUnit.MINUTES.toSeconds(intervalInMin.intValue());
 
         motorSettingsJob = scheduler.scheduleWithFixedDelay(() -> {
             if (enableNotifications()) {
@@ -501,7 +501,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private void updateBatteryLevel(int value) {
         if (value >= 0 && value <= 100) {
-            PercentType deviceElectric = new PercentType(value & 0xFF);
+            DecimalType deviceElectric = new DecimalType(value & 0xFF);
             logger.debug("updating battery lebel to: {}", deviceElectric);
             updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_ELECTRIC, deviceElectric);
         } else {

@@ -54,10 +54,10 @@ public class AM43DiscoveryParticipant implements BluetoothDiscoveryParticipant {
         Map<String, Object> properties = new HashMap<>();
         properties.put(BluetoothBindingConstants.CONFIGURATION_ADDRESS, device.getAddress().toString());
         properties.put(Thing.PROPERTY_VENDOR, "A-OK Precision motor Ltd.");
-        Integer txPower = device.getTxPower();
-        if (txPower != null) {
-            properties.put(BluetoothBindingConstants.PROPERTY_TXPOWER, Integer.toString(txPower));
-        }
+        // Integer txPower = device.getTxPower();
+        // if (txPower != null) {
+        // properties.put(BluetoothBindingConstants.PROPERTY_TXPOWER, Integer.toString(txPower));
+        // }
 
         // Create the discovery result and add to the inbox
         return DiscoveryResultBuilder.create(thingUID).withProperties(properties)
