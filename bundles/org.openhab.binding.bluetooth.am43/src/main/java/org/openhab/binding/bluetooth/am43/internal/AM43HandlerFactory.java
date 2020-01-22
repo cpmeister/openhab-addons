@@ -12,8 +12,6 @@
  */
 package org.openhab.binding.bluetooth.am43.internal;
 
-import static org.openhab.binding.bluetooth.am43.internal.AM43BindingConstants.THING_TYPE_AM43;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -33,10 +31,11 @@ import org.osgi.service.component.annotations.Component;
  * @author Connor Petty - Initial contribution
  */
 @NonNullByDefault
-@Component(configurationPid = "binding.bluetooth.am43", service = ThingHandlerFactory.class)
+@Component(service = ThingHandlerFactory.class, configurationPid = "binding.am43")
 public class AM43HandlerFactory extends BaseThingHandlerFactory {
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_AM43);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
+            .singleton(AM43BindingConstants.THING_TYPE_AM43);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -47,7 +46,7 @@ public class AM43HandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (THING_TYPE_AM43.equals(thingTypeUID)) {
+        if (AM43BindingConstants.THING_TYPE_AM43.equals(thingTypeUID)) {
             return new AM43Handler(thing);
         }
 

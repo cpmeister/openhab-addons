@@ -54,10 +54,10 @@ public class AM43DiscoveryParticipant implements BluetoothDiscoveryParticipant {
         Map<String, Object> properties = new HashMap<>();
         properties.put(BluetoothBindingConstants.CONFIGURATION_ADDRESS, device.getAddress().toString());
         properties.put(Thing.PROPERTY_VENDOR, "A-OK Precision motor Ltd.");
-        // Integer txPower = device.getTxPower();
-        // if (txPower != null) {
-        // properties.put(BluetoothBindingConstants.PROPERTY_TXPOWER, Integer.toString(txPower));
-        // }
+        Integer txPower = device.getTxPower();
+        if (txPower != null) {
+            properties.put(BluetoothBindingConstants.PROPERTY_TXPOWER, Integer.toString(txPower));
+        }
 
         // Create the discovery result and add to the inbox
         return DiscoveryResultBuilder.create(thingUID).withProperties(properties)
@@ -67,9 +67,7 @@ public class AM43DiscoveryParticipant implements BluetoothDiscoveryParticipant {
 
     @Override
     public @Nullable ThingUID getThingUID(BluetoothDevice device) {
-        if (device.getManufacturerId() == null && "A-OK".equals(device.getName())
-        // && device.supportsService(BlindsEngineConstants.RX_SERVICE_UUID)
-        ) {
+        if (device.getManufacturerId() == null && "A-OK".equals(device.getName())) {
             return new ThingUID(AM43BindingConstants.THING_TYPE_AM43, device.getAdapter().getUID(),
                     device.getAddress().toString().toLowerCase().replace(":", ""));
         }

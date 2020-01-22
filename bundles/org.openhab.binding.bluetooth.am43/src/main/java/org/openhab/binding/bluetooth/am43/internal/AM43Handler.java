@@ -21,6 +21,7 @@ import javax.measure.quantity.Length;
 import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jdt.annotation.DefaultLocation;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
@@ -60,6 +61,8 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private final Logger logger = LoggerFactory.getLogger(AM43Handler.class);
 
+    private AM43Configuration configuration;
+
     protected volatile Boolean enabledNotifications = false;
 
     private ScheduledFuture<?> motorSettingsJob;
@@ -72,16 +75,11 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private MotorSettings motorSettings = null;
 
-    private boolean inverse = false;
-
     @Override
     public void initialize() {
         super.initialize();
 
-        inverse = (Boolean) getConfig().get(AM43BindingConstants.PROPERTY_INVERT_POSITION);
-
-        Number intervalInMin = (Number) getConfig().get(AM43BindingConstants.PROPERTY_REFRESH_INTERVAL);
-        long intervalInSec = intervalInMin.intValue();
+        configuration = getConfigAs(AM43Configuration.class);
 
         motorSettingsJob = scheduler.scheduleWithFixedDelay(() -> {
             if (enableNotifications()) {
@@ -93,13 +91,13 @@ public class AM43Handler extends ConnectedBluetoothHandler {
             if (enableNotifications()) {
                 sendFindElectricCommand();
             }
-        }, 5, intervalInSec, TimeUnit.SECONDS);
+        }, 5, configuration.refreshInterval, TimeUnit.SECONDS);
 
         refreshLightLevelJob = scheduler.scheduleWithFixedDelay(() -> {
             if (enableNotifications()) {
                 sendFindLightLevelCommand();
             }
-        }, 10, intervalInSec, TimeUnit.SECONDS);
+        }, 10, configuration.refreshInterval, TimeUnit.SECONDS);
     }
 
     private void cancelMotorSettingsJob() {
@@ -195,10 +193,10 @@ public class AM43Handler extends ConnectedBluetoothHandler {
                 if (command instanceof PercentType) {
                     PercentType percent = (PercentType) command;
                     int value = percent.intValue();
-                    if (inverse) {
+                    if (configuration.invertPosition) {
                         value = 100 - value;
                     }
-                    sendControlPercentCommand(percent.intValue());
+                    sendControlPercentCommand(value);
                     return;
                 }
                 if (command instanceof StopMoveType) {
@@ -291,12 +289,13 @@ public class AM43Handler extends ConnectedBluetoothHandler {
             return;
         }
         byte[] data = characteristic.getByteValue();
-        byte headType = data[1];
+        logger.debug("recieved {}", HexUtils.bytesToHex(data));
 
+        byte headType = data[1];
         switch (headType) {
-            case AM43Constants.Command_Head_Type_Control_direct: {
+            case AM43Constants.Command_Head_Type_Control_Direct: {
                 logger.debug("received control ack");
-                if (data[3] == AM43Constants.Command_Notify_Content_Succese) {
+                if (data[3] == AM43Constants.Command_Notify_Content_Success) {
                     // direct command was successful
                 }
                 return;
@@ -424,12 +423,15 @@ public class AM43Handler extends ConnectedBluetoothHandler {
             }
 
         }
-        sendBleNotifyAck(headType);
+        // scheduler.submit(() -> {
+        // sendBleCommand(headType, true, AM43Constants.Command_Notify_Content_Success);
+        // });
     }
 
     private void updateDirection(boolean bitValue) {
         Direction direction = Direction.valueOf(bitValue);
         motorSettings.setDirection(direction);
+
         StringType directionType = new StringType(direction.toString());
         logger.debug("updating direction to: {}", directionType);
         updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_DIRECTION, directionType);
@@ -438,6 +440,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     private void updateOperationMode(boolean bitValue) {
         OperationMode opMode = OperationMode.valueOf(bitValue);
         motorSettings.setOperationMode(opMode);
+
         StringType mode = new StringType(opMode.toString());
         logger.debug("updating operationMode to: {}", mode);
         updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_OPERATION_MODE, mode);
@@ -463,6 +466,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private void updateSpeed(byte value) {
         motorSettings.setSpeed(value);
+
         DecimalType speed = new DecimalType(value);
         logger.debug("updating speed to: {}", speed);
         updateStateIfLinked(AM43BindingConstants.CHANNEL_ID_SPEED, speed);
@@ -471,7 +475,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     private void updatePosition(byte value) {
         if (value >= 0 && value <= 100) {
             int percentValue = value;
-            if (inverse) {
+            if (configuration.invertPosition) {
                 percentValue = 100 - percentValue;
             }
             PercentType position = new PercentType(percentValue);
@@ -537,46 +541,47 @@ public class AM43Handler extends ConnectedBluetoothHandler {
         }
     }
 
-    private void sendBleNotifyAck(byte commandType) {
-        byte[] data = { AM43Constants.Command_Notify_Content_Succese };
-        // sendBleCommand(commandType, data);
-        sendBleCommandWithoutCrc(commandType, data, true);
+    /**
+     * The footer can be one of three values: the crc, a successflag, or a failure flag.
+     */
+    private static byte createFooter(@Nullable Boolean verificationFooter, byte[] contentByteArray) {
+        if (verificationFooter == null) {
+            return computeCrc(contentByteArray);
+        } else if (verificationFooter) {
+            return AM43Constants.Command_Foot_Verification_Success;
+        } else {
+            return AM43Constants.Command_Foot_Verification_Failure;
+        }
     }
 
-    private void sendBleCommandWithoutCrc(byte commandType, byte[] contentByteArray, boolean z) {
-        byte[] value = AM43Constants.Command_Head_Tag;
-        value = ArrayUtils.add(value, AM43Constants.Command_Head_Value);
-        value = ArrayUtils.add(value, commandType);
-        value = ArrayUtils.add(value, (byte) contentByteArray.length);
-        value = ArrayUtils.addAll(value, contentByteArray);
-        value = ArrayUtils.add(value, (byte) (z ? 49 : 206));
-
-        BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.TX_CHAR_UUID);
-        characteristic.setValue(value);
-        device.writeCharacteristic(characteristic);
+    private static byte computeCrc(byte[] data) {
+        byte crc = data[0];
+        for (int i = 1; i < data.length; i++) {
+            crc ^= data[i];
+        }
+        return crc;
     }
 
-    private void sendBleCommand(byte commandType, byte... contentByteArray) {
+    public static byte[] createBleCommand(byte commandType, @Nullable Boolean verificationFooter,
+            byte... contentByteArray) {
         byte[] header = AM43Constants.Command_Head_Tag;
         byte[] value = ArrayUtils.EMPTY_BYTE_ARRAY;
         value = ArrayUtils.add(value, AM43Constants.Command_Head_Value);
         value = ArrayUtils.add(value, commandType);
         value = ArrayUtils.add(value, (byte) contentByteArray.length);
         value = ArrayUtils.addAll(value, contentByteArray);
-        value = ArrayUtils.add(value, computeCrc(value));
-        value = ArrayUtils.addAll(header, value);
-
-        BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.TX_CHAR_UUID);
-        characteristic.setValue(value);
-        device.writeCharacteristic(characteristic);
+        value = ArrayUtils.add(value, createFooter(verificationFooter, value));
+        return ArrayUtils.addAll(header, value);
     }
 
-    private byte computeCrc(byte[] data) {
-        byte crc = data[0];
-        for (int i = 1; i < data.length; i++) {
-            crc ^= data[i];
-        }
-        return crc;
+    private void sendBleCommand(byte commandType, byte... contentByteArray) {
+        sendBleCommand(commandType, null, contentByteArray);
+    }
+
+    private void sendBleCommand(byte commandType, @Nullable Boolean verificationFooter, byte... contentByteArray) {
+        BluetoothCharacteristic characteristic = device.getCharacteristic(AM43Constants.TX_CHAR_UUID);
+        characteristic.setValue(createBleCommand(commandType, verificationFooter, contentByteArray));
+        device.writeCharacteristic(characteristic);
     }
 
     private void sendMotorSettingsCommand() {
@@ -610,11 +615,11 @@ public class AM43Handler extends ConnectedBluetoothHandler {
     }
 
     private void sendControlCommand(byte command) {
-        sendBleCommand(AM43Constants.Command_Head_Type_Control_direct, command);
+        sendBleCommand(AM43Constants.Command_Head_Type_Control_Direct, command);
     }
 
     private void sendControlPercentCommand(int percent) {
-        sendBleCommand(AM43Constants.Command_Head_Type_Control_percent, (byte) percent);
+        sendBleCommand(AM43Constants.Command_Head_Type_Control_Percent, (byte) percent);
     }
 
     @SuppressWarnings("unused")
@@ -671,7 +676,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
 
     private void sendFindSetCommand() {
         sendBleCommand(AM43Constants.Command_Head_Type_Setting_findAll,
-                AM43Constants.Command_Send_content_Type_Setting_findAll);
+                AM43Constants.Command_Send_Content_Type_Setting_findAll);
     }
 
     private void sendFindLightLevelCommand() {

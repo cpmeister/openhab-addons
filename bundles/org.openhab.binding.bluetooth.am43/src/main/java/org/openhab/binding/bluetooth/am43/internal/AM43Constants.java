@@ -36,13 +36,13 @@ public class AM43Constants {
 
     public static final byte Command_Foot_Verification_Failure = ((byte) 206);
 
-    public static final byte Command_Foot_Verification_Succese = ((byte) 49);
+    public static final byte Command_Foot_Verification_Success = ((byte) 49);
 
     public static final byte[] Command_Head_Tag = { 0, (byte) 255, 0, 0 };
 
-    public static final byte Command_Head_Type_Control_direct = ((byte) 10);
+    public static final byte Command_Head_Type_Control_Direct = ((byte) 10);
 
-    public static final byte Command_Head_Type_Control_percent = ((byte) 13);
+    public static final byte Command_Head_Type_Control_Percent = ((byte) 13);
 
     public static final byte Command_Head_Type_LimitOrReset = ((byte) 34);
 
@@ -88,7 +88,7 @@ public class AM43Constants {
 
     public static final byte Command_Notify_Content_Season_Open2Stop_Close2Open = (byte) 1;
 
-    public static final byte Command_Notify_Content_Succese = (byte) 90;
+    public static final byte Command_Notify_Content_Success = (byte) 90;
 
     public static final byte Command_Notify_Head_Type_Fault = ((byte) 166);
 
@@ -122,7 +122,7 @@ public class AM43Constants {
 
     public static final byte Command_Send_Content_saveLimit = ((byte) 32);
 
-    public static final byte Command_Send_content_Type_Setting_findAll = (byte) 1;
+    public static final byte Command_Send_Content_Type_Setting_findAll = (byte) 1;
 
     public static final byte Conmmand_Send_Content_exitLimit = ((byte) 64);
 
