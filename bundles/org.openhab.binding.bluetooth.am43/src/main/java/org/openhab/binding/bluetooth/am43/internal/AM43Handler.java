@@ -85,7 +85,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
             if (enableNotifications()) {
                 sendFindSetCommand();
             }
-        }, 0, 60, TimeUnit.SECONDS);
+        }, 0, configuration.refreshInterval, TimeUnit.SECONDS);
 
         refreshBatteryJob = scheduler.scheduleWithFixedDelay(() -> {
             if (enableNotifications()) {
@@ -356,7 +356,7 @@ public class AM43Handler extends ConnectedBluetoothHandler {
                 updateDiameter(data[8]);
                 updateType(Math.abs(data[9] >> 4));
 
-                cancelMotorSettingsJob();
+                // cancelMotorSettingsJob();
                 break;
             }
             case AM43Constants.Command_Notify_Head_Type_Find_Timing: {
