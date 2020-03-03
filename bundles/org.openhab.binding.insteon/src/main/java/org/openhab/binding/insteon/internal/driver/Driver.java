@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class Driver {
-    private static final Logger logger = LoggerFactory.getLogger(Driver.class);
+    private final Logger logger = LoggerFactory.getLogger(Driver.class);
 
     // maps device name to serial port, i.e /dev/insteon -> Port object
     private HashMap<String, Port> m_ports = new HashMap<String, Port>();

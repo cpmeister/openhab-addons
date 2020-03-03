@@ -213,7 +213,7 @@ public class InsteonBinding {
         @Nullable
         DeviceFeature f = dev.getFeature(bindingConfig.getFeature());
         if (f == null || f.isFeatureGroup()) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             ArrayList<String> names = new ArrayList<String>(dev.getFeatures().keySet());
             Collections.sort(names);
             for (String name : names) {
@@ -349,7 +349,7 @@ public class InsteonBinding {
         ArrayList<Byte> controls = dbe.getControls();
         ArrayList<Byte> responds = dbe.getRespondsTo();
 
-        StringBuffer buf = new StringBuffer("the modem");
+        StringBuilder buf = new StringBuilder("the modem");
         if (!controls.isEmpty()) {
             buf.append(" controls groups [");
             buf.append(toGroupString(controls));
@@ -373,7 +373,7 @@ public class InsteonBinding {
         ArrayList<Byte> sorted = new ArrayList<Byte>(group);
         Collections.sort(sorted);
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (Byte b : sorted) {
             if (buf.length() > 0) {
                 buf.append(",");

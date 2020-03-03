@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class DeviceFeatureListener {
-    private static final Logger logger = LoggerFactory.getLogger(DeviceFeatureListener.class);
+    private final Logger logger = LoggerFactory.getLogger(DeviceFeatureListener.class);
 
     public enum StateChangeType {
         ALWAYS,

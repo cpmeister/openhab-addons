@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class Port {
-    private static final Logger logger = LoggerFactory.getLogger(Port.class);
+    private final Logger logger = LoggerFactory.getLogger(Port.class);
 
     /**
      * The ReplyType is used to keep track of the state of the serial port receiver
@@ -161,10 +161,10 @@ public class Port {
             return;
         }
         m_readThread = new Thread(m_reader);
-        m_writeThread = new Thread(m_writer);
-        m_readThread.setName(m_logName + " Reader");
-        m_writeThread.setName(m_logName + " Writer");
+        m_readThread.setName("Insteon " + m_logName + " Reader");
         m_readThread.start();
+        m_writeThread = new Thread(m_writer);
+        m_writeThread.setName("Insteon " + m_logName + " Writer");
         m_writeThread.start();
         m_modem.initialize();
         m_mdbb.start(); // start downloading the device list

@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class InsteonDevice {
-    private static final Logger logger = LoggerFactory.getLogger(InsteonDevice.class);
+    private final Logger logger = LoggerFactory.getLogger(InsteonDevice.class);
 
     public static enum DeviceStatus {
         INITIALIZED,

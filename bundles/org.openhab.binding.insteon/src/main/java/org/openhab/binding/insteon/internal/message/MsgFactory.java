@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class MsgFactory {
-    private static final Logger logger = LoggerFactory.getLogger(MsgFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(MsgFactory.class);
     // no idea what the max msg length could be, but
     // I doubt it'll ever be larger than 4k
     private final static int MAX_MSG_LEN = 4096;

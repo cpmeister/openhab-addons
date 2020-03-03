@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class HubIOStream extends IOStream implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(HubIOStream.class);
+    private final Logger logger = LoggerFactory.getLogger(HubIOStream.class);
 
     private static final String BS_START = "<BS>";
     private static final String BS_END = "</BS>";
@@ -95,6 +95,7 @@ public class HubIOStream extends IOStream implements Runnable {
 
         polling = true;
         m_pollThread = new Thread(this);
+        m_pollThread.setName("Insteon Hub Poller");
         m_pollThread.start();
 
         return true;

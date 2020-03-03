@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class GroupMessageStateMachine {
-    private static final Logger logger = LoggerFactory.getLogger(GroupMessageStateMachine.class);
+    private final Logger logger = LoggerFactory.getLogger(GroupMessageStateMachine.class);
 
     /**
      * The different kinds of Insteon ALL Link (Group) messages that can be received.

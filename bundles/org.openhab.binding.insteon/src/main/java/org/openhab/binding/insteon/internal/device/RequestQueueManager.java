@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class RequestQueueManager {
     private static @Nullable RequestQueueManager s_instance = null;
-    private static final Logger logger = LoggerFactory.getLogger(RequestQueueManager.class);
+    private final Logger logger = LoggerFactory.getLogger(RequestQueueManager.class);
     private @Nullable Thread m_queueThread = null;
     private PriorityQueue<RequestQueue> m_requestQueues = new PriorityQueue<RequestQueue>();
     private HashMap<InsteonDevice, @Nullable RequestQueue> m_requestQueueHash = new HashMap<InsteonDevice, @Nullable RequestQueue>();
@@ -45,6 +45,7 @@ public class RequestQueueManager {
 
     private RequestQueueManager() {
         m_queueThread = new Thread(new RequestQueueReader());
+        m_queueThread.setName("Insteon Request Queue Reader");
         m_queueThread.start();
     }
 

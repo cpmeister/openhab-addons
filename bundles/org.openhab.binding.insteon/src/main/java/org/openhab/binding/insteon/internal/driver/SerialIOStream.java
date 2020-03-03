@@ -39,7 +39,7 @@ import gnu.io.UnsupportedCommOperationException;
  */
 @NonNullByDefault
 public class SerialIOStream extends IOStream {
-    private static final Logger logger = LoggerFactory.getLogger(SerialIOStream.class);
+    private final Logger logger = LoggerFactory.getLogger(SerialIOStream.class);
     private @Nullable SerialPort m_port = null;
     private final String m_appName = "PLM";
     private int m_baudRate = 19200;

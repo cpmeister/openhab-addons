@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class Poller {
-    private static final Logger logger = LoggerFactory.getLogger(Poller.class);
+    private final Logger logger = LoggerFactory.getLogger(Poller.class);
     private static Poller s_poller = new Poller(); // for singleton
 
     private @Nullable Thread m_pollThread = null;
@@ -105,6 +105,7 @@ public class Poller {
     public void start() {
         if (m_pollThread == null) {
             m_pollThread = new Thread(new PollQueueReader());
+            m_pollThread.setName("Insteon Poll Queue Reader");
             m_pollThread.start();
         }
     }

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class ModemDBBuilder implements MsgListener, Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(ModemDBBuilder.class);
+    private final Logger logger = LoggerFactory.getLogger(ModemDBBuilder.class);
     private boolean m_isComplete = false;
     private Port m_port;
     private @Nullable Thread m_writeThread = null;
@@ -53,7 +53,7 @@ public class ModemDBBuilder implements MsgListener, Runnable {
     public void start() {
         m_port.addListener(this);
         m_writeThread = new Thread(this);
-        m_writeThread.setName("DBBuilder");
+        m_writeThread.setName("Insteon DBBuilder");
         m_writeThread.start();
         logger.debug("querying port for first link record");
     }
@@ -163,27 +163,30 @@ public class ModemDBBuilder implements MsgListener, Runnable {
     }
 
     public void updateModemDB(InsteonAddress linkAddr, Port port, @Nullable Msg m) {
-        HashMap<InsteonAddress, @Nullable ModemDBEntry> dbes = port.getDriver().lockModemDBEntries();
-        ModemDBEntry dbe = dbes.get(linkAddr);
-        if (dbe == null) {
-            dbe = new ModemDBEntry(linkAddr);
-            dbes.put(linkAddr, dbe);
-        }
-        dbe.setPort(port);
-        if (m != null) {
-            dbe.addLinkRecord(m);
-            try {
-                byte group = m.getByte("ALLLinkGroup");
-                int recordFlags = m.getByte("RecordFlags") & 0xff;
-                if ((recordFlags & (0x1 << 6)) != 0) {
-                    dbe.addControls(group);
-                } else {
-                    dbe.addRespondsTo(group);
-                }
-            } catch (FieldException e) {
-                logger.warn("cannot access field:", e);
+        try {
+            HashMap<InsteonAddress, @Nullable ModemDBEntry> dbes = port.getDriver().lockModemDBEntries();
+            ModemDBEntry dbe = dbes.get(linkAddr);
+            if (dbe == null) {
+                dbe = new ModemDBEntry(linkAddr);
+                dbes.put(linkAddr, dbe);
             }
+            dbe.setPort(port);
+            if (m != null) {
+                dbe.addLinkRecord(m);
+                try {
+                    byte group = m.getByte("ALLLinkGroup");
+                    int recordFlags = m.getByte("RecordFlags") & 0xff;
+                    if ((recordFlags & (0x1 << 6)) != 0) {
+                        dbe.addControls(group);
+                    } else {
+                        dbe.addRespondsTo(group);
+                    }
+                } catch (FieldException e) {
+                    logger.warn("cannot access field:", e);
+                }
+            }
+        } finally {
+            port.getDriver().unlockModemDBEntries();
         }
-        port.getDriver().unlockModemDBEntries();
     }
 }

@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class TcpIOStream extends IOStream {
-    private static final Logger logger = LoggerFactory.getLogger(TcpIOStream.class);
+    private final Logger logger = LoggerFactory.getLogger(TcpIOStream.class);
 
     private @Nullable String m_host = null;
     private int m_port = -1;
