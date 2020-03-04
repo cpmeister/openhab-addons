@@ -79,7 +79,6 @@ public class InsteonNetworkHandler extends BaseBridgeHandler {
             settleJob = scheduler.scheduleWithFixedDelay(() -> {
                 // check to see if it has been at least SETTLE_TIME_IN_SECONDS since last device was created
                 if (System.currentTimeMillis() - lastInsteonDeviceCreatedTimestamp > SETTLE_TIME_IN_SECONDS * 1000) {
-
                     // settle time has expired start polling
                     if (insteonBinding.startPolling()) {
                         pollingJob = scheduler.scheduleWithFixedDelay(() -> {

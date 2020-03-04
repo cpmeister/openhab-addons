@@ -37,7 +37,6 @@ public class InsteonChannelConfiguration {
 
     public InsteonChannelConfiguration(ChannelUID channelUID, String feature, InsteonAddress address, String productKey,
             HashMap<String, @Nullable String> parameters) {
-
         this.channelUID = channelUID;
         this.feature = feature;
         this.address = address;

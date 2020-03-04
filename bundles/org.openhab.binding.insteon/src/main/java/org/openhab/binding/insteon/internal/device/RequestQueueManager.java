@@ -195,7 +195,7 @@ public class RequestQueueManager {
         return (s_instance);
     }
 
-    public static void s_destroyInstance() {
+    public static synchronized void s_destroyInstance() {
         if (s_instance != null) {
             s_instance.stopThread();
             s_instance = null;

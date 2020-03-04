@@ -122,7 +122,6 @@ public class SerialIOStream extends IOStream {
     }
 
     private void updateSerialProperties(String devName) {
-
         /*
          * By default, RXTX searches only devices /dev/ttyS* and
          * /dev/ttyUSB*, and will therefore not find devices that

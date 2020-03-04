@@ -295,7 +295,7 @@ public abstract class MessageHandler {
      * @param the device feature (needed for debug printing)
      * @return the button number or -1 if no button found
      */
-    static protected int getButtonInfo(Msg msg, DeviceFeature f) {
+    protected static int getButtonInfo(Msg msg, DeviceFeature f) {
         // the cleanup messages have the button number in the command2 field
         // the broadcast messages have it as the lsb of the toAddress
         try {

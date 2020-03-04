@@ -134,7 +134,7 @@ public class Port {
     public void removeListener(MsgListener l) {
         synchronized (m_listeners) {
             if (m_listeners.remove(l)) {
-                // logger.debug("removed listener from port");
+                logger.debug("removed listener from port");
             }
         }
     }

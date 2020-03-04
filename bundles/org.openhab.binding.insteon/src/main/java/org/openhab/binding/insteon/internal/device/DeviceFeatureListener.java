@@ -48,7 +48,7 @@ public class DeviceFeatureListener {
     private HashMap<Class<?>, @Nullable State> m_state = new HashMap<Class<?>, @Nullable State>();
     private ArrayList<InsteonAddress> m_relatedDevices = new ArrayList<InsteonAddress>();
     private InsteonBinding m_binding;
-    private final static int TIME_DELAY_POLL_RELATED_MSEC = 5000;
+    private static final int TIME_DELAY_POLL_RELATED_MSEC = 5000;
 
     /**
      * Constructor

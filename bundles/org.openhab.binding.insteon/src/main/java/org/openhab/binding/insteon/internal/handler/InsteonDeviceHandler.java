@@ -166,13 +166,11 @@ public class InsteonDeviceHandler extends BaseThingHandler {
                 if (productKey.equals(HIDDEN_DOOR_SENSOR_PRODUCT_KEY)) {
                     if (feature.equalsIgnoreCase(InsteonBindingConstants.BATTERY_LEVEL)
                             || feature.equalsIgnoreCase(InsteonBindingConstants.BATTERY_WATERMARK_LEVEL)) {
-
                         feature = DATA;
                     }
                 } else if (productKey.equals(MOTION_SENSOR_PRODUCT_KEY)) {
                     if (feature.equalsIgnoreCase(InsteonBindingConstants.BATTERY_LEVEL)
                             || feature.equalsIgnoreCase(InsteonBindingConstants.LIGHT_LEVEL)) {
-
                         feature = DATA;
                     }
                 } else if (productKey.equals(PLM_PRODUCT_KEY)) {
@@ -186,7 +184,6 @@ public class InsteonDeviceHandler extends BaseThingHandler {
                             || feature.equalsIgnoreCase(InsteonBindingConstants.RESET)
                             || feature.equalsIgnoreCase(InsteonBindingConstants.UPDATE)
                             || feature.equalsIgnoreCase(InsteonBindingConstants.WATTS)) {
-
                         feature = METER;
                     }
                 }

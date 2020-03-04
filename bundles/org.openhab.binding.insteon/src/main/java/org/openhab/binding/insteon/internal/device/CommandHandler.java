@@ -468,7 +468,7 @@ public abstract class CommandHandler {
             }
         }
 
-        static private final int[] s_X10CodeForLevel = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+        private static final int[] s_X10CodeForLevel = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
     }
 
     @NonNullByDefault
@@ -600,7 +600,7 @@ public abstract class CommandHandler {
     }
 
     @NonNullByDefault
-    private static abstract class RampCommandHandler extends CommandHandler {
+    private abstract static class RampCommandHandler extends CommandHandler {
         private static double[] halfRateRampTimes = new double[] { 0.1, 0.3, 2, 6.5, 19, 23.5, 28, 32, 38.5, 47, 90,
                 150, 210, 270, 360, 480 };
 

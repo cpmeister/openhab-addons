@@ -37,7 +37,7 @@ public class MsgFactory {
     private final Logger logger = LoggerFactory.getLogger(MsgFactory.class);
     // no idea what the max msg length could be, but
     // I doubt it'll ever be larger than 4k
-    private final static int MAX_MSG_LEN = 4096;
+    private static final int MAX_MSG_LEN = 4096;
     private byte[] m_buf = new byte[MAX_MSG_LEN];
     private int m_end = 0; // offset of end of buffer
 
