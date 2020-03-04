@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class DeviceFeature {
     public static enum QueryStatus {
         NEVER_QUERIED,

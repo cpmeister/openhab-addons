@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class TcpIOStream extends IOStream {
     private final Logger logger = LoggerFactory.getLogger(TcpIOStream.class);
 

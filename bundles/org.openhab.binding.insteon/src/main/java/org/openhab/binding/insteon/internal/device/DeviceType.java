@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class DeviceType {
     private String m_productKey;
     private String m_model = "";

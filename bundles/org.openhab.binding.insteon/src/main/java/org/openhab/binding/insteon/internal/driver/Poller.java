@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class Poller {
     private final Logger logger = LoggerFactory.getLogger(Poller.class);
     private static Poller s_poller = new Poller(); // for singleton

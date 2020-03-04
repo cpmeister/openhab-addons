@@ -28,6 +28,7 @@ import org.openhab.binding.insteon.internal.utils.Utils;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public final class Field {
     private final String m_name;
     private final int m_offset;

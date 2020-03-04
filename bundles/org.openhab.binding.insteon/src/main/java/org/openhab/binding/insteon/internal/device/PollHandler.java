@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public abstract class PollHandler {
     private static final Logger logger = LoggerFactory.getLogger(PollHandler.class);
     DeviceFeature m_feature;

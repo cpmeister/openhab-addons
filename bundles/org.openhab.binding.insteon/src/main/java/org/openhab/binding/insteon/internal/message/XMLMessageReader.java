@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class XMLMessageReader {
     /**
      * Reads the message definitions from an xml file

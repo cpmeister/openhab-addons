@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class HubIOStream extends IOStream implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(HubIOStream.class);
 

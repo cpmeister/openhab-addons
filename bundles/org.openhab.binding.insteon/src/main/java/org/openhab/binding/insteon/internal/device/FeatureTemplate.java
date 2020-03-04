@@ -28,6 +28,7 @@ import org.eclipse.smarthome.core.types.Command;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class FeatureTemplate {
     private String m_name;
     private String m_timeout;

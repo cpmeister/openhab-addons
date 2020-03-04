@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class Port {
     private final Logger logger = LoggerFactory.getLogger(Port.class);
 

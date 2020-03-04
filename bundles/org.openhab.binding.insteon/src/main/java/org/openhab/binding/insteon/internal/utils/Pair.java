@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class Pair<K, V> {
     private K m_key;
     private V m_value;

@@ -25,6 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class X10 {
     /**
      * Enumerates the X10 command codes.

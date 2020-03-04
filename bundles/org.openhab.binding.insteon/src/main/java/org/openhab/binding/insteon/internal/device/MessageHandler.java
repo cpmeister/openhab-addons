@@ -15,7 +15,6 @@ package org.openhab.binding.insteon.internal.device;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -43,6 +42,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public abstract class MessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
@@ -851,10 +851,7 @@ public abstract class MessageHandler {
 
         @Override
         public void handleMessage(int group, byte cmd1a, Msg msg, DeviceFeature f, String fromPort) {
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTimeInMillis(System.currentTimeMillis());
-            DateTimeType t = new DateTimeType(calendar);
-            m_feature.publish(t, StateChangeType.ALWAYS);
+            m_feature.publish(new DateTimeType(), StateChangeType.ALWAYS);
         }
     }
 

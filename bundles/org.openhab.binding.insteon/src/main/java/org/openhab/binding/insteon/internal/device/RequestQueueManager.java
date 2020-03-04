@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class RequestQueueManager {
     private static @Nullable RequestQueueManager s_instance = null;
     private final Logger logger = LoggerFactory.getLogger(RequestQueueManager.class);

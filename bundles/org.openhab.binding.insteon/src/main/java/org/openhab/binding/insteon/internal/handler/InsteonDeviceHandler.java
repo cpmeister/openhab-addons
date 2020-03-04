@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Initial contribution
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class InsteonDeviceHandler extends BaseThingHandler {
 
     private static final Set<String> DEFINED_CHANNELS = Collections.unmodifiableSet(Stream.of(

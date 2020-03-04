@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class Driver {
     private final Logger logger = LoggerFactory.getLogger(Driver.class);
 

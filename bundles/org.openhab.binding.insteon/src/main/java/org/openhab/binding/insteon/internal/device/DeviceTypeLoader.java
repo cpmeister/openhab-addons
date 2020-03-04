@@ -42,6 +42,7 @@ import org.xml.sax.SAXException;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class DeviceTypeLoader {
     private static final Logger logger = LoggerFactory.getLogger(DeviceTypeLoader.class);
     private HashMap<String, DeviceType> m_deviceTypes = new HashMap<String, DeviceType>();

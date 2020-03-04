@@ -99,6 +99,7 @@ import org.xml.sax.SAXException;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings({ "null", "unused" })
 public class InsteonBinding {
     private static final int DEAD_DEVICE_COUNT = 10;
 

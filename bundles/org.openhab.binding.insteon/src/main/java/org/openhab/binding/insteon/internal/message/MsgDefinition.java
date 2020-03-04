@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class MsgDefinition {
     private HashMap<String, @Nullable Field> m_fields = new HashMap<String, @Nullable Field>();
 

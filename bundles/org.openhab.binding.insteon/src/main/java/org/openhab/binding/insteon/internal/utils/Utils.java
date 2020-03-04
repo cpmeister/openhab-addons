@@ -24,6 +24,7 @@ import org.openhab.binding.insteon.internal.message.DataType;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class Utils {
     public static String getHexString(int b) {
         String result = String.format("%02X", b & 0xFF);

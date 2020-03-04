@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Initial contribution
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class InsteonNetworkHandler extends BaseBridgeHandler {
 
     private static final int LOG_DEVICE_STATISTICS_DELAY_IN_SECONDS = 600;

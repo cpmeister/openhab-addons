@@ -38,6 +38,7 @@ import gnu.io.UnsupportedCommOperationException;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public class SerialIOStream extends IOStream {
     private final Logger logger = LoggerFactory.getLogger(SerialIOStream.class);
     private @Nullable SerialPort m_port = null;

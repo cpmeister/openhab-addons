@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
+@SuppressWarnings("null")
 public abstract class CommandHandler {
     private static final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
     DeviceFeature m_feature; // related DeviceFeature
@@ -725,8 +726,7 @@ public abstract class CommandHandler {
                         logger.info("{}: sent update msg to power meter {}", nm(), dev.getAddress());
                         m_feature.publish(OnOffType.OFF, StateChangeType.ALWAYS, "cmd", "update");
                     } else {
-                        logger.warn("{}: ignoring unknown cmd {} for power meter {}", nm(), cmdParam,
-                                dev.getAddress());
+                        logger.warn("{}: ignoring unknown cmd {} for power meter {}", nm(), cmdParam, dev.getAddress());
                     }
                 } else if (cmd == OnOffType.OFF) {
                     logger.info("{}: ignoring off request for power meter {}", nm(), dev.getAddress());
