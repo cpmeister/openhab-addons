@@ -207,7 +207,7 @@ public class InsteonAddress {
             @SuppressWarnings("unused")
             int test = Integer.parseInt(fields[2], 16) * 65536 + Integer.parseInt(fields[1], 16) * 256
                     + +Integer.parseInt(fields[0], 16);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             return false;
         }
         return true;
@@ -222,17 +222,4 @@ public class InsteonAddress {
     public static InsteonAddress s_parseAddress(String val) {
         return new InsteonAddress(val);
     }
-
-    // /**
-    // * Function for unit testing
-    // *
-    // * @param args ignored
-    // */
-    // public static void main(String[] args) {
-    // // debug/test code
-    // InsteonAddress a1 = new InsteonAddress();
-    // InsteonAddress a2 = new InsteonAddress();
-    // System.out.println(a1.equals(a2));
-    // System.out.println(new InsteonAddress("0f.0f.0a"));
-    // }
 }

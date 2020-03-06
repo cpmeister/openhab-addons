@@ -97,6 +97,7 @@ public class HubIOStream extends IOStream implements Runnable {
         polling = true;
         m_pollThread = new Thread(this);
         m_pollThread.setName("Insteon Hub Poller");
+        m_pollThread.setDaemon(true);
         m_pollThread.start();
 
         return true;

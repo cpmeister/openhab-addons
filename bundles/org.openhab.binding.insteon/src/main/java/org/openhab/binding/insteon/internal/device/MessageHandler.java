@@ -13,6 +13,7 @@
 package org.openhab.binding.insteon.internal.device;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
@@ -1254,7 +1255,8 @@ public abstract class MessageHandler {
             T mh = dc.getDeclaredConstructor(DeviceFeature.class).newInstance(f);
             mh.setParameters(params);
             return mh;
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.warn("error trying to create message handler: {}", name, e);
         }
         return null;

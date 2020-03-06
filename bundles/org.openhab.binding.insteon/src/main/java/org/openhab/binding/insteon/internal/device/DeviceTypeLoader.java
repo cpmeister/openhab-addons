@@ -219,20 +219,4 @@ public class DeviceTypeLoader {
         }
         return s_deviceTypeLoader;
     }
-
-    // /**
-    // * Test function for debugging
-    // */
-    // public static void main(String[] arg) throws Exception {
-    // String fileName = "target/classes/device_types.xml";
-    // try {
-    // DeviceTypeLoader dtl = s_instance();
-    // dtl.loadDeviceTypesXML(fileName);
-    // for (Entry<String, DeviceType> dt : dtl.getDeviceTypes().entrySet()) {
-    // System.out.println(String.format("%-10s ->", dt.getKey()) + dt.getValue());
-    // }
-    // } catch (SAXException e) {
-    // System.out.println("got exception: " + e);
-    // }
-    // }
 }

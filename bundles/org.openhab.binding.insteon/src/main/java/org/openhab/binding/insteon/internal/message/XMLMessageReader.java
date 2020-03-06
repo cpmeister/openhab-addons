@@ -173,15 +173,4 @@ public class XMLMessageReader {
         }
         return msg;
     }
-
-    // public static void main(String[] args) throws Exception {
-    // // for local testing
-    // File f = new File(System.getProperty("user.home")
-    // + "/workspace/openhab/bundles/binding/org.openhab.binding.insteonplm/src/main/resources/msg_definitions.xml");
-    // InputStream s = new FileInputStream(f);
-    // HashMap<String, Msg> msgs = XMLMessageReader.s_readMessageDefinitions(s);
-    // for (Msg msg : msgs.values()) {
-    // System.out.println(msg);
-    // }
-    // }
 }

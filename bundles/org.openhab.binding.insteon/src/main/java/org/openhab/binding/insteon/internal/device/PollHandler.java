@@ -13,6 +13,7 @@
 package org.openhab.binding.insteon.internal.device;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -151,7 +152,8 @@ public abstract class PollHandler {
             T phc = dc.getDeclaredConstructor(DeviceFeature.class).newInstance(f);
             phc.setParameters(ph.getParams());
             return phc;
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.warn("error trying to create message handler: {}", ph.getName(), e);
         }
         return null;

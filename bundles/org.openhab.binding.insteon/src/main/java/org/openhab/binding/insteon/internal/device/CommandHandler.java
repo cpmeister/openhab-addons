@@ -13,6 +13,7 @@
 package org.openhab.binding.insteon.internal.device;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Timer;
@@ -904,7 +905,8 @@ public abstract class CommandHandler {
             T ch = dc.getDeclaredConstructor(DeviceFeature.class).newInstance(f);
             ch.setParameters(params);
             return ch;
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.warn("error trying to create message handler: {}", name, e);
         }
         return null;

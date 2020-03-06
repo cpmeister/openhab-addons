@@ -301,21 +301,23 @@ public class InsteonBinding {
      * @return number of devices in modem database
      */
     private int checkIfInModemDatabase(InsteonDevice dev) {
-        InsteonAddress addr = dev.getAddress();
-        HashMap<InsteonAddress, @Nullable ModemDBEntry> dbes = m_driver.lockModemDBEntries();
-        if (dbes.containsKey(addr)) {
-            if (!dev.hasModemDBEntry()) {
-                logger.info("device {} found in the modem database and {}.", addr, getLinkInfo(dbes, addr));
-                dev.setHasModemDBEntry(true);
+        try {
+            InsteonAddress addr = dev.getAddress();
+            HashMap<InsteonAddress, @Nullable ModemDBEntry> dbes = m_driver.lockModemDBEntries();
+            if (dbes.containsKey(addr)) {
+                if (!dev.hasModemDBEntry()) {
+                    logger.info("device {} found in the modem database and {}.", addr, getLinkInfo(dbes, addr));
+                    dev.setHasModemDBEntry(true);
+                }
+            } else {
+                if (m_driver.isModemDBComplete() && !addr.isX10()) {
+                    logger.warn("device {} not found in the modem database. Did you forget to link?", addr);
+                }
             }
-        } else {
-            if (m_driver.isModemDBComplete() && !addr.isX10()) {
-                logger.warn("device {} not found in the modem database. Did you forget to link?", addr);
-            }
+            return dbes.size();
+        } finally {
+            m_driver.unlockModemDBEntries();
         }
-        int ndev = dbes.size();
-        m_driver.unlockModemDBEntries();
-        return ndev;
     }
 
     /**
@@ -425,43 +427,46 @@ public class InsteonBinding {
 
         @Override
         public void driverCompletelyInitialized() {
-            HashMap<InsteonAddress, @Nullable ModemDBEntry> dbes = m_driver.lockModemDBEntries();
-            logger.info("modem database has {} entries!", dbes.size());
-            if (dbes.isEmpty()) {
-                logger.warn("the modem link database is empty!");
-            }
-            for (InsteonAddress k : dbes.keySet()) {
-                logger.debug("modem db entry: {}", k);
-            }
-            HashSet<InsteonAddress> addrs = new HashSet<InsteonAddress>();
-            for (InsteonDevice dev : m_devices.values()) {
-                InsteonAddress a = dev.getAddress();
-                if (!dbes.containsKey(a)) {
-                    if (!a.isX10()) {
-                        logger.warn("device {} not found in the modem database. Did you forget to link?", a);
-                    }
-                } else {
-                    if (!dev.hasModemDBEntry()) {
-                        addrs.add(a);
-                        logger.info("device {} found in the modem database and {}.", a, getLinkInfo(dbes, a));
-                        dev.setHasModemDBEntry(true);
-                    }
-                    if (dev.getStatus() != DeviceStatus.POLLING) {
-                        Poller.s_instance().startPolling(dev, dbes.size());
-                    }
-                }
-            }
-
             List<String> missing = new ArrayList<String>();
-            for (InsteonAddress k : dbes.keySet()) {
-                if (!addrs.contains(k) && !k.equals(dbes.get(k).getPort().getAddress())) {
-                    logger.info("device {} found in the modem database, but is not configured as a thing and {}.", k,
-                            getLinkInfo(dbes, k));
-
-                    missing.add(k.toString());
+            try {
+                HashMap<InsteonAddress, @Nullable ModemDBEntry> dbes = m_driver.lockModemDBEntries();
+                logger.info("modem database has {} entries!", dbes.size());
+                if (dbes.isEmpty()) {
+                    logger.warn("the modem link database is empty!");
                 }
+                for (InsteonAddress k : dbes.keySet()) {
+                    logger.debug("modem db entry: {}", k);
+                }
+                HashSet<InsteonAddress> addrs = new HashSet<InsteonAddress>();
+                for (InsteonDevice dev : m_devices.values()) {
+                    InsteonAddress a = dev.getAddress();
+                    if (!dbes.containsKey(a)) {
+                        if (!a.isX10()) {
+                            logger.warn("device {} not found in the modem database. Did you forget to link?", a);
+                        }
+                    } else {
+                        if (!dev.hasModemDBEntry()) {
+                            addrs.add(a);
+                            logger.info("device {} found in the modem database and {}.", a, getLinkInfo(dbes, a));
+                            dev.setHasModemDBEntry(true);
+                        }
+                        if (dev.getStatus() != DeviceStatus.POLLING) {
+                            Poller.s_instance().startPolling(dev, dbes.size());
+                        }
+                    }
+                }
+
+                for (InsteonAddress k : dbes.keySet()) {
+                    if (!addrs.contains(k) && !k.equals(dbes.get(k).getPort().getAddress())) {
+                        logger.info("device {} found in the modem database, but is not configured as a thing and {}.",
+                                k, getLinkInfo(dbes, k));
+
+                        missing.add(k.toString());
+                    }
+                }
+            } finally {
+                m_driver.unlockModemDBEntries();
             }
-            m_driver.unlockModemDBEntries();
 
             if (!missing.isEmpty()) {
                 m_handler.addMissingDevices(missing);

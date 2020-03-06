@@ -163,9 +163,11 @@ public class Port {
         }
         m_readThread = new Thread(m_reader);
         m_readThread.setName("Insteon " + m_logName + " Reader");
+        m_readThread.setDaemon(true);
         m_readThread.start();
         m_writeThread = new Thread(m_writer);
         m_writeThread.setName("Insteon " + m_logName + " Writer");
+        m_writeThread.setDaemon(true);
         m_writeThread.start();
         m_modem.initialize();
         m_mdbb.start(); // start downloading the device list
@@ -443,8 +445,6 @@ public class Port {
                 } catch (InterruptedException e) {
                     logger.debug("got interrupted exception in write thread");
                     break;
-                } catch (Exception e) {
-                    logger.warn("got exception in write thread:", e);
                 }
             }
             logger.info("writer thread exiting!");

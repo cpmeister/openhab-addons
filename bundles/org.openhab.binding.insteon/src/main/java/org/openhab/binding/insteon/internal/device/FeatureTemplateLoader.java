@@ -161,20 +161,4 @@ public class FeatureTemplateLoader {
             throw new ParsingException("Unknown Command Type");
         }
     }
-
-    // public static void main(String[] args) throws Exception {
-    // File f = new File(System.getProperty("user.home")
-    // + "/workspace/openhab/bundles/binding/org.openhab.binding.insteonplm/src/main/resources/device_features.xml");
-    // InputStream s = new FileInputStream(f);
-    // ArrayList<FeatureTemplate> features = s_readTemplates(s);
-    // for (FeatureTemplate feature : features) {
-    // System.out.println(feature);
-    // System.out.println(
-    // "\tPOLL: " + feature.getPollHandler() + "\n\tDISPATCH: " + feature.getDispatcher().getName());
-    // System.out.println(
-    // "\tDCH: " + feature.getDefaultCommandHandler() + "\n\tDMH: " + feature.getDefaultMessageHandler());
-    // System.out.println("\tMSG HANDLERS: " + feature.getMessageHandlers().size());
-    // System.out.println("\tCMD HANDLERS: " + feature.getCommandHandlers());
-    // }
-    // }
 }

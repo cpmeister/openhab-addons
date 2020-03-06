@@ -55,6 +55,7 @@ public class ModemDBBuilder implements MsgListener, Runnable {
         m_port.addListener(this);
         m_writeThread = new Thread(this);
         m_writeThread.setName("Insteon DBBuilder");
+        m_writeThread.setDaemon(true);
         m_writeThread.start();
         logger.debug("querying port for first link record");
     }

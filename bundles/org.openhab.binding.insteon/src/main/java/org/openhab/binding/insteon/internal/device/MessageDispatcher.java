@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.insteon.internal.device;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -408,7 +409,8 @@ public abstract class MessageDispatcher {
             T ch = dc.getDeclaredConstructor(DeviceFeature.class).newInstance(f);
             ch.setParameters(params);
             return ch;
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             logger.warn("error trying to create dispatcher: {}", name, e);
         }
         return null;

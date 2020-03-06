@@ -107,6 +107,7 @@ public class Poller {
         if (m_pollThread == null) {
             m_pollThread = new Thread(new PollQueueReader());
             m_pollThread.setName("Insteon Poll Queue Reader");
+            m_pollThread.setDaemon(true);
             m_pollThread.start();
         }
     }

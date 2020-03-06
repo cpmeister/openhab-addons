@@ -47,6 +47,7 @@ public class RequestQueueManager {
     private RequestQueueManager() {
         m_queueThread = new Thread(new RequestQueueReader());
         m_queueThread.setName("Insteon Request Queue Reader");
+        m_queueThread.setDaemon(true);
         m_queueThread.start();
     }
 
