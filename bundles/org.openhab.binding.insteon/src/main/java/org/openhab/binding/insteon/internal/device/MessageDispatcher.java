@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * Does preprocessing of messages to decide which handler should be called.
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

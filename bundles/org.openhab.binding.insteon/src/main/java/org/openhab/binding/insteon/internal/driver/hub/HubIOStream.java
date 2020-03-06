@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * Implements IOStream for a Hub 2014 device
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  *
  */
 @NonNullByDefault

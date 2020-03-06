@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
- * A majority of the code in this file is from the OpenHAB 1 binding
+ * A majority of the code in this file is from the openHAB 1 binding
  * org.openhab.binding.insteonplm.InsteonPLMActiveBinding. Including the comments below.
  *
  * -----------------------------------------------------------------------------------------------
@@ -96,8 +96,8 @@ import org.xml.sax.SAXException;
  *
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Daniel Pfrommer - OpenHAB 1 insteonplm binding
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Daniel Pfrommer - openHAB 1 insteonplm binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings({ "null", "unused" })

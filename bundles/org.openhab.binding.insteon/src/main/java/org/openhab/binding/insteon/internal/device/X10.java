@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * This class has utilities related to the X10 protocol.
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")
@@ -30,7 +30,7 @@ public class X10 {
     /**
      * Enumerates the X10 command codes.
      *
-     * @author Bernd Pfrommer - OpenHAB 1 insteonplm binding
+     * @author Bernd Pfrommer - openHAB 1 insteonplm binding
      *
      */
     public enum Command {

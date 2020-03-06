@@ -21,7 +21,7 @@ import org.openhab.binding.insteon.internal.message.DataType;
  * Various utility functions for e.g. hex string parsing
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

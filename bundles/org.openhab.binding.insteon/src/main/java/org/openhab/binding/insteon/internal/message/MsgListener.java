@@ -18,7 +18,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * Interface to receive Insteon messages from the modem.
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 public interface MsgListener {

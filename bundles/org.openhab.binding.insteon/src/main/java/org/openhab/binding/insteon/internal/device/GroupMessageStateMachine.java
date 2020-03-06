@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * and the message should lead to publishing of a state update (it has [] around it).
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 public class GroupMessageStateMachine {

@@ -25,7 +25,7 @@ import org.openhab.binding.insteon.internal.utils.Utils;
  * holds name, type, and offset (but not value!).
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

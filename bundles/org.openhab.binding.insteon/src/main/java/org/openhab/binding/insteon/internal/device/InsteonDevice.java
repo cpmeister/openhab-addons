@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * will then be represented by DeviceFeatures.
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

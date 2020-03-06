@@ -26,12 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DeviceFeatureListener essentially represents an OpenHAB item that
+ * A DeviceFeatureListener essentially represents an openHAB item that
  * listens to a particular feature of an Insteon device
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Bernd Pfrommer - OpenHAB 1 insteonplm binding
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Bernd Pfrommer - openHAB 1 insteonplm binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 public class DeviceFeatureListener {
@@ -135,7 +135,7 @@ public class DeviceFeatureListener {
     /**
      * Publish the state. In the case of PercentType, if the value is
      * 0, send a OnOffType.OFF and if the value is 100, send a OnOffType.ON.
-     * That way an OpenHAB Switch will work properly with a Insteon dimmer,
+     * That way an openHAB Switch will work properly with a Insteon dimmer,
      * as long it is used like a switch (On/Off). An openHAB DimmerItem will
      * internally convert the ON back to 100% and OFF back to 0, so there is
      * no need to send both 0/OFF and 100/ON.

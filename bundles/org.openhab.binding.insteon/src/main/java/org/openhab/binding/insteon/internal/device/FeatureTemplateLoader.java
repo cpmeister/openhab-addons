@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * Class that loads the device feature templates from an xml stream
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 public class FeatureTemplateLoader {

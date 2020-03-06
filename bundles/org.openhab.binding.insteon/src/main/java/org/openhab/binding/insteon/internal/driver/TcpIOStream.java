@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * Also works for serial ports exposed via tcp, eg. ser2net
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  *
  */
 @NonNullByDefault

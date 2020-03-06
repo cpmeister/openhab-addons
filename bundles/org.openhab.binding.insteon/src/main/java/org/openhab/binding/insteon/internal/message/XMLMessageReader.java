@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  * Reads the Msg definitions from an XML file
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

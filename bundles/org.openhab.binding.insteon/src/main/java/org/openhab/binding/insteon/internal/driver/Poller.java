@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * queue. The poller just reminds the device to poll.
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

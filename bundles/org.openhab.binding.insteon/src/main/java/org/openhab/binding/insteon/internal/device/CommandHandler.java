@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
  * A command handler translates an openHAB command into a insteon message
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Bernd Pfrommer - OpenHAB 1 insteonplm binding
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Bernd Pfrommer - openHAB 1 insteonplm binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")
@@ -373,7 +373,7 @@ public abstract class CommandHandler {
      *
      * crucially, the 0x09 command does not work (NACK from device)
      *
-     * @author Bernd Pfrommer - OpenHAB 1 insteonplm binding
+     * @author Bernd Pfrommer - openHAB 1 insteonplm binding
      */
     @NonNullByDefault
     public static class LEDOnOffCommandHandler extends CommandHandler {

@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
  *
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Daniel Pfrommer - OpenHAB 1 insteonplm binding
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Daniel Pfrommer - openHAB 1 insteonplm binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

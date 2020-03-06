@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
  * corresponding messages on the openhab bus, updating device state etc.
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Bernd Pfrommer - OpenHAB 1 insteonplm binding
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Bernd Pfrommer - openHAB 1 insteonplm binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

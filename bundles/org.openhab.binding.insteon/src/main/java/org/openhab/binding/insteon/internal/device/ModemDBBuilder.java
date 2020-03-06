@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * Builds the modem database from incoming link record messages
  *
  * @author Bernd Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

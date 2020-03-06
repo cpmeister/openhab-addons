@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  *
  * Lastly, DeviceFeatureListeners can register with the DeviceFeature to get notifications when
  * the state of a feature has changed. In practice, a DeviceFeatureListener corresponds to an
- * OpenHAB item.
+ * openHAB item.
  *
  * The character of a DeviceFeature is thus given by a set of message and command handlers.
  * A FeatureTemplate captures exactly that: it says what set of handlers make up a DeviceFeature.
@@ -56,8 +56,8 @@ import org.slf4j.LoggerFactory;
  * from the Device definition file (device_types.xml).
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Bernd Pfrommer - OpenHAB 1 insteonplm binding
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Bernd Pfrommer - openHAB 1 insteonplm binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @NonNullByDefault
 @SuppressWarnings("null")

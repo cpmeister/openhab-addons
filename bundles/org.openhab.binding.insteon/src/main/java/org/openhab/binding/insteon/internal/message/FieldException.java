@@ -19,7 +19,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * example type mismatch, out of bounds etc.
  *
  * @author Daniel Pfrommer - Initial contribution
- * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
+ * @author Rob Nielsen - Port to openHAB 2 insteon binding
  */
 @SuppressWarnings("serial")
 @NonNullByDefault

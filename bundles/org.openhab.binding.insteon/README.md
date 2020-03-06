@@ -645,20 +645,20 @@ More than one device can be polled by separating them with "+" sign, e.g. "relat
 
 ## Troubleshooting
 
-Turn on DEBUG or TRACE logging for `org.openhab.binding.insteon`. See [logging in OpenHAB](https://www.openhab.org/docs/administration/logging.html) for more info.
+Turn on DEBUG or TRACE logging for `org.openhab.binding.insteon`. See [logging in openHAB](https://www.openhab.org/docs/administration/logging.html) for more info.
 
 ### Device Permissions / Linux Device Locks
 
 When openHAB is running as a non-root user (Linux/OSX) it is important to ensure it has write access not just to the PLM device, but to the os lock directory. Under openSUSE this is `/run/lock` and is managed by the **lock** group. 
 
-Example commands to grant OpenHAB access (adjust for your distribution):
+Example commands to grant openHAB access (adjust for your distribution):
 
 ````
 usermod -a -G dialout openhab
 usermod -a -G lock openhab
 ````
 
-Insufficient access to the lock directory will result in OpenHAB failing to access the device, even if the device itself is writable.
+Insufficient access to the lock directory will result in openHAB failing to access the device, even if the device itself is writable.
 
 ### Adding new device types (using existing device features)
 
@@ -713,7 +713,7 @@ If all else fails there are the Java sources, in particular the classes MessageH
 ## Known Limitations and Issues
 
 1. Devices cannot be linked to the modem while the binding is running. If new devices are linked, the binding must be restarted.
-2. Setting up Insteon groups and linking devices cannot be done from within openHAB. Use the [Insteon Terminal](https://github.com/pfrommerd/insteon-terminal) for that. If using Insteon Terminal (especially as root), ensure any stale lock files (For example, /var/lock/LCK..ttyUSB0) are removed before starting OpenHAB runtime. Failure to do so may result in "found no ports".
+2. Setting up Insteon groups and linking devices cannot be done from within openHAB. Use the [Insteon Terminal](https://github.com/pfrommerd/insteon-terminal) for that. If using Insteon Terminal (especially as root), ensure any stale lock files (For example, /var/lock/LCK..ttyUSB0) are removed before starting openHAB runtime. Failure to do so may result in "found no ports".
 3. Very rarely during binding startup, a message arrives at the modem while the initial read of the modem database happens. Somehow the modem then stops sending the remaining link records and the binding no longer is able to address the missing devices. The fix is to simply restart the binding.
 4. The Insteon PLM device is know to break after about 2-3 years due to poorly sized capacitors of the power supply. With a bit of soldering skill you can repair it yourself, see http://pfrommer.us/home-automation or the original thread: http://forum.universal-devices.com/topic/13866-repair-of-2413s-plm-when-the-power-supply-fails/.
 5. Using the Insteon Hub 2014 in conjunction with other applications (such as the InsteonApp) is not supported. Concretely, OpenHab will not learn when a switch is flipped via the Insteon App until the next poll, which could take minutes.
