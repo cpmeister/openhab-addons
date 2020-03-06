@@ -18,6 +18,7 @@ import java.io.OutputStream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.insteon.internal.driver.hub.HubIOStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,13 +128,13 @@ public abstract class IOStream {
      * @return reference to IOStream
      */
 
-    public static IOStream s_create(String config) {
+    public static IOStream s_create(@Nullable SerialPortManager serialPortManager, String config) {
         if (config.startsWith("/hub2/")) {
             return makeHub2014Stream(config);
         } else if (config.startsWith("/hub/") || config.startsWith("/tcp/")) {
             return makeTCPStream(config);
         } else {
-            return new SerialIOStream(config);
+            return new SerialIOStream(serialPortManager, config);
         }
     }
 

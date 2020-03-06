@@ -18,6 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.insteon.internal.device.InsteonAddress;
 import org.openhab.binding.insteon.internal.message.Msg;
 import org.openhab.binding.insteon.internal.message.MsgListener;
@@ -80,11 +81,11 @@ public class Driver {
      * @param name the name of the port (from the config file, e.g. port_0, port_1, etc
      * @param port the device name, e.g. /dev/insteon, /dev/ttyUSB0 etc
      */
-    public void addPort(String name, String port) {
+    public void addPort(String name, String port, @Nullable SerialPortManager serialPortManager) {
         if (m_ports.keySet().contains(port)) {
             logger.warn("ignored attempt to add duplicate port: {} {}", name, port);
         } else {
-            Port p = new Port(port, this);
+            Port p = new Port(port, this, serialPortManager);
             p.setModemDBRetryTimeout(m_modemDBRetryTimeout);
             m_ports.put(port, p);
             logger.debug("added new port: {} {}", name, port);

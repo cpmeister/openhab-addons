@@ -25,6 +25,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.insteon.internal.InsteonBinding;
 import org.openhab.binding.insteon.internal.config.InsteonNetworkConfiguration;
 import org.openhab.binding.insteon.internal.discovery.InsteonDeviceDiscoveryService;
@@ -52,11 +53,13 @@ public class InsteonNetworkHandler extends BaseBridgeHandler {
     private @Nullable ScheduledFuture<?> pollingJob = null;
     private @Nullable ScheduledFuture<?> settleJob = null;
     private long lastInsteonDeviceCreatedTimestamp = 0;
+    private @Nullable SerialPortManager serialPortManager;
 
     public static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-    public InsteonNetworkHandler(Bridge bridge) {
+    public InsteonNetworkHandler(Bridge bridge, @Nullable SerialPortManager serialPortManager) {
         super(bridge);
+        this.serialPortManager = serialPortManager;
     }
 
     @Override
@@ -69,7 +72,7 @@ public class InsteonNetworkHandler extends BaseBridgeHandler {
         config = getConfigAs(InsteonNetworkConfiguration.class);
 
         scheduler.execute(() -> {
-            insteonBinding = new InsteonBinding(this, config);
+            insteonBinding = new InsteonBinding(this, config, serialPortManager);
 
             updateStatus(ThingStatus.ONLINE);
 

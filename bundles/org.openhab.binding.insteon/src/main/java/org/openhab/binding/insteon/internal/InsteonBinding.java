@@ -29,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.insteon.internal.config.InsteonChannelConfiguration;
 import org.openhab.binding.insteon.internal.config.InsteonNetworkConfiguration;
 import org.openhab.binding.insteon.internal.device.DeviceFeature;
@@ -116,7 +117,8 @@ public class InsteonBinding {
     private int m_x10HouseUnit = -1;
     private InsteonNetworkHandler m_handler;
 
-    public InsteonBinding(InsteonNetworkHandler handler, @Nullable InsteonNetworkConfiguration config) {
+    public InsteonBinding(InsteonNetworkHandler handler, @Nullable InsteonNetworkConfiguration config,
+            @Nullable SerialPortManager serialPortManager) {
         this.m_handler = handler;
 
         Integer devicePollIntervalSeconds = config.getDevicePollIntervalSeconds();
@@ -152,7 +154,7 @@ public class InsteonBinding {
 
         String port = config.getPort();
         logger.info("port = '{}'", port);
-        m_driver.addPort("port", port);
+        m_driver.addPort("port", port, serialPortManager);
         m_driver.addMsgListener(m_portListener, port);
 
         logger.debug("setting driver listener");

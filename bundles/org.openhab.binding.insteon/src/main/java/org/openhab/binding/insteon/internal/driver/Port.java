@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.insteon.internal.device.DeviceType;
 import org.openhab.binding.insteon.internal.device.DeviceTypeLoader;
 import org.openhab.binding.insteon.internal.device.InsteonAddress;
@@ -87,13 +88,13 @@ public class Port {
      * @param devName the name of the port, i.e. '/dev/insteon'
      * @param d The Driver object that manages this port
      */
-    public Port(String devName, Driver d) {
+    public Port(String devName, Driver d, @Nullable SerialPortManager serialPortManager) {
         m_devName = devName;
         m_driver = d;
         m_logName = devName;
         m_modem = new Modem();
         addListener(m_modem);
-        m_ioStream = IOStream.s_create(devName);
+        m_ioStream = IOStream.s_create(serialPortManager, devName);
         m_reader = new IOStreamReader();
         m_writer = new IOStreamWriter();
         m_mdbb = new ModemDBBuilder(this);

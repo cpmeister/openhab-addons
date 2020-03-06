@@ -21,10 +21,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Rob Nielsen - Port to OpenHAB 2 insteon binding
  */
 @NonNullByDefault
-@SuppressWarnings("null")
 public class Pair<K, V> {
-    private K m_key;
-    private V m_value;
+    private K key;
+    private V value;
 
     /**
      * Constructs a new <code>Pair</code> with a given key/value
@@ -33,23 +32,15 @@ public class Pair<K, V> {
      * @param value the value
      */
     public Pair(K key, V value) {
-        setKey(key);
-        setValue(value);
+        this.key = key;
+        this.value = value;
     }
 
     public K getKey() {
-        return m_key;
+        return key;
     }
 
     public V getValue() {
-        return m_value;
-    }
-
-    public void setKey(K key) {
-        m_key = key;
-    }
-
-    public void setValue(V value) {
-        m_value = value;
+        return value;
     }
 }
