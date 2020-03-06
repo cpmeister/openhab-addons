@@ -125,11 +125,11 @@ public class InsteonBinding {
         if (devicePollIntervalSeconds != null) {
             m_devicePollIntervalMilliseconds = devicePollIntervalSeconds * 1000;
         }
-        logger.info("device poll interval set to {} seconds", m_devicePollIntervalMilliseconds / 1000);
+        logger.debug("device poll interval set to {} seconds", m_devicePollIntervalMilliseconds / 1000);
 
         Integer modemDbRetryTimeoutSeconds = config.getModemDbRetryTimeoutSeconds();
         if (modemDbRetryTimeoutSeconds != null) {
-            logger.info("setting modem db retry timeout to {} seconds", modemDbRetryTimeoutSeconds);
+            logger.debug("setting modem db retry timeout to {} seconds", modemDbRetryTimeoutSeconds);
             m_driver.setModemDBRetryTimeout(modemDbRetryTimeoutSeconds * 1000);
         }
 
@@ -137,7 +137,7 @@ public class InsteonBinding {
         if (additionalDevices != null) {
             try {
                 DeviceTypeLoader.s_instance().loadDeviceTypesXML(additionalDevices);
-                logger.info("read additional device definitions from {}", additionalDevices);
+                logger.debug("read additional device definitions from {}", additionalDevices);
             } catch (ParserConfigurationException | SAXException | IOException e) {
                 logger.warn("error reading additional devices from {}", additionalDevices, e);
             }
@@ -145,12 +145,12 @@ public class InsteonBinding {
 
         String additionalFeatures = config.getAdditionalFeatures();
         if (additionalFeatures != null) {
-            logger.info("reading additional feature templates from {}", additionalFeatures);
+            logger.debug("reading additional feature templates from {}", additionalFeatures);
             DeviceFeature.s_readFeatureTemplates(additionalFeatures);
         }
 
         m_deadDeviceTimeout = m_devicePollIntervalMilliseconds * DEAD_DEVICE_COUNT;
-        logger.info("dead device timeout set to {} seconds", m_deadDeviceTimeout / 1000);
+        logger.debug("dead device timeout set to {} seconds", m_deadDeviceTimeout / 1000);
 
         String port = config.getPort();
         logger.info("port = '{}'", port);

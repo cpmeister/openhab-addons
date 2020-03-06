@@ -96,7 +96,7 @@ public class SerialIOStream extends IOStream {
             port.enableReceiveTimeout(1000);
             m_in = port.getInputStream();
             m_out = port.getOutputStream();
-            logger.info("successfully opened port {}", devName);
+            logger.debug("successfully opened port {}", devName);
             return true;
         } catch (IOException e) {
             logger.warn("cannot open port: {}, got IOException {}", devName, e.getMessage());

@@ -120,7 +120,7 @@ public abstract class CommandHandler {
                 if (i > 1 && i <= 99) {
                     int level = (int) Math.ceil((i * 255.0) / 100); // round up
                     if (level < defaultLevel) {
-                        logger.info("item {}: using dimmermax value of {}", item, dimmerMax);
+                        logger.debug("item {}: using dimmermax value of {}", item, dimmerMax);
                         return level;
                     }
                 } else {
@@ -195,17 +195,17 @@ public abstract class CommandHandler {
                 if (cmd == OnOffType.ON) {
                     level = getMaxLightLevel(conf, 0xff);
                     direc = 0x11;
-                    logger.info("{}: sent msg to switch {} to {}", nm(), dev.getAddress(),
+                    logger.debug("{}: sent msg to switch {} to {}", nm(), dev.getAddress(),
                             level == 0xff ? "on" : level);
                 } else if (cmd == OnOffType.OFF) {
                     direc = 0x13;
-                    logger.info("{}: sent msg to switch {} off", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to switch {} off", nm(), dev.getAddress());
                 }
                 if (ext == 1 || ext == 2) {
                     byte[] data = new byte[] { (byte) getIntParameter("d1", 0), (byte) getIntParameter("d2", 0),
                             (byte) getIntParameter("d3", 0) };
                     m = dev.makeExtendedMessage((byte) 0x0f, (byte) direc, (byte) level, data);
-                    logger.info("{}: was an extended message for device {}", nm(), dev.getAddress());
+                    logger.debug("{}: was an extended message for device {}", nm(), dev.getAddress());
                     if (ext == 1) {
                         m.setCRC();
                     } else if (ext == 2) {
@@ -214,7 +214,7 @@ public abstract class CommandHandler {
                 } else {
                     m = dev.makeStandardMessage((byte) 0x0f, (byte) direc, (byte) level, s_getGroup(conf));
                 }
-                logger.info("Sending message to {}", dev.getAddress());
+                logger.debug("Sending message to {}", dev.getAddress());
                 dev.enqueueMessage(m, m_feature);
                 // expect to get a direct ack after this!
             } catch (IOException e) {
@@ -238,12 +238,12 @@ public abstract class CommandHandler {
                     int level = getMaxLightLevel(conf, 0xff);
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x12, (byte) level, s_getGroup(conf));
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent fast on to switch {} level {}", nm(), dev.getAddress(),
+                    logger.debug("{}: sent fast on to switch {} level {}", nm(), dev.getAddress(),
                             level == 0xff ? "on" : level);
                 } else if (cmd == OnOffType.OFF) {
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x14, (byte) 0x00, s_getGroup(conf));
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent fast off to switch {}", nm(), dev.getAddress());
+                    logger.debug("{}: sent fast off to switch {}", nm(), dev.getAddress());
                 }
                 // expect to get a direct ack after this!
             } catch (IOException e) {
@@ -269,7 +269,7 @@ public abstract class CommandHandler {
                     byte cmd2 = encode(ramptime, ramplevel);
                     Msg m = dev.makeStandardMessage((byte) 0x0f, getOnCmd(), cmd2, s_getGroup(conf));
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent ramp on to switch {} time {} level {} cmd1 {}", nm(), dev.getAddress(),
+                    logger.debug("{}: sent ramp on to switch {} time {} level {} cmd1 {}", nm(), dev.getAddress(),
                             ramptime, ramplevel, getOnCmd());
                 } else if (cmd == OnOffType.OFF) {
                     double ramptime = getRampTime(conf, 0);
@@ -277,7 +277,7 @@ public abstract class CommandHandler {
                     byte cmd2 = encode(ramptime, ramplevel);
                     Msg m = dev.makeStandardMessage((byte) 0x0f, getOffCmd(), cmd2, s_getGroup(conf));
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent ramp off to switch {} time {} cmd1 {}", nm(), dev.getAddress(), ramptime,
+                    logger.debug("{}: sent ramp off to switch {} time {} cmd1 {}", nm(), dev.getAddress(), ramptime,
                             getOffCmd());
                 }
                 // expect to get a direct ack after this!
@@ -309,8 +309,8 @@ public abstract class CommandHandler {
                     int cmd2 = (v == 2) ? 0x01 : 0; // up or down
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) cmd1, (byte) cmd2, s_getGroup(conf));
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: cmd {} sent manual change {} {} to {}", nm(), v, (cmd1 == 0x17) ? "START" : "STOP",
-                            (cmd2 == 0x01) ? "UP" : "DOWN", dev.getAddress());
+                    logger.debug("{}: cmd {} sent manual change {} {} to {}", nm(), v,
+                            (cmd1 == 0x17) ? "START" : "STOP", (cmd2 == 0x01) ? "UP" : "DOWN", dev.getAddress());
                 } else {
                     logger.warn("{}: invalid command type: {}", nm(), cmd);
                 }
@@ -342,7 +342,7 @@ public abstract class CommandHandler {
                         logger.warn("no group=xx specified in item {}", conf.getChannelName());
                         return;
                     }
-                    logger.info("{}: sending {} broadcast to group {}", nm(), (cmd1 == 0x11) ? "ON" : "OFF",
+                    logger.debug("{}: sending {} broadcast to group {}", nm(), (cmd1 == 0x11) ? "ON" : "OFF",
                             s_getGroup(conf));
                     Msg m = dev.makeStandardMessage((byte) 0x0f, cmd1, value, group);
                     dev.enqueueMessage(m, m_feature);
@@ -389,12 +389,12 @@ public abstract class CommandHandler {
                     Msg m = dev.makeExtendedMessage((byte) 0x1f, (byte) 0x2e, (byte) 0x00,
                             new byte[] { (byte) button, (byte) 0x09, (byte) 0x01 });
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to switch {} on", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to switch {} on", nm(), dev.getAddress());
                 } else if (cmd == OnOffType.OFF) {
                     Msg m = dev.makeExtendedMessage((byte) 0x1f, (byte) 0x2e, (byte) 0x00,
                             new byte[] { (byte) button, (byte) 0x09, (byte) 0x00 });
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to switch {} off", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to switch {} off", nm(), dev.getAddress());
                 }
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);
@@ -423,7 +423,7 @@ public abstract class CommandHandler {
                     Msg mcmd = dev.makeX10Message(houseCommandCode, (byte) 0x80); // send command code
                     dev.enqueueMessage(mcmd, m_feature);
                     String onOff = cmd == OnOffType.ON ? "ON" : "OFF";
-                    logger.info("{}: sent msg to switch {} {}", nm(), dev.getAddress(), onOff);
+                    logger.debug("{}: sent msg to switch {} {}", nm(), dev.getAddress(), onOff);
                 }
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);
@@ -492,7 +492,7 @@ public abstract class CommandHandler {
                     Msg mcmd = dev.makeX10Message(houseCommandCode, (byte) 0x80); // send command code
                     dev.enqueueMessage(mcmd, m_feature);
                     String bd = cmd == IncreaseDecreaseType.INCREASE ? "BRIGHTEN" : "DIM";
-                    logger.info("{}: sent msg to switch {} {}", nm(), dev.getAddress(), bd);
+                    logger.debug("{}: sent msg to switch {} {}", nm(), dev.getAddress(), bd);
                 }
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);
@@ -514,11 +514,11 @@ public abstract class CommandHandler {
                 if (cmd == OnOffType.ON) {
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x11, (byte) 0xff);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to switch {} on", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to switch {} on", nm(), dev.getAddress());
                 } else if (cmd == OnOffType.OFF) {
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x13, (byte) 0x00);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to switch {} off", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to switch {} off", nm(), dev.getAddress());
                 }
                 // This used to be configurable, but was made static to make
                 // the architecture of the binding cleaner.
@@ -556,11 +556,11 @@ public abstract class CommandHandler {
                 if (cmd == IncreaseDecreaseType.INCREASE) {
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x15, (byte) 0x00);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to brighten {}", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to brighten {}", nm(), dev.getAddress());
                 } else if (cmd == IncreaseDecreaseType.DECREASE) {
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x16, (byte) 0x00);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to dimm {}", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to dimm {}", nm(), dev.getAddress());
                 }
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);
@@ -586,11 +586,11 @@ public abstract class CommandHandler {
                     level = getMaxLightLevel(conf, level);
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x11, (byte) level);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to set {} to {}", nm(), dev.getAddress(), level);
+                    logger.debug("{}: sent msg to set {} to {}", nm(), dev.getAddress(), level);
                 } else { // switch off
                     Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x13, (byte) 0x00);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to set {} to zero by switching off", nm(), dev.getAddress());
+                    logger.debug("{}: sent msg to set {} to zero by switching off", nm(), dev.getAddress());
                 }
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);
@@ -685,12 +685,12 @@ public abstract class CommandHandler {
                     byte cmd2 = encode(ramptime, level);
                     Msg m = dev.makeStandardMessage((byte) 0x0f, getOnCmd(), cmd2);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to set {} to {} with {} second ramp time.", nm(), dev.getAddress(), level,
-                            ramptime);
+                    logger.debug("{}: sent msg to set {} to {} with {} second ramp time.", nm(), dev.getAddress(),
+                            level, ramptime);
                 } else { // switch off
                     Msg m = dev.makeStandardMessage((byte) 0x0f, getOffCmd(), (byte) 0x00);
                     dev.enqueueMessage(m, m_feature);
-                    logger.info("{}: sent msg to set {} to zero by switching off with {} ramp time.", nm(),
+                    logger.debug("{}: sent msg to set {} to zero by switching off with {} ramp time.", nm(),
                             dev.getAddress(), ramptime);
                 }
             } catch (IOException e) {
@@ -719,18 +719,18 @@ public abstract class CommandHandler {
                     if (cmdParam.equals("reset")) {
                         Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x80, (byte) 0x00);
                         dev.enqueueMessage(m, m_feature);
-                        logger.info("{}: sent reset msg to power meter {}", nm(), dev.getAddress());
+                        logger.debug("{}: sent reset msg to power meter {}", nm(), dev.getAddress());
                         m_feature.publish(OnOffType.OFF, StateChangeType.ALWAYS, "cmd", "reset");
                     } else if (cmdParam.equals("update")) {
                         Msg m = dev.makeStandardMessage((byte) 0x0f, (byte) 0x82, (byte) 0x00);
                         dev.enqueueMessage(m, m_feature);
-                        logger.info("{}: sent update msg to power meter {}", nm(), dev.getAddress());
+                        logger.debug("{}: sent update msg to power meter {}", nm(), dev.getAddress());
                         m_feature.publish(OnOffType.OFF, StateChangeType.ALWAYS, "cmd", "update");
                     } else {
                         logger.warn("{}: ignoring unknown cmd {} for power meter {}", nm(), cmdParam, dev.getAddress());
                     }
                 } else if (cmd == OnOffType.OFF) {
-                    logger.info("{}: ignoring off request for power meter {}", nm(), dev.getAddress());
+                    logger.debug("{}: ignoring off request for power meter {}", nm(), dev.getAddress());
                 }
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);
@@ -797,7 +797,7 @@ public abstract class CommandHandler {
                     m.setByte(vfield, level);
                 }
                 dev.enqueueMessage(m, m_feature);
-                logger.info("{}: sent msg to change level to {}", nm(), ((DecimalType) cmd).intValue());
+                logger.debug("{}: sent msg to change level to {}", nm(), ((DecimalType) cmd).intValue());
                 m = null;
             } catch (IOException e) {
                 logger.warn("{}: command send i/o error: ", nm(), e);

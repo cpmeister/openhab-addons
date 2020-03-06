@@ -375,7 +375,7 @@ public abstract class MessageHandler {
                 logger.warn("{}: device {}: ignoring ack of direct.", nm(), a);
             } else {
                 String mode = getStringParameter("mode", "REGULAR");
-                logger.info("{}: device {} was turned on {}. " + "Sending poll request to get actual level", nm(), a,
+                logger.debug("{}: device {} was turned on {}. " + "Sending poll request to get actual level", nm(), a,
                         mode);
                 m_feature.publish(PercentType.HUNDRED, StateChangeType.ALWAYS);
                 // need to poll to find out what level the dimmer is at now.
@@ -399,7 +399,7 @@ public abstract class MessageHandler {
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             if (isMybutton(msg, f)) {
                 String mode = getStringParameter("mode", "REGULAR");
-                logger.info("{}: device {} was turned off {}.", nm(), f.getDevice().getAddress(), mode);
+                logger.debug("{}: device {} was turned off {}.", nm(), f.getDevice().getAddress(), mode);
                 f.publish(PercentType.ZERO, StateChangeType.ALWAYS);
             }
         }
@@ -415,7 +415,7 @@ public abstract class MessageHandler {
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             if (isMybutton(msg, f)) {
                 String mode = getStringParameter("mode", "REGULAR");
-                logger.info("{}: device {} was switched on {}.", nm(), f.getDevice().getAddress(), mode);
+                logger.debug("{}: device {} was switched on {}.", nm(), f.getDevice().getAddress(), mode);
                 f.publish(OnOffType.ON, StateChangeType.ALWAYS);
             } else {
                 logger.debug("ignored message: {}", isMybutton(msg, f));
@@ -433,7 +433,7 @@ public abstract class MessageHandler {
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             if (isMybutton(msg, f)) {
                 String mode = getStringParameter("mode", "REGULAR");
-                logger.info("{}: device {} was switched off {}.", nm(), f.getDevice().getAddress(), mode);
+                logger.debug("{}: device {} was switched off {}.", nm(), f.getDevice().getAddress(), mode);
                 f.publish(OnOffType.OFF, StateChangeType.ALWAYS);
             }
         }
@@ -468,7 +468,7 @@ public abstract class MessageHandler {
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             if (cmd1 == onCmd) {
                 int level = getLevel(msg);
-                logger.info("{}: device {} was switched on using ramp to level {}.", nm(), f.getDevice().getAddress(),
+                logger.debug("{}: device {} was switched on using ramp to level {}.", nm(), f.getDevice().getAddress(),
                         level);
                 if (level == 100) {
                     f.publish(OnOffType.ON, StateChangeType.ALWAYS);
@@ -484,7 +484,7 @@ public abstract class MessageHandler {
                     f.publish(new PercentType(level), StateChangeType.ALWAYS);
                 }
             } else if (cmd1 == offCmd) {
-                logger.info("{}: device {} was switched off using ramp.", nm(), f.getDevice().getAddress());
+                logger.debug("{}: device {} was switched off using ramp.", nm(), f.getDevice().getAddress());
                 f.publish(new PercentType(0), StateChangeType.ALWAYS);
             }
         }
@@ -522,7 +522,7 @@ public abstract class MessageHandler {
                     handleNoButtons(cmd2, a, msg);
                 } else {
                     boolean isOn = isLEDLit(cmd2, button);
-                    logger.info("{}: dev {} button {} switched to {}", nm(), a, button, isOn ? "ON" : "OFF");
+                    logger.debug("{}: dev {} button {} switched to {}", nm(), a, button, isOn ? "ON" : "OFF");
                     m_feature.publish(isOn ? OnOffType.ON : OnOffType.OFF, StateChangeType.CHANGED);
                 }
             } catch (FieldException e) {
@@ -539,10 +539,10 @@ public abstract class MessageHandler {
          */
         void handleNoButtons(int cmd2, InsteonAddress a, Msg msg) {
             if (cmd2 == 0) {
-                logger.info("{}: set device {} to OFF", nm(), a);
+                logger.debug("{}: set device {} to OFF", nm(), a);
                 m_feature.publish(OnOffType.OFF, StateChangeType.CHANGED);
             } else if (cmd2 == 0xff) {
-                logger.info("{}: set device {} to ON", nm(), a);
+                logger.debug("{}: set device {} to ON", nm(), a);
                 m_feature.publish(OnOffType.ON, StateChangeType.CHANGED);
             } else {
                 logger.warn("{}: {} ignoring unexpected cmd2 in msg: {}", nm(), a, msg);
@@ -591,17 +591,17 @@ public abstract class MessageHandler {
                 }
 
                 if (cmd2 == 0) {
-                    logger.info("{}: set device {} to level 0", nm(), dev.getAddress());
+                    logger.debug("{}: set device {} to level 0", nm(), dev.getAddress());
                     m_feature.publish(PercentType.ZERO, StateChangeType.CHANGED);
                 } else if (cmd2 == 0xff) {
-                    logger.info("{}: set device {} to level 100", nm(), dev.getAddress());
+                    logger.debug("{}: set device {} to level 100", nm(), dev.getAddress());
                     m_feature.publish(PercentType.HUNDRED, StateChangeType.CHANGED);
                 } else {
                     int level = cmd2 * 100 / 255;
                     if (level == 0) {
                         level = 1;
                     }
-                    logger.info("{}: set device {} to level {}", nm(), dev.getAddress(), level);
+                    logger.debug("{}: set device {} to level {}", nm(), dev.getAddress(), level);
                     m_feature.publish(new PercentType(level), StateChangeType.CHANGED);
                 }
             } catch (FieldException e) {
@@ -650,7 +650,7 @@ public abstract class MessageHandler {
             try {
                 int cmd2 = msg.getByte("command2") & 0xff;
                 int upDown = (cmd2 == 0) ? 0 : 2;
-                logger.info("{}: dev {} manual state change: {}", nm(), f.getDevice().getAddress(),
+                logger.debug("{}: dev {} manual state change: {}", nm(), f.getDevice().getAddress(),
                         (upDown == 0) ? "DOWN" : "UP");
                 m_feature.publish(new DecimalType(upDown), StateChangeType.ALWAYS);
             } catch (FieldException e) {
@@ -674,7 +674,7 @@ public abstract class MessageHandler {
 
         @Override
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
-            logger.info("{}: dev {} manual state change: {}", nm(), f.getDevice().getAddress(), 0);
+            logger.debug("{}: dev {} manual state change: {}", nm(), f.getDevice().getAddress(), 0);
             m_feature.publish(new DecimalType(1), StateChangeType.ALWAYS);
 
         }
@@ -700,11 +700,11 @@ public abstract class MessageHandler {
                         int prodKey = msg.getInt24("userData2", "userData3", "userData4");
                         int devCat = msg.getByte("userData5");
                         int subCat = msg.getByte("userData6");
-                        logger.info("{} {} got product data: cat: {} subcat: {} key: {} ", nm(), dev.getAddress(),
+                        logger.debug("{} {} got product data: cat: {} subcat: {} key: {} ", nm(), dev.getAddress(),
                                 devCat, subCat, Utils.getHexString(prodKey));
                         break;
                     case 0x02: // this is a device text string response message
-                        logger.info("{} {} got text str {} ", nm(), dev.getAddress(), msg);
+                        logger.debug("{} {} got text str {} ", nm(), dev.getAddress(), msg);
                         break;
                     default:
                         logger.warn("{} unknown cmd2 = {} in info reply message {}", nm(), cmd2, msg);
@@ -834,7 +834,7 @@ public abstract class MessageHandler {
         @Override
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             InsteonDevice dev = f.getDevice();
-            logger.info("{}: power meter {} was reset", nm(), dev.getAddress());
+            logger.debug("{}: power meter {} was reset", nm(), dev.getAddress());
 
             // poll device to get updated kilowatt hours and watts
             Msg m = f.makePollMsg();
@@ -875,7 +875,7 @@ public abstract class MessageHandler {
             }
             if (msg.isAckOfDirect() && (f.getQueryStatus() == DeviceFeature.QueryStatus.QUERY_PENDING) && cmd == 0x50) {
                 OpenClosedType oc = (cmd2 == 0) ? OpenClosedType.OPEN : OpenClosedType.CLOSED;
-                logger.info("{}: set contact {} to: {}", nm(), f.getDevice().getAddress(), oc);
+                logger.debug("{}: set contact {} to: {}", nm(), f.getDevice().getAddress(), oc);
                 m_feature.publish(oc, StateChangeType.CHANGED);
             }
         }
@@ -1164,7 +1164,7 @@ public abstract class MessageHandler {
         @Override
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             InsteonAddress a = f.getDevice().getAddress();
-            logger.info("{}: set X10 device {} to ON", nm(), a);
+            logger.debug("{}: set X10 device {} to ON", nm(), a);
             m_feature.publish(OnOffType.ON, StateChangeType.ALWAYS);
         }
     }
@@ -1178,7 +1178,7 @@ public abstract class MessageHandler {
         @Override
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             InsteonAddress a = f.getDevice().getAddress();
-            logger.info("{}: set X10 device {} to OFF", nm(), a);
+            logger.debug("{}: set X10 device {} to OFF", nm(), a);
             m_feature.publish(OnOffType.OFF, StateChangeType.ALWAYS);
         }
     }
@@ -1218,7 +1218,7 @@ public abstract class MessageHandler {
         @Override
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             InsteonAddress a = f.getDevice().getAddress();
-            logger.info("{}: set X10 device {} to OPEN", nm(), a);
+            logger.debug("{}: set X10 device {} to OPEN", nm(), a);
             m_feature.publish(OpenClosedType.OPEN, StateChangeType.ALWAYS);
         }
     }
@@ -1232,7 +1232,7 @@ public abstract class MessageHandler {
         @Override
         public void handleMessage(int group, byte cmd1, Msg msg, DeviceFeature f, String fromPort) {
             InsteonAddress a = f.getDevice().getAddress();
-            logger.info("{}: set X10 device {} to CLOSED", nm(), a);
+            logger.debug("{}: set X10 device {} to CLOSED", nm(), a);
             m_feature.publish(OpenClosedType.CLOSED, StateChangeType.ALWAYS);
         }
     }

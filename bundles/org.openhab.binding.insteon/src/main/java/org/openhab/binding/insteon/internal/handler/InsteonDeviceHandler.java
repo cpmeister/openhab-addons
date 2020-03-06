@@ -236,7 +236,7 @@ public class InsteonDeviceHandler extends BaseThingHandler {
         if (getBridge() != null && InsteonAddress.s_isValid(address)) {
             getInsteonBinding().removeDevice(new InsteonAddress(address));
 
-            logger.info("removed {} address = {}", getThing().getUID().getAsString(), address);
+            logger.debug("removed {} address = {}", getThing().getUID().getAsString(), address);
         }
 
         super.dispose();
@@ -244,7 +244,7 @@ public class InsteonDeviceHandler extends BaseThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        logger.info("channel {} was triggered with the command {}", channelUID.getAsString(), command);
+        logger.debug("channel {} was triggered with the command {}", channelUID.getAsString(), command);
 
         getInsteonBinding().sendCommand(channelUID.getAsString(), command);
     }
@@ -318,7 +318,7 @@ public class InsteonDeviceHandler extends BaseThingHandler {
     public void channelUnlinked(ChannelUID channelUID) {
         getInsteonBinding().removeFeatureListener(channelUID);
 
-        logger.info("channel {} unlinked ", channelUID.getAsString());
+        logger.debug("channel {} unlinked ", channelUID.getAsString());
     }
 
     private @Nullable InsteonBinding getInsteonBinding() {

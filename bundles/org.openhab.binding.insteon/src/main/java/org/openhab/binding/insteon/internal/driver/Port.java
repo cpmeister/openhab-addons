@@ -290,7 +290,7 @@ public class Port {
             } catch (InterruptedException e) {
                 logger.debug("reader thread got interrupted!");
             }
-            logger.info("reader thread exiting!");
+            logger.debug("reader thread exiting!");
         }
 
         private void processMessages() {
@@ -448,7 +448,7 @@ public class Port {
                     break;
                 }
             }
-            logger.info("writer thread exiting!");
+            logger.debug("writer thread exiting!");
         }
     }
 
