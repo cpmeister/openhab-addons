@@ -137,8 +137,8 @@ public class FeatureTemplate {
      *
      * @return the feature which this template describes
      */
-    public DeviceFeature build() {
-        DeviceFeature f = new DeviceFeature(m_name);
+    public DeviceFeature build(RequestQueueManager requestQueueManager) {
+        DeviceFeature f = new DeviceFeature(m_name, requestQueueManager);
         f.setStatusFeature(m_isStatus);
         f.setTimeout(m_timeout);
         if (m_dispatcher != null) {

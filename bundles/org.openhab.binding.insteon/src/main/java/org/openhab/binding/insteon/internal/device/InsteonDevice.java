@@ -69,11 +69,13 @@ public class InsteonDevice {
     private long m_lastQueryTime = 0L;
     private boolean m_hasModemDBEntry = false;
     private DeviceStatus m_status = DeviceStatus.INITIALIZED;
+    private RequestQueueManager requestQueueManager;
 
     /**
      * Constructor
      */
-    public InsteonDevice() {
+    public InsteonDevice(RequestQueueManager requestQueueManager) {
+        this.requestQueueManager = requestQueueManager;
         m_lastMsgReceived = System.currentTimeMillis();
     }
 
@@ -287,7 +289,7 @@ public class InsteonDevice {
                 m_requestQueue.add(e);
             }
         }
-        RequestQueueManager.s_instance().addQueue(this, now + delay);
+        requestQueueManager.addQueue(this, now + delay);
 
         if (!l.isEmpty()) {
             synchronized (m_lastTimePolled) {
@@ -517,7 +519,7 @@ public class InsteonDevice {
             m.setQuietTime(QUIET_TIME_DIRECT_MESSAGE);
         }
         logger.trace("enqueing direct message with delay {}", delay);
-        RequestQueueManager.s_instance().addQueue(this, now + delay);
+        requestQueueManager.addQueue(this, now + delay);
     }
 
     private void writeMessage(Msg m) throws IOException {
@@ -526,7 +528,7 @@ public class InsteonDevice {
 
     private void instantiateFeatures(@Nullable DeviceType dt) {
         for (Entry<String, String> fe : dt.getFeatures().entrySet()) {
-            DeviceFeature f = DeviceFeature.s_makeDeviceFeature(fe.getValue());
+            DeviceFeature f = DeviceFeature.s_makeDeviceFeature(fe.getValue(), requestQueueManager);
             if (f == null) {
                 logger.warn("device type {} references unknown feature: {}", dt, fe.getValue());
             } else {
@@ -536,7 +538,7 @@ public class InsteonDevice {
         for (Entry<String, FeatureGroup> fe : dt.getFeatureGroups().entrySet()) {
             FeatureGroup fg = fe.getValue();
             @Nullable
-            DeviceFeature f = DeviceFeature.s_makeDeviceFeature(fg.getType());
+            DeviceFeature f = DeviceFeature.s_makeDeviceFeature(fg.getType(), requestQueueManager);
             if (f == null) {
                 logger.warn("device type {} references unknown feature group: {}", dt, fg.getType());
             } else {
@@ -581,8 +583,8 @@ public class InsteonDevice {
      * @param dt device type after which to model the device
      * @return newly created device
      */
-    public static InsteonDevice s_makeDevice(@Nullable DeviceType dt) {
-        InsteonDevice dev = new InsteonDevice();
+    public static InsteonDevice s_makeDevice(@Nullable DeviceType dt, RequestQueueManager requestQueueManager) {
+        InsteonDevice dev = new InsteonDevice(requestQueueManager);
         dev.instantiateFeatures(dt);
         return dev;
     }

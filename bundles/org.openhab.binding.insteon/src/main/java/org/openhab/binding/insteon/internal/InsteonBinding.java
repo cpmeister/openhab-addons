@@ -117,9 +117,17 @@ public class InsteonBinding {
     private int m_x10HouseUnit = -1;
     private InsteonNetworkHandler m_handler;
 
+    private Poller poller;
+    private RequestQueueManager requestQueueManager;
+    private DeviceTypeLoader deviceTypeLoader;
+
     public InsteonBinding(InsteonNetworkHandler handler, @Nullable InsteonNetworkConfiguration config,
-            @Nullable SerialPortManager serialPortManager) {
+            SerialPortManager serialPortManager, Poller poller, RequestQueueManager requestQueueManager,
+            DeviceTypeLoader deviceTypeLoader) {
         this.m_handler = handler;
+        this.poller = poller;
+        this.requestQueueManager = requestQueueManager;
+        this.deviceTypeLoader = deviceTypeLoader;
 
         Integer devicePollIntervalSeconds = config.getDevicePollIntervalSeconds();
         if (devicePollIntervalSeconds != null) {
@@ -136,7 +144,7 @@ public class InsteonBinding {
         String additionalDevices = config.getAdditionalDevices();
         if (additionalDevices != null) {
             try {
-                DeviceTypeLoader.s_instance().loadDeviceTypesXML(additionalDevices);
+                deviceTypeLoader.loadDeviceTypesXML(additionalDevices);
                 logger.debug("read additional device definitions from {}", additionalDevices);
             } catch (ParserConfigurationException | SAXException | IOException e) {
                 logger.warn("error reading additional devices from {}", additionalDevices, e);
@@ -154,7 +162,7 @@ public class InsteonBinding {
 
         String port = config.getPort();
         logger.info("port = '{}'", port);
-        m_driver.addPort("port", port, serialPortManager);
+        m_driver.addPort("port", port, serialPortManager, requestQueueManager, deviceTypeLoader);
         m_driver.addMsgListener(m_portListener, port);
 
         logger.debug("setting driver listener");
@@ -262,8 +270,8 @@ public class InsteonBinding {
     }
 
     public InsteonDevice makeNewDevice(InsteonAddress addr, String productKey) {
-        DeviceType dt = DeviceTypeLoader.s_instance().getDeviceType(productKey);
-        InsteonDevice dev = InsteonDevice.s_makeDevice(dt);
+        DeviceType dt = deviceTypeLoader.getDeviceType(productKey);
+        InsteonDevice dev = InsteonDevice.s_makeDevice(dt, requestQueueManager);
         dev.setAddress(addr);
         dev.setDriver(m_driver);
         dev.addPort(m_driver.getDefaultPort());
@@ -274,7 +282,7 @@ public class InsteonBinding {
             int ndev = checkIfInModemDatabase(dev);
             if (dev.hasModemDBEntry()) {
                 dev.setStatus(DeviceStatus.POLLING);
-                Poller.s_instance().startPolling(dev, ndev);
+                poller.startPolling(dev, ndev);
             }
         }
         m_devices.put(addr, dev);
@@ -291,7 +299,7 @@ public class InsteonBinding {
         }
 
         if (dev.getStatus() == DeviceStatus.POLLING) {
-            Poller.s_instance().stopPolling(dev);
+            poller.stopPolling(dev);
         }
     }
 
@@ -333,8 +341,6 @@ public class InsteonBinding {
         logger.debug("shutting down Insteon bridge");
         m_driver.stopAllPorts();
         m_devices.clear();
-        RequestQueueManager.s_destroyInstance();
-        Poller.s_instance().stop();
         m_isActive = false;
     }
 
@@ -392,7 +398,7 @@ public class InsteonBinding {
 
     public void logDeviceStatistics() {
         String msg = String.format("devices: %3d configured, %3d polling, msgs received: %5d", m_devices.size(),
-                Poller.s_instance().getSizeOfQueue(), m_messagesReceived);
+                poller.getSizeOfQueue(), m_messagesReceived);
         logger.info("{}", msg);
         m_messagesReceived = 0;
         for (InsteonDevice dev : m_devices.values()) {
@@ -453,7 +459,7 @@ public class InsteonBinding {
                             dev.setHasModemDBEntry(true);
                         }
                         if (dev.getStatus() != DeviceStatus.POLLING) {
-                            Poller.s_instance().startPolling(dev, dbes.size());
+                            poller.startPolling(dev, dbes.size());
                         }
                     }
                 }

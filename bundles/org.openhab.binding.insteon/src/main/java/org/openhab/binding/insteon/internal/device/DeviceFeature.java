@@ -72,7 +72,7 @@ public class DeviceFeature {
 
     private static HashMap<String, FeatureTemplate> s_features = new HashMap<String, FeatureTemplate>();
 
-    private InsteonDevice m_device = new InsteonDevice();
+    private InsteonDevice m_device;
     private String m_name = "INVALID_FEATURE_NAME";
     private boolean m_isStatus = false;
     private int m_directAckTimeout = 6000;
@@ -96,7 +96,7 @@ public class DeviceFeature {
      */
     public DeviceFeature(InsteonDevice device, String name) {
         m_name = name;
-        setDevice(device);
+        m_device = device;
     }
 
     /**
@@ -104,8 +104,8 @@ public class DeviceFeature {
      *
      * @param name descriptive name of the feature
      */
-    public DeviceFeature(String name) {
-        m_name = name;
+    public DeviceFeature(String name, RequestQueueManager requestQueueManager) {
+        this(new InsteonDevice(requestQueueManager), name);
     }
 
     // various simple getters
@@ -372,11 +372,11 @@ public class DeviceFeature {
      * @return The newly created DeviceFeature, or null if requested DeviceFeature does not exist.
      */
     @Nullable
-    public static DeviceFeature s_makeDeviceFeature(String s) {
+    public static DeviceFeature s_makeDeviceFeature(String s, RequestQueueManager requestQueueManager) {
         DeviceFeature f = null;
         synchronized (s_features) {
             if (s_features.containsKey(s)) {
-                f = s_features.get(s).build();
+                f = s_features.get(s).build(requestQueueManager);
             } else {
                 logger.warn("unimplemented feature requested: {}", s);
             }

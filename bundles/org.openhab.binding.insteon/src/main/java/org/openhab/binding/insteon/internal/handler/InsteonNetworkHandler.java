@@ -28,7 +28,10 @@ import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.insteon.internal.InsteonBinding;
 import org.openhab.binding.insteon.internal.config.InsteonNetworkConfiguration;
+import org.openhab.binding.insteon.internal.device.DeviceTypeLoader;
+import org.openhab.binding.insteon.internal.device.RequestQueueManager;
 import org.openhab.binding.insteon.internal.discovery.InsteonDeviceDiscoveryService;
+import org.openhab.binding.insteon.internal.driver.Poller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,13 +56,20 @@ public class InsteonNetworkHandler extends BaseBridgeHandler {
     private @Nullable ScheduledFuture<?> pollingJob = null;
     private @Nullable ScheduledFuture<?> settleJob = null;
     private long lastInsteonDeviceCreatedTimestamp = 0;
-    private @Nullable SerialPortManager serialPortManager;
+    private SerialPortManager serialPortManager;
+    private Poller poller;
+    private RequestQueueManager requestQueueManager;
+    private DeviceTypeLoader deviceTypeLoader;
 
     public static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-    public InsteonNetworkHandler(Bridge bridge, @Nullable SerialPortManager serialPortManager) {
+    public InsteonNetworkHandler(Bridge bridge, SerialPortManager serialPortManager, Poller poller,
+            RequestQueueManager requestQueueManager, DeviceTypeLoader deviceTypeLoader) {
         super(bridge);
         this.serialPortManager = serialPortManager;
+        this.poller = poller;
+        this.requestQueueManager = requestQueueManager;
+        this.deviceTypeLoader = deviceTypeLoader;
     }
 
     @Override
@@ -72,7 +82,8 @@ public class InsteonNetworkHandler extends BaseBridgeHandler {
         config = getConfigAs(InsteonNetworkConfiguration.class);
 
         scheduler.execute(() -> {
-            insteonBinding = new InsteonBinding(this, config, serialPortManager);
+            insteonBinding = new InsteonBinding(this, config, serialPortManager, poller, requestQueueManager,
+                    deviceTypeLoader);
 
             updateStatus(ThingStatus.ONLINE);
 

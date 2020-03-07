@@ -20,6 +20,9 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.insteon.internal.device.InsteonDevice;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +45,9 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @SuppressWarnings("null")
+@Component(immediate = false, service = Poller.class)
 public class Poller {
     private final Logger logger = LoggerFactory.getLogger(Poller.class);
-    private static Poller s_poller = new Poller(); // for singleton
 
     private @Nullable Thread m_pollThread = null;
     private TreeSet<PQEntry> m_pollQueue = new TreeSet<PQEntry>();
@@ -103,6 +106,7 @@ public class Poller {
     /**
      * Starts the poller thread
      */
+    @Activate
     public void start() {
         if (m_pollThread == null) {
             m_pollThread = new Thread(new PollQueueReader());
@@ -115,6 +119,7 @@ public class Poller {
     /**
      * Stops the poller thread
      */
+    @Deactivate
     public void stop() {
         logger.debug("stopping poller!");
         synchronized (m_pollQueue) {
@@ -285,16 +290,6 @@ public class Poller {
         public String toString() {
             return m_dev.getAddress().toString() + "/" + String.format("%tc", new Date(m_expirationTime));
         }
-    }
-
-    /**
-     * Singleton pattern instance() method
-     *
-     * @return the poller instance
-     */
-    public static synchronized Poller s_instance() {
-        s_poller.start();
-        return (s_poller);
     }
 
 }

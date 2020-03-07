@@ -17,6 +17,9 @@ import java.util.PriorityQueue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +39,8 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @SuppressWarnings("null")
+@Component(immediate = true)
 public class RequestQueueManager {
-    private static @Nullable RequestQueueManager s_instance = null;
     private final Logger logger = LoggerFactory.getLogger(RequestQueueManager.class);
     private @Nullable Thread m_queueThread = null;
     private PriorityQueue<RequestQueue> m_requestQueues = new PriorityQueue<RequestQueue>();
@@ -48,7 +51,6 @@ public class RequestQueueManager {
         m_queueThread = new Thread(new RequestQueueReader());
         m_queueThread.setName("Insteon Request Queue Reader");
         m_queueThread.setDaemon(true);
-        m_queueThread.start();
     }
 
     /**
@@ -84,10 +86,16 @@ public class RequestQueueManager {
         }
     }
 
+    @Activate
+    public void startThread() {
+        m_queueThread.start();
+    }
+
     /**
      * Stops request queue thread
      */
-    private void stopThread() {
+    @Deactivate
+    public void stopThread() {
         logger.debug("stopping thread");
         if (m_queueThread != null) {
             synchronized (m_requestQueues) {
@@ -188,18 +196,18 @@ public class RequestQueueManager {
         }
     }
 
-    @NonNullByDefault
-    public static synchronized @Nullable RequestQueueManager s_instance() {
-        if (s_instance == null) {
-            s_instance = new RequestQueueManager();
-        }
-        return (s_instance);
-    }
-
-    public static synchronized void s_destroyInstance() {
-        if (s_instance != null) {
-            s_instance.stopThread();
-            s_instance = null;
-        }
-    }
+    // @NonNullByDefault
+    // public static synchronized @Nullable RequestQueueManager s_instance() {
+    // if (s_instance == null) {
+    // s_instance = new RequestQueueManager();
+    // }
+    // return (s_instance);
+    // }
+    //
+    // public static synchronized void s_destroyInstance() {
+    // if (s_instance != null) {
+    // s_instance.stopThread();
+    // s_instance = null;
+    // }
+    // }
 }
