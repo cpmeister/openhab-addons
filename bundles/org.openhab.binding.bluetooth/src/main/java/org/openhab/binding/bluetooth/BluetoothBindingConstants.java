@@ -32,10 +32,20 @@ public class BluetoothBindingConstants {
     public static final ThingTypeUID THING_TYPE_BEACON = new ThingTypeUID(BINDING_ID, "beacon");
 
     // List of all Channel Type IDs
+    public static final String CHANNEL_CHARACTERISTIC = "char";
     public static final String CHANNEL_TYPE_RSSI = "rssi";
 
     public static final String PROPERTY_TXPOWER = "txpower";
     public static final String PROPERTY_MAXCONNECTIONS = "maxconnections";
+
+    // Field properties
+    public static final String PROPERTY_FIELD_NAME = "FieldName";
+    public static final String PROPERTY_FIELD_INDEX = "FieldIndex";
+
+    // Characteristic properties
+    public static final String PROPERTY_FLAGS = "Flags";
+    public static final String PROPERTY_SERVICE_UUID = "ServiceUUID";
+    public static final String PROPERTY_CHARACTERISTIC_UUID = "CharacteristicUUID";
 
     public static final String CONFIGURATION_ADDRESS = "address";
 
