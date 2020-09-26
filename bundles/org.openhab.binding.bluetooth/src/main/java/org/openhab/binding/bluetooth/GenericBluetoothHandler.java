@@ -1,3 +1,15 @@
+/**
+ * Copyright (c) 2010-2020 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.bluetooth;
 
 import java.util.List;
@@ -20,6 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sputnikdev.bluetooth.gattparser.BluetoothGattParser;
 
+/**
+ * This is a handler for generic connected bluetooth devices that dynamically generates
+ * channels based off of a bluetooth device's GATT characteristics.
+ *
+ * @author Connor Petty - Initial contribution
+ *
+ */
 @NonNullByDefault
 public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
 
@@ -97,7 +116,5 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             characteristic.setValue(data);
             return device.writeCharacteristic(characteristic);
         }
-
     }
-
 }

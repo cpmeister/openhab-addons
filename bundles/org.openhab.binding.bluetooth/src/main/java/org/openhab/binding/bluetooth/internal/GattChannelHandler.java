@@ -39,6 +39,11 @@ import org.sputnikdev.bluetooth.gattparser.GattResponse;
 import org.sputnikdev.bluetooth.gattparser.spec.Characteristic;
 import org.sputnikdev.bluetooth.gattparser.spec.Field;
 
+/**
+ * The GattChannelHandler handles the mapping of channels to bluetooth gatt characteristics.
+ *
+ * @author Connor Petty - Initial contribution
+ */
 @NonNullByDefault
 public class GattChannelHandler {
     private static final String CHANNEL_TYPE_NAME_PATTERN = "characteristic-%s-%s-%s-%s";
@@ -200,5 +205,4 @@ public class GattChannelHandler {
         properties.put(BluetoothBindingConstants.PROPERTY_CHARACTERISTIC_UUID, characteristic.getUuid().toString());
         return properties;
     }
-
 }

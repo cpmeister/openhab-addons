@@ -21,6 +21,12 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.bluetooth.BluetoothCharacteristic;
 
+/**
+ * The ChannelHandlerCallback is a callback interface used by the GattChannelHandler to interact with the
+ * ThingHandler instance.
+ *
+ * @author Connor Petty - Initial contribution
+ */
 @NonNullByDefault
 public interface ChannelHandlerCallback {
 

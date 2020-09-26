@@ -46,7 +46,7 @@ import tec.uom.se.unit.Units;
 /**
  * The {@link BluetoothUnit} maps bluetooth units to openHAB units.
  *
- * @author Connor Petty - Initial contribution and API
+ * @author Connor Petty - Initial contribution
  */
 @NonNullByDefault
 public enum BluetoothUnit {
@@ -209,7 +209,7 @@ public enum BluetoothUnit {
 
     private Unit<?> unit;
 
-    private BluetoothUnit(int key, String type, Unit<?> unit) {
+    private BluetoothUnit(long key, String type, Unit<?> unit) {
         this.uuid = new UUID((key << 32) | 0x1000, BluetoothBindingConstants.BLUETOOTH_BASE_UUID);
         this.type = type;
         this.unit = unit;
@@ -304,7 +304,6 @@ public enum BluetoothUnit {
         private static <U extends Unit<?>> U addUnit(U unit) {
             return unit;
         }
-
     }
 
     public interface AngularVelocity extends Quantity<AngularVelocity> {
@@ -341,7 +340,6 @@ public enum BluetoothUnit {
             }
         }
         return null;
-
     }
 
     private static final String RAW = "<tbody>\n"

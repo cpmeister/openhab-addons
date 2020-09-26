@@ -153,9 +153,14 @@ public class BluetoothDiscoveryProcess implements Supplier<DiscoveryResult>, Blu
             properties.put(Thing.PROPERTY_VENDOR, manufacturer);
             label += " (" + manufacturer + ")";
         }
-
-        ThingUID thingUID = new ThingUID(BluetoothBindingConstants.THING_TYPE_BEACON, device.getAdapter().getUID(),
-                device.getAddress().toString().toLowerCase().replace(":", ""));
+        ThingUID thingUID;
+        if (device.getServices().isEmpty()) {
+            thingUID = new ThingUID(BluetoothBindingConstants.THING_TYPE_BEACON, device.getAdapter().getUID(),
+                    device.getAddress().toString().toLowerCase().replace(":", ""));
+        } else {
+            thingUID = new ThingUID(BluetoothBindingConstants.THING_TYPE_CONNECTED, device.getAdapter().getUID(),
+                    device.getAddress().toString().toLowerCase().replace(":", ""));
+        }
 
         // Create the discovery result and add to the inbox
         return DiscoveryResultBuilder.create(thingUID).withProperties(properties)

@@ -24,8 +24,12 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.bluetooth.BeaconBluetoothHandler;
 import org.openhab.binding.bluetooth.BluetoothBindingConstants;
-import org.openhab.binding.bluetooth.ConnectedBluetoothHandler;
+import org.openhab.binding.bluetooth.GenericBluetoothHandler;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.sputnikdev.bluetooth.gattparser.BluetoothGattParser;
 
 /**
  * The {@link BluetoothHandlerFactory} is responsible for creating things and thing handlers.
@@ -41,6 +45,13 @@ public class BluetoothHandlerFactory extends BaseThingHandlerFactory {
         SUPPORTED_THING_TYPES_UIDS.add(BluetoothBindingConstants.THING_TYPE_BEACON);
         SUPPORTED_THING_TYPES_UIDS.add(BluetoothBindingConstants.THING_TYPE_CONNECTED);
     }
+    private final BluetoothGattParser gattParser;
+
+    @Activate
+    public BluetoothHandlerFactory(
+            @Reference(cardinality = ReferenceCardinality.MANDATORY) GattParserFactory gattParserFactory) {
+        this.gattParser = gattParserFactory.getParser();
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -54,7 +65,7 @@ public class BluetoothHandlerFactory extends BaseThingHandlerFactory {
         if (thingTypeUID.equals(BluetoothBindingConstants.THING_TYPE_BEACON)) {
             return new BeaconBluetoothHandler(thing);
         } else if (thingTypeUID.equals(BluetoothBindingConstants.THING_TYPE_CONNECTED)) {
-            return new ConnectedBluetoothHandler(thing);
+            return new GenericBluetoothHandler(thing, gattParser);
         }
         return null;
     }

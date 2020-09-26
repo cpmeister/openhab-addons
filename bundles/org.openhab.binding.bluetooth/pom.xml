@@ -16,10 +16,17 @@
 
   <dependencies>
     <dependency>
-	  <groupId>org.sputnikdev</groupId>
-	  <artifactId>bluetooth-gatt-parser</artifactId>
-	  <version>1.9.4</version>
-	  <scope>compile</scope>
+      <groupId>org.sputnikdev</groupId>
+      <artifactId>bluetooth-gatt-parser</artifactId>
+      <version>1.9.4</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.9.3</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
+
 </project>

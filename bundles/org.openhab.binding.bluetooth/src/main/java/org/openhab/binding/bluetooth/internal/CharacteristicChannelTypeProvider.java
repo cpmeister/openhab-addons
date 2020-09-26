@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.config.core.ConfigOptionProvider;
 import org.eclipse.smarthome.core.thing.type.ChannelType;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeBuilder;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeProvider;
@@ -31,6 +30,7 @@ import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.eclipse.smarthome.core.types.StateDescriptionFragmentBuilder;
 import org.eclipse.smarthome.core.types.StateOption;
 import org.openhab.binding.bluetooth.BluetoothBindingConstants;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -40,13 +40,13 @@ import org.sputnikdev.bluetooth.gattparser.BluetoothGattParser;
 import org.sputnikdev.bluetooth.gattparser.spec.Field;
 
 /**
- * {@link ConfigOptionProvider} that provides channel types for dynamically discovered characteristics.
+ * {@link CharacteristicChannelTypeProvider} that provides channel types for dynamically discovered characteristics.
  *
  * @author Vlad Kolotov - Original author
  * @author Connor Petty - Modified for openHAB use.
  */
 @NonNullByDefault
-@Component(immediate = true, service = ChannelTypeProvider.class)
+@Component(service = ChannelTypeProvider.class)
 public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
 
     private Logger logger = LoggerFactory.getLogger(CharacteristicChannelTypeProvider.class);
@@ -55,9 +55,10 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
 
     private final BluetoothGattParser gattParser;
 
+    @Activate
     public CharacteristicChannelTypeProvider(
-            @Reference(cardinality = ReferenceCardinality.MANDATORY) BluetoothGattParser gattParser) {
-        this.gattParser = gattParser;
+            @Reference(cardinality = ReferenceCardinality.MANDATORY) GattParserFactory gattParserFactory) {
+        this.gattParser = gattParserFactory.getParser();
     }
 
     @Override

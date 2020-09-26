@@ -4,7 +4,6 @@
 
 	<feature name="openhab-binding-bluetooth-airthings" description="Bluetooth Binding Airthings" version="${project.version}">
 		<feature>openhab-runtime-base</feature>
-		<feature>openhab-transport-serial</feature>
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.binding.bluetooth/${project.version}</bundle>
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.binding.bluetooth.airthings/${project.version}</bundle>
 	</feature>

@@ -32,11 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a handler for generic Bluetooth devices in connected mode, which at the same time can be used
- * as a base implementation for more specific thing handlers.
+ * This is a base implementation for more specific thing handlers that require constant connection to bluetooth devices.
  *
  * @author Kai Kreuzer - Initial contribution and API
- *
  */
 @NonNullByDefault({ DefaultLocation.PARAMETER, DefaultLocation.RETURN_TYPE, DefaultLocation.ARRAY_CONTENTS,
         DefaultLocation.TYPE_ARGUMENT, DefaultLocation.TYPE_BOUND, DefaultLocation.TYPE_PARAMETER })
@@ -202,5 +200,4 @@ public class ConnectedBluetoothHandler extends BeaconBluetoothHandler {
                     descriptor.getUuid(), address);
         }
     }
-
 }

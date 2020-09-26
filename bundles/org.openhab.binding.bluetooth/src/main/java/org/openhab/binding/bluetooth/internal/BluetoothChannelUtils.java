@@ -37,6 +37,12 @@ import org.sputnikdev.bluetooth.gattparser.spec.Field;
 import org.sputnikdev.bluetooth.gattparser.spec.FieldFormat;
 import org.sputnikdev.bluetooth.gattparser.spec.FieldType;
 
+/**
+ * The {@link BluetoothChannelUtils} contains utility functions used by the GattChannelHandler
+ *
+ * @author Vlad Kolotov - Original author
+ * @author Connor Petty - Modified for openHAB use
+ */
 @NonNullByDefault
 public class BluetoothChannelUtils {
 
@@ -204,5 +210,4 @@ public class BluetoothChannelUtils {
     private static <T extends State> @Nullable T convert(State state, Class<T> typeClass) {
         return state.as(typeClass);
     }
-
 }
