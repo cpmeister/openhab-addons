@@ -15,7 +15,8 @@ The binding also supports sending and receiving of legacy X10 messages.
 
 The binding does not support linking new devices on the fly, i.e. all devices must be linked with the modem *before* starting the Insteon binding.
 
-openHAB is not a configuration tool! To configure and set up your devices, link the devices manually via the set buttons, or use the free [Insteon Terminal](https://github.com/pfrommerd/insteon-terminal) software.
+The openHAB binding supports minimal configuration of devices, currently only monitoring and sending messages.
+For all other configuration and set up of devices, link the devices manually via the set buttons, or use the free [Insteon Terminal](https://github.com/pfrommerd/insteon-terminal) software.
 The free HouseLinc software from Insteon can also be used for configuration, but it wipes the modem link database clean on its initial use, requiring to re-link the modem to all devices.
 
 ## Supported Things
@@ -35,7 +36,7 @@ X10 devices are not auto discovered.
 
 ## Thing Configuration
 
-###### Network Configuration
+#### Network Configuration
 
 The Insteon PLM or hub is configured with the following parameters:
 
@@ -43,13 +44,12 @@ The Insteon PLM or hub is configured with the following parameters:
 |----------|---------:|--------:|-------------|
 | port   |         |   Yes    | **Examples:**<br>- PLM on  Linux: `/dev/ttyS0` or `/dev/ttyUSB0`<br>- Smartenit ZBPLM on Linux: `/dev/ttyUSB0,baudRate=115200`<br>- PLM on Windows: `COM1`<br>- Current  hub (2245-222) at 192.168.1.100 on port 25105, with a poll interval of 1000 ms (1 second): `/hub2/my_user_name:my_password@192.168.1.100:25105,poll_time=1000`<br>- Legacy hub (2242-222) at 192.168.1.100 on port 9761:`/hub/192.168.1.100:9761`<br>- Networked PLM using ser2net at 192.168.1.100 on port 9761:`/tcp/192.168.1.100:9761` |
 | devicePollIntervalSeconds | 300 |  No  | Poll interval of devices in seconds. Poll too often and you will overload the insteon network, leading to sluggish or no response when trying to send messages to devices. The default poll interval of 300 seconds has been tested and found to be a good compromise in a configuration of about 110 switches/dimmers. |
-|modemDbRetryTimeoutSeconds|120|No|The number of seconds to wait for the modem database to completely download before retrying again. Under normal circumstances this will not need to be modified.|
 | additionalDevices | |       No     | Optional file with additional device types. The syntax of the file is identical to the `device_types.xml` file in the source tree. Please remember to post successfully added device types to the openhab group so the developers can include them into the `device_types.xml` file! |
 | additionalFeatures | |      No     | Optional file with additional feature templates, like in the `device_features.xml` file in the source tree. |
 
 >NOTE: For users upgrading from InsteonPLM, The parameter port_1 is now port.
 
-###### Device Configuration
+#### Device Configuration
 
 The Insteon device is configured with the following required parameters:
 
@@ -57,6 +57,7 @@ The Insteon device is configured with the following required parameters:
 |----------|-------------|
 |address|Insteon or X10 address of the device. Insteon device addresses are in the format 'xx.xx.xx', and can be found on the device. X10 device address are in the format 'x.y' and are typically configured on the device.|
 |productKey|Insteon binding product key that is used to identy the device. Every Insteon device type is uniquely identified by its Insteon product key, typically a six digit hex number. For some of the older device types (in particular the SwitchLinc switches and dimmers), Insteon does not give a product key, so an arbitrary fake one of the format Fxx.xx.xx (or Xxx.xx.xx for X10 devices) is assigned by the binding.|
+|deviceConfig|Optional JSON object with device specific configuration. The JSON object will contain one or more key/value pairs. The key is a parameter for the device and the type of the value will vary.|
 
 The following is a list of the product keys and associated devices.
 These have been tested and should work out of the box:
@@ -100,9 +101,10 @@ These have been tested and should work out of the box:
 | 2450 | IO Link | 0x00001A | Bernd Pfrommer |
 | 2486D | KeypadLinc Dimmer | 0x000037 | Patrick Giasson, Joe Barnum |
 | 2484DWH8 | KeypadLinc Countdown Timer | 0x000041 | Rob Nielsen |
-| 2413U | PowerLinc 2413U USB modem | 0x000045 | Bernd Pfrommer |
+| Various | PLM or hub | 0x000045 | Bernd Pfrommer |
 | 2843-222 | Wireless Open/Close Sensor | 0x000049 | Josenivaldo Benito |
 | 2842-222 | Motion Sensor | 0x00004A | Bernd Pfrommer |
+| 2844-222 | Motion Sensor II | F00.00.24 | Rob Nielsen |
 | 2486DWH8 | KeypadLinc Dimmer | 0x000051 | Chris Graham |
 | 2472D | OutletLincDimmer | 0x000068 | Chris Graham |
 | X10 switch | generic X10 switch | X00.00.01 | Bernd Pfrommer |
@@ -119,6 +121,7 @@ In order to determine which channels a device supports, you can look at the devi
 | acDelay | Number | AC Delay |
 | backlightDuration | Number | Back Light Duration |
 | batteryLevel | Number | Battery Level |
+| batteryPercent | Number:Dimensionless | Battery Percent |
 | batteryWatermarkLevel | Number | Battery Watermark Level |
 | beep | Switch | Beep |
 | bottomOutlet | Switch | Bottom Outlet |
@@ -155,7 +158,7 @@ In order to determine which channels a device supports, you can look at the devi
 | keypadButtonF | Switch | Keypad Button F |
 | keypadButtonG | Switch | Keypad Button G |
 | keypadButtonH | Switch | Keypad Button H |
-| kWh | Number | Kilowatt Hour |
+| kWh | Number:Energy | Kilowatt Hour |
 | lastHeardFrom | DateTime | Last Heard From |
 | ledBrightness | Number | LED brightness |
 | ledOnOff | Switch | LED On/Off |
@@ -180,10 +183,12 @@ In order to determine which channels a device supports, you can look at the devi
 | stage1Duration | Number | Stage 1 Duration |
 | switch | Switch | Switch |
 | systemMode | Number | System Mode |
+| tamperSwitch | Contact | Tamper Switch |
 | temperature | Number:Temperature | Temperature |
+| temperatureLevel | Number | Temperature Level |
 | topOutlet | Switch | Top Outlet |
 | update | Switch | Update |
-| watts | Number | Watts |
+| watts | Number:Power | Watts |
 
 
 ## Full Example
@@ -244,9 +249,20 @@ openhab> smarthome:insteon
 Usage: smarthome:insteon display_devices - display devices that are online, along with available channels
 Usage: smarthome:insteon display_channels - display channels that are linked, along with configuration information
 Usage: smarthome:insteon display_local_database - display Insteon PLM or hub database details
+Usage: smarthome:insteon display_monitored - display monitored device(s)
+Usage: smarthome:insteon start_monitoring all|address - start displaying messages received from device(s)
+Usage: smarthome:insteon stop_monitoring all|address - stop displaying messages received from device(s)
+Usage: smarthome:insteon send_standard_message address flags cmd1 cmd2 - send standard message to a device
+Usage: smarthome:insteon send_extended_message address flags cmd1 cmd2 [up to 13 bytes] - send extended message to a device
+Usage: smarthome:insteon send_extended_message_2 address flags cmd1 cmd2 [up to 12 bytes] - send extended message with a two byte crc to a device
 ```
 
 Here is an example of command: `smarthome:insteon display_local_database`.
+
+When monitoring devices, the output will be displayed where openHAB was started.
+You may need to redirect the output to a log file to see the messages.
+The send message commands do not display any results.
+If you want to see the response from the device, you will need to monitor the device.
 
 ## Insteon Groups and Scenes
 
@@ -389,12 +405,45 @@ Then create entries in the .items file like this:
 
 ```
     Contact motionSensor             "motion sensor [MAP(contact.map):%s]" { channel="insteon:device:home:AABBCC:contact"}
-    Number  motionSensorBatteryLevel "motion sensor battery level [%.1f]"  { channel="insteon:device:home:AABBCC:batteryLevel" }
-    Number  motionSensorLightLevel   "motion sensor light level [%.1f]"    { channel="insteon:device:home:AABBCC:lightLevel" }
+    Number  motionSensorBatteryLevel "motion sensor battery level"         { channel="insteon:device:home:AABBCC:batteryLevel" }
+    Number  motionSensorLightLevel   "motion sensor light level"           { channel="insteon:device:home:AABBCC:lightLevel" }
 ```
 
 This will give you a contact, the battery level, and the light level.
-Note that battery and light level are only updated when either there is motion, or the sensor battery runs low.
+The motion sensor II includes three additional channels:
+
+**Items**
+
+```
+    Number  motionSensorBatteryPercent     "motion sensor battery percent"                     { channel="insteon:device:home:AABBCC:batteryPercent" }
+    Contact motionSensorTamperSwitch       "motion sensor tamper switch [MAP(contact.map):%s]" { channel="insteon:device:home:AABBCC:tamperSwitch"}
+    Number  motionSensorTemperatureLevel   "motion sensor temperature level"                   { channel="insteon:device:home:AABBCC:temperatureLevel" }
+```
+
+The battery, light level and temperature level are updated when either there is motion, light level above/below threshold, tamper switch activated, or the sensor battery runs low.
+This is accomplished by querying the device for the data.
+The motion sensor II will also periodically send data if the alternate heartbeat is enabled on the device.
+
+If the alternate heartbeat is enabled, the device can be configured to not query the device and rely on the data from the alternate heartbeat.
+Disabling the querying of the device should provide more accurate battery data since it appears to fluctuate with queries of the device.
+This can be configured with the device configuration parameter of the device.
+The key in the JSON object is `heartbeatOnly` and the value is a boolean:
+
+**Things**
+
+```
+Bridge insteon:network:home [port="/dev/ttyUSB0"] {
+  Thing device AABBCC [address="AA.BB.CC", productKey="F00.00.24", deviceConfig="{'heartbeatOnly': true}"]
+}
+
+```
+
+The temperature can be calculated in Fahrenheit using the following formulas:
+
+* If the device is battery powered: `temperature = 0.73 * motionSensorTemperatureLevel - 20.53`
+* If the device is USB powered: `temperature = 0.72 * motionSensorTemperatureLevel - 24.61`
+
+Since the motion sensor II might not be calibrated correctly, the values `20.53` and `24.61` can be adjusted as necessary to produce the correct temperature.
 
 ### Hidden Door Sensors
 
@@ -478,7 +527,7 @@ Please see the Insteon I/O Linc documentation for further details.
 Before you attempt to configure the keypads, please familiarize yourself with the concept of an Insteon group.
 
 The Insteon keypad devices typically control one main load and have a number of buttons that will send out group broadcast messages to trigger a scene.
-If you just want to use the main load switch within openhab just link modem and device with the set buttons as usual, no complicated linking is necessary.
+If you just want to use the main load switch within openHAB just link modem and device with the set buttons as usual, no complicated linking is necessary.
 But if you want to get the buttons to work, read on.
 
 Each button will send out a message for a different, predefined group.
@@ -648,10 +697,10 @@ See the example below:
 **Items**
 
 ``` 
-    Number iMeterWatts   "iMeter [%d watts]"   { channel="insteon:device:home:AABBCC:watts" }
-    Number iMeterKwh     "iMeter [%.04f kwh]"  { channel="insteon:device:home:AABBCC:kwh" }
-    Switch iMeterUpdate  "iMeter Update"       { channel="insteon:device:home:AABBCC:update" }
-    Switch iMeterReset   "iMeter Reset"        { channel="insteon:device:home:AABBCC:reset" }
+    Number:Power  iMeterWatts   "iMeter [%d watts]"   { channel="insteon:device:home:AABBCC:watts" }
+    Number:Energy iMeterKwh     "iMeter [%.04f kWh]"  { channel="insteon:device:home:AABBCC:kWh" }
+    Switch        iMeterUpdate  "iMeter Update"       { channel="insteon:device:home:AABBCC:update" }
+    Switch        iMeterReset   "iMeter Reset"        { channel="insteon:device:home:AABBCC:reset" }
 ```
 
 ### Fan Controllers
@@ -692,7 +741,7 @@ Further note that X10 devices are addressed with `houseCode.unitCode`, e.g. `A.2
 
 The binding can command the modem to send broadcasts to a given Insteon group.
 Since it is a broadcast message, the corresponding item does *not* take the address of any device, but of the modem itself.
-The format is broadcastOnOff#X where X is the group that you want to be able to broadcast messages to:
+The format is `broadcastOnOff#X` where X is the group that you want to be able to broadcast messages to:
 
 **Things**
 
@@ -713,6 +762,18 @@ Bridge insteon:network:home [port="/dev/ttyUSB0"] {
 ```
 
 Flipping this switch to "ON" will cause the modem to send a broadcast message with group=2, and all devices that are configured to respond to it should react.
+
+Channels can also be configured using the device configuration parameter of the device.
+The key in the JSON object is `broadcastGroups` and the value is an array of integers:
+
+**Things**
+
+```
+Bridge insteon:network:home [port="/dev/ttyUSB0"] {
+  Thing device AABBCC             [address="AA.BB.CC", productKey="0x000045", deviceConfig="{'broadcastGroups': [2]}"]
+}
+
+```
 
 ## Channel "related" Property
 
@@ -741,7 +802,7 @@ A typical example would be a switch configured to broadcast to a group, and one 
 
 ```
 Bridge insteon:network:home [port="/dev/ttyUSB0"] {
-  Thing device AABBCC             [address="A.BB.CC", productKey="0x000045"] {
+  Thing device AABBCC [address="AA.BB.CC", productKey="0x000045"] {
     Channels:
       Type switch : broadcastOnOff#3 [related="AA.BB.DD"]
   }
@@ -827,9 +888,6 @@ If new devices are linked, the binding must be restarted.
 Use the [Insteon Terminal](https://github.com/pfrommerd/insteon-terminal) for that.
 If using Insteon Terminal (especially as root), ensure any stale lock files (For example, /var/lock/LCK..ttyUSB0) are removed before starting openHAB runtime.
 Failure to do so may result in "found no ports".
-* Very rarely during binding startup, a message arrives at the modem while the initial read of the modem database happens.
-Somehow the modem then stops sending the remaining link records and the binding no longer is able to address the missing devices.
-The fix is to simply restart the binding.
-* The Insteon PLM device is know to break after about 2-3 years due to poorly sized capacitors of the power supply.
-With a bit of soldering skill you can repair it yourself, see [here](http://pfrommer.us/home-automation) or [the original thread](http://forum.universal-devices.com/topic/13866-repair-of-2413s-plm-when-the-power-supply-fails/).
+* The Insteon PLM or hub is know to break in about 2-3 years due to poorly sized capacitors.
+You can repair it yourself using basic soldering skills, search for "Insteon PLM repair" or "Insteon hub repair".
 * Using the Insteon Hub 2014 in conjunction with other applications (such as the InsteonApp) is not supported. Concretely, openHAB will not learn when a switch is flipped via the Insteon App until the next poll, which could take minutes.

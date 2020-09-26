@@ -170,7 +170,8 @@ The Thing configuration for **Niko Home Control thermostats** has the following 
 
 ```
 Thing nikohomecontrol:thermostat:<bridgeId>:<thingId> "Label" @ "Location"
-                        [ thermostatId="<Niko Home Control thermostat ID>" ]
+                        [ thermostatId="<Niko Home Control thermostat ID>",
+                          overruleTime=<default duration for overrule temperature in minutes> ]
 ```
 
 or nested in the bridge configuration:
@@ -194,7 +195,7 @@ For Niko Home Control II, the `thermostatId` parameter is a unique ID for the th
 It can only be auto-discovered.
 If you want to define the thermostat through textual configuration, you may first need to do discovery on the bridge to get the correct `thermostatId` to use in the textual configuration.
 
-The `overruleTime` parameter is used to set the standard overrule duration when you set a new setpoint without providing an overrule duration.
+The `overruleTime` parameter is used to set the standard overrule duration in minutes when you set a new setpoint without providing an overrule duration.
 The default value is 60 minutes.
 
 The Thing configuration for **Niko Home Control energy meters** has the following syntax:
@@ -250,6 +251,7 @@ When updating `setpoint`, it will overrule the temperature setpoint defined by t
 `demand` is a number indicating of the system is actively heating/cooling.
 The value will be 1 for heating, -1 for cooling and 0 if not heating or cooling.
 Note that cooling in NHC I is set by the binding, and will incorrectly show cooling demand when the system does not have cooling capabilities.
+In NHC II, `measured` and `setpoint` temperatures will always report in 0.5°C increments due to a Niko Home Control II API restriction.
 
 For thing type `energymeter` the only supported channel is `power`.
 This channel is read only and give a current power consumption/production reading (positive for consumption) every 2 seconds.
@@ -311,8 +313,8 @@ Rollershutter Kitchen   {channel="nikohomecontrol:blind:nhc1:4:rollershutter"}  
 Number:Temperature CurTemperature   "[%.1f °F]"  {channel="nikohomecontrol:thermostat:nhc1:5:measured"}   # Getting measured temperature from thermostat in °F, read only
 Number ThermostatMode   {channel="nikohomecontrol:thermostat:nhc1:5:mode"}        # Get and set thermostat mode
 Number:Temperature SetTemperature   "[%.1f °C]"  {channel="nikohomecontrol:thermostat:nhc1:5:setpoint"}   # Get and set target temperature in °C
-Number OverruleDuration {channel="nikohomecontrol:thermostat:nhc1:5:overruletime} # Get and set the overrule time
-Number ThermostatDemand {channel="nikohomecontrol:thermostat:nhc1:5:demand}       # Get the current heating/cooling demand
+Number OverruleDuration {channel="nikohomecontrol:thermostat:nhc1:5:overruletime"} # Get and set the overrule time
+Number ThermostatDemand {channel="nikohomecontrol:thermostat:nhc1:5:demand"}       # Get the current heating/cooling demand
 Number:Power CurPower   "[%.0f W]"  {channel="nikohomecontrol:energyMeter:nhc2:6:power"}   # Get current power consumption
 ```
 
@@ -325,7 +327,7 @@ Slider item=TVRoom
 Switch item=TVRoom          # allows switching dimmer item off or on (with controller defined behavior)
 Rollershutter item=Kitchen
 Text item=CurTemperature
-Selection item=ThermostatMode mappings="[0="day", 1="night", 2="eco", 3="off", 4="cool", 5="prog 1", 6="prog 2", 7="prog 3"]
+Selection item=ThermostatMode mappings=[0="day", 1="night", 2="eco", 3="off", 4="cool", 5="prog 1", 6="prog 2", 7="prog 3"]
 Setpoint item=SetTemperature minValue=0 maxValue=30
 Slider item=OverruleDuration minValue=0 maxValue=120
 Text item=Power

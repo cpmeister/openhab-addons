@@ -226,7 +226,7 @@ public class CloudService implements ActionService, CloudClientListener, EventSu
 
         httpClient.setMaxConnectionsPerDestination(DEFAULT_LOCAL_OPENHAB_MAX_CONCURRENT_REQUESTS);
         httpClient.setConnectTimeout(DEFAULT_LOCAL_OPENHAB_REQUEST_TIMEOUT);
-
+        httpClient.setFollowRedirects(false);
         if (!httpClient.isRunning()) {
             try {
                 httpClient.start();
@@ -394,5 +394,4 @@ public class CloudService implements ActionService, CloudClientListener, EventSu
             cloudClient.sendItemUpdate(ise.getItemName(), ise.getItemState().toString());
         }
     }
-
 }

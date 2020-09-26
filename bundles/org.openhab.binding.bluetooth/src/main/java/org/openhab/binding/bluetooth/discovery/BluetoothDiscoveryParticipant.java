@@ -13,20 +13,21 @@
 package org.openhab.binding.bluetooth.discovery;
 
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.discovery.DiscoveryResult;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.openhab.binding.bluetooth.BluetoothDevice;
+import org.openhab.binding.bluetooth.BluetoothAdapter;
 
 /**
  * A {@link BluetoothDiscoveryParticipant} that is registered as a service is picked up by the BluetoothDiscoveryService
  * and can thus contribute {@link DiscoveryResult}s from Bluetooth scans.
  *
  * @author Kai Kreuzer - Initial contribution
- * @author Connor Petty - added 'requiresConnection' method
+ * @author Connor Petty - added 'requiresConnection' and 'publishAdditionalResults' methods
  */
 @NonNullByDefault
 public interface BluetoothDiscoveryParticipant {
@@ -45,7 +46,7 @@ public interface BluetoothDiscoveryParticipant {
      * @return the according discovery result or <code>null</code>, if device is not
      *         supported by this participant
      */
-    public @Nullable DiscoveryResult createResult(BluetoothDevice device);
+    public @Nullable DiscoveryResult createResult(BluetoothDiscoveryDevice device);
 
     /**
      * Returns the thing UID for a Bluetooth device
@@ -53,7 +54,7 @@ public interface BluetoothDiscoveryParticipant {
      * @param device the Bluetooth device
      * @return a thing UID or <code>null</code>, if the device is not supported by this participant
      */
-    public @Nullable ThingUID getThingUID(BluetoothDevice device);
+    public @Nullable ThingUID getThingUID(BluetoothDiscoveryDevice device);
 
     /**
      * Returns true if this participant requires the device to be connected before it can produce a
@@ -69,7 +70,25 @@ public interface BluetoothDiscoveryParticipant {
      * @param device the Bluetooth device
      * @return true if a connection is required before calling {@link createResult(BluetoothDevice)}
      */
-    public default boolean requiresConnection(BluetoothDevice device) {
+    public default boolean requiresConnection(BluetoothDiscoveryDevice device) {
         return false;
+    }
+
+    /**
+     * Allows participants to perform any post-processing on each DiscoveryResult as well
+     * as produce additional DiscoveryResults as they see fit.
+     * Additional results can be published using the provided {@code publisher}.
+     * Results published in this way will create a new DiscoveryResult and ThingUID
+     * using the provided {@link BluetoothAdapter} as the bridge instead.
+     * A BluetoothAdapter instance must be provided for any additional results sent to the publisher.
+     * <p>
+     * Note: Any additional results will not be subject to post-processing.
+     *
+     * @param result the DiscoveryResult to post-process
+     * @param publisher the consumer to publish additional results to.
+     */
+    public default void publishAdditionalResults(DiscoveryResult result,
+            BiConsumer<BluetoothAdapter, DiscoveryResult> publisher) {
+        // do nothing by default
     }
 }

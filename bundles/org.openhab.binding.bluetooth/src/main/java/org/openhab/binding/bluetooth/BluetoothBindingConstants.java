@@ -14,6 +14,7 @@ package org.openhab.binding.bluetooth;
 
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 
 /**
@@ -23,6 +24,7 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
  * @author Chris Jackson - Initial contribution
  * @author Kai Kreuzer - refactoring and extension
  */
+@NonNullByDefault
 public class BluetoothBindingConstants {
 
     public static final String BINDING_ID = "bluetooth";
@@ -34,6 +36,8 @@ public class BluetoothBindingConstants {
     // List of all Channel Type IDs
     public static final String CHANNEL_CHARACTERISTIC = "char";
     public static final String CHANNEL_TYPE_RSSI = "rssi";
+    public static final String CHANNEL_TYPE_ADAPTER = "adapterUID";
+    public static final String CHANNEL_TYPE_ADAPTER_LOCATION = "adapterLocation";
 
     public static final String PROPERTY_TXPOWER = "txpower";
     public static final String PROPERTY_MAXCONNECTIONS = "maxconnections";
@@ -48,6 +52,7 @@ public class BluetoothBindingConstants {
     public static final String PROPERTY_CHARACTERISTIC_UUID = "CharacteristicUUID";
 
     public static final String CONFIGURATION_ADDRESS = "address";
+    public static final String CONFIGURATION_DISCOVERY = "backgroundDiscovery";
 
     public static final long BLUETOOTH_BASE_UUID = 0x800000805f9b34fbL;
 
@@ -62,5 +67,4 @@ public class BluetoothBindingConstants {
     public static final UUID PROFILE_HEADSET = UUID.fromString("00001108-0000-1000-8000-00805f9b34fb");
     public static final UUID PROFILE_HFP = UUID.fromString("0000111e-0000-1000-8000-00805f9b34fb");
     public static final UUID PROFILE_HFP_AUDIOGATEWAY = UUID.fromString("0000111f-0000-1000-8000-00805f9b34fb");
-
 }

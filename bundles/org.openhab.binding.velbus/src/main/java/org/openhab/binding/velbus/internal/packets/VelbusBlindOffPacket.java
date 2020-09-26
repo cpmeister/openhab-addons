@@ -14,6 +14,7 @@ package org.openhab.binding.velbus.internal.packets;
 
 import static org.openhab.binding.velbus.internal.VelbusBindingConstants.COMMAND_SWITCH_BLIND_OFF;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.velbus.internal.VelbusChannelIdentifier;
 
 /**
@@ -22,6 +23,7 @@ import org.openhab.binding.velbus.internal.VelbusChannelIdentifier;
  *
  * @author Cedric Boon - Initial contribution
  */
+@NonNullByDefault
 public class VelbusBlindOffPacket extends VelbusPacket {
     private byte channel;
 
@@ -35,5 +37,4 @@ public class VelbusBlindOffPacket extends VelbusPacket {
     protected byte[] getDataBytes() {
         return new byte[] { COMMAND_SWITCH_BLIND_OFF, channel };
     }
-
 }

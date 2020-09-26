@@ -35,8 +35,10 @@ public enum MiIoCommand {
     SET_MODE_BASIC("set_mode"),
     SET_POWER("set_power"),
     SET_BRIGHT("set_bright"),
+    SET_RGB("set_rgb"),
     SET_WIFI_LET("set_wifi_led"),
     SET_FAVORITE("set_level_favorite"),
+    ACTION("action"),
 
     // vacuum commands
     START_VACUUM("app_start"),
@@ -46,6 +48,7 @@ public enum MiIoCommand {
     CHARGE("app_charge"),
     START_ZONE("app_zoned_clean"),
     FIND_ME("find_me"),
+    START_SEGMENT("app_segment_clean"),
 
     CONSUMABLES_GET("get_consumable"),
     CONSUMABLES_RESET("reset_consumable"),
@@ -73,6 +76,7 @@ public enum MiIoCommand {
 
     SET_MODE("set_custom_mode"),
     GET_MODE("get_custom_mode"),
+    SET_WATERBOX_MODE("set_water_box_custom_mode"),
 
     TIMERZONE_SET("set_timezone"),
     TIMERZONE_GET("get_timezone"),
@@ -102,5 +106,4 @@ public enum MiIoCommand {
         }
         return UNKNOWN;
     }
-
 }

@@ -421,7 +421,7 @@ public class DeviceHandler extends BaseThingHandler implements DeviceStatusListe
     @Override
     public synchronized void onDeviceRemoved(GeneralDeviceInformation device) {
         if (device instanceof Device) {
-            this.device = null;
+            this.device = (Device) device;
             if (this.getThing().getStatus().equals(ThingStatus.ONLINE)) {
                 if (!((Device) device).isPresent()) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
@@ -768,7 +768,6 @@ public class DeviceHandler extends BaseThingHandler implements DeviceStatusListe
             updateThing(thingBuilder.build());
             logger.debug("load channel: {} with item: {}", channelTypeUID.getAsString(), acceptedItemType);
         }
-
     }
 
     private ChannelUID getSensorChannelUID(SensorEnum sensorType) {
@@ -935,38 +934,39 @@ public class DeviceHandler extends BaseThingHandler implements DeviceStatusListe
                 // super.updateThing(editThing().build());
             }
         }
-
     }
 
     @Override
     public void onDeviceConfigChanged(ChangeableDeviceConfigEnum whichConfig) {
-        switch (whichConfig) {
-            case DEVICE_NAME:
-                super.updateProperty(DEVICE_NAME, device.getName());
-                break;
-            case METER_DSID:
-                super.updateProperty(DEVICE_METER_ID, device.getMeterDSID().getValue());
-                break;
-            case ZONE_ID:
-                super.updateProperty(DEVICE_ZONE_ID, device.getZoneId() + "");
-                break;
-            case GROUPS:
-                super.updateProperty(DEVICE_GROUPS, device.getGroups().toString());
-                break;
-            case FUNCTIONAL_GROUP:
-                super.updateProperty(DEVICE_FUNCTIONAL_COLOR_GROUP, device.getFunctionalColorGroup().toString());
-                checkOutputChannel();
-                break;
-            case OUTPUT_MODE:
-                super.updateProperty(DEVICE_OUTPUT_MODE, device.getOutputMode().toString());
-                checkOutputChannel();
-                break;
-            case BINARY_INPUTS:
-                super.updateProperty(DEVICE_BINARAY_INPUTS, getBinarayInputList());
-                checkSensorChannel();
-                break;
-            default:
-                break;
+        if (whichConfig != null) {
+            switch (whichConfig) {
+                case DEVICE_NAME:
+                    super.updateProperty(DEVICE_NAME, device.getName());
+                    break;
+                case METER_DSID:
+                    super.updateProperty(DEVICE_METER_ID, device.getMeterDSID().getValue());
+                    break;
+                case ZONE_ID:
+                    super.updateProperty(DEVICE_ZONE_ID, device.getZoneId() + "");
+                    break;
+                case GROUPS:
+                    super.updateProperty(DEVICE_GROUPS, device.getGroups().toString());
+                    break;
+                case FUNCTIONAL_GROUP:
+                    super.updateProperty(DEVICE_FUNCTIONAL_COLOR_GROUP, device.getFunctionalColorGroup().toString());
+                    checkOutputChannel();
+                    break;
+                case OUTPUT_MODE:
+                    super.updateProperty(DEVICE_OUTPUT_MODE, device.getOutputMode().toString());
+                    checkOutputChannel();
+                    break;
+                case BINARY_INPUTS:
+                    super.updateProperty(DEVICE_BINARAY_INPUTS, getBinarayInputList());
+                    checkSensorChannel();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

@@ -15,6 +15,8 @@ package org.openhab.binding.bluetooth;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.bluetooth.BluetoothCharacteristic.GattCharacteristic;
 import org.openhab.binding.bluetooth.notification.BluetoothConnectionStatusNotification;
 
@@ -23,14 +25,15 @@ import org.openhab.binding.bluetooth.notification.BluetoothConnectionStatusNotif
  *
  * @author Connor Petty - Initial contribution
  */
-public class MockBluetoothDevice extends BluetoothDevice {
+@NonNullByDefault
+public class MockBluetoothDevice extends BaseBluetoothDevice {
 
     private AtomicBoolean servicesDiscovered = new AtomicBoolean(false);
 
     /**
      * This is the name that returned in the DEVICE_NAME characteristic
      */
-    private String deviceName = null;
+    private @Nullable String deviceName = null;
 
     public MockBluetoothDevice(BluetoothAdapter adapter, BluetoothAddress address) {
         super(adapter, address);
@@ -89,4 +92,28 @@ public class MockBluetoothDevice extends BluetoothDevice {
         CompletableFuture.runAsync(() -> super.notifyListeners(event, args));
     }
 
+    @Override
+    public boolean writeCharacteristic(BluetoothCharacteristic characteristic) {
+        return false;
+    }
+
+    @Override
+    public boolean enableNotifications(BluetoothCharacteristic characteristic) {
+        return false;
+    }
+
+    @Override
+    public boolean disableNotifications(BluetoothCharacteristic characteristic) {
+        return false;
+    }
+
+    @Override
+    public boolean enableNotifications(BluetoothDescriptor descriptor) {
+        return false;
+    }
+
+    @Override
+    public boolean disableNotifications(BluetoothDescriptor descriptor) {
+        return false;
+    }
 }

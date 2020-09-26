@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import javax.measure.Unit;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -47,10 +46,12 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.CommandOption;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.StateOption;
 import org.eclipse.smarthome.core.types.UnDefType;
+import org.openhab.binding.kodi.internal.KodiDynamicCommandDescriptionProvider;
 import org.openhab.binding.kodi.internal.KodiDynamicStateDescriptionProvider;
 import org.openhab.binding.kodi.internal.KodiEventListener;
 import org.openhab.binding.kodi.internal.KodiPlayerState;
@@ -87,6 +88,7 @@ public class KodiHandler extends BaseThingHandler implements KodiEventListener {
     private final Logger logger = LoggerFactory.getLogger(KodiHandler.class);
 
     private final KodiConnection connection;
+    private final KodiDynamicCommandDescriptionProvider commandDescriptionProvider;
     private final KodiDynamicStateDescriptionProvider stateDescriptionProvider;
 
     private final ChannelUID profileChannelUID;
@@ -94,11 +96,13 @@ public class KodiHandler extends BaseThingHandler implements KodiEventListener {
     private ScheduledFuture<?> connectionCheckerFuture;
     private ScheduledFuture<?> statusUpdaterFuture;
 
-    public KodiHandler(Thing thing, KodiDynamicStateDescriptionProvider stateDescriptionProvider,
-            WebSocketClient webSocketClient, String callbackUrl) {
+    public KodiHandler(Thing thing, KodiDynamicCommandDescriptionProvider commandDescriptionProvider,
+            KodiDynamicStateDescriptionProvider stateDescriptionProvider, WebSocketClient webSocketClient,
+            String callbackUrl) {
         super(thing);
         connection = new KodiConnection(this, webSocketClient, callbackUrl);
 
+        this.commandDescriptionProvider = commandDescriptionProvider;
         this.stateDescriptionProvider = stateDescriptionProvider;
 
         profileChannelUID = new ChannelUID(getThing().getUID(), CHANNEL_PROFILE);
@@ -348,7 +352,8 @@ public class KodiHandler extends BaseThingHandler implements KodiEventListener {
         int httpPort = config.getHttpPort();
         String httpUser = config.getHttpUser();
         String httpPassword = config.getHttpPassword();
-        String userInfo = (StringUtils.isEmpty(httpUser) || StringUtils.isEmpty(httpPassword)) ? null
+        String userInfo = httpUser == null || httpUser.isEmpty() || httpPassword == null || httpPassword.isEmpty()
+                ? null
                 : String.format("%s:%s", httpUser, httpPassword);
         return new URI("http", userInfo, host, httpPort, "/image/", null, null);
     }
@@ -366,9 +371,9 @@ public class KodiHandler extends BaseThingHandler implements KodiEventListener {
         if (favorite != null) {
             String path = favorite.getPath();
             String windowParameter = favorite.getWindowParameter();
-            if (StringUtils.isNotEmpty(path)) {
+            if (path != null && !path.isEmpty()) {
                 connection.playURI(path);
-            } else if (StringUtils.isNotEmpty(windowParameter)) {
+            } else if (windowParameter != null && !windowParameter.isEmpty()) {
                 String[] windowParameters = { windowParameter };
                 connection.activateWindow(favorite.getWindow(), windowParameters);
             } else {
@@ -973,23 +978,23 @@ public class KodiHandler extends BaseThingHandler implements KodiEventListener {
     @Override
     public void updateSystemProperties(KodiSystemProperties systemProperties) {
         if (systemProperties != null) {
-            List<StateOption> options = new ArrayList<>();
+            List<CommandOption> options = new ArrayList<>();
             if (systemProperties.canHibernate()) {
-                options.add(new StateOption(SYSTEM_COMMAND_HIBERNATE, SYSTEM_COMMAND_HIBERNATE));
+                options.add(new CommandOption(SYSTEM_COMMAND_HIBERNATE, SYSTEM_COMMAND_HIBERNATE));
             }
             if (systemProperties.canReboot()) {
-                options.add(new StateOption(SYSTEM_COMMAND_REBOOT, SYSTEM_COMMAND_REBOOT));
+                options.add(new CommandOption(SYSTEM_COMMAND_REBOOT, SYSTEM_COMMAND_REBOOT));
             }
             if (systemProperties.canShutdown()) {
-                options.add(new StateOption(SYSTEM_COMMAND_SHUTDOWN, SYSTEM_COMMAND_SHUTDOWN));
+                options.add(new CommandOption(SYSTEM_COMMAND_SHUTDOWN, SYSTEM_COMMAND_SHUTDOWN));
             }
             if (systemProperties.canSuspend()) {
-                options.add(new StateOption(SYSTEM_COMMAND_SUSPEND, SYSTEM_COMMAND_SUSPEND));
+                options.add(new CommandOption(SYSTEM_COMMAND_SUSPEND, SYSTEM_COMMAND_SUSPEND));
             }
             if (systemProperties.canQuit()) {
-                options.add(new StateOption(SYSTEM_COMMAND_QUIT, SYSTEM_COMMAND_QUIT));
+                options.add(new CommandOption(SYSTEM_COMMAND_QUIT, SYSTEM_COMMAND_QUIT));
             }
-            stateDescriptionProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_SYSTEMCOMMAND),
+            commandDescriptionProvider.setCommandOptions(new ChannelUID(getThing().getUID(), CHANNEL_SYSTEMCOMMAND),
                     options);
         }
     }

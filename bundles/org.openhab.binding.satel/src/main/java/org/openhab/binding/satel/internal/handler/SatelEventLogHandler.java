@@ -129,7 +129,6 @@ public class SatelEventLogHandler extends SatelThingHandler {
             return "EventLogEntry [index=" + index + ", prevIndex=" + prevIndex + ", timestamp=" + timestamp
                     + ", description=" + description + ", details=" + details + "]";
         }
-
     }
 
     public SatelEventLogHandler(Thing thing) {
@@ -292,6 +291,10 @@ public class SatelEventLogHandler extends SatelThingHandler {
                             + DETAILS_SEPARATOR + "ip: " + readEventCmd.getSource() + "."
                             + (readEventCmd.getObject() * 32 + readEventCmd.getUserControlNumber()) + eventDetails;
                     break;
+                case 32:
+                    eventDetails = getDeviceDescription(DeviceType.PARTITION, readEventCmd.getPartition())
+                            + DETAILS_SEPARATOR + getDeviceDescription(DeviceType.ZONE, readEventCmd.getSource());
+                    break;
                 default:
                     logger.info("Unsupported device kind code {} at index {}", eventDesc.getKind(),
                             readEventCmd.getCurrentIndex());
@@ -334,7 +337,6 @@ public class SatelEventLogHandler extends SatelThingHandler {
         int getKind() {
             return descKind;
         }
-
     }
 
     private static class EventDescription extends EventDescriptionCacheEntry {
@@ -344,7 +346,6 @@ public class SatelEventLogHandler extends SatelThingHandler {
             super(eventText, descKind);
             this.readEventCmd = readEventCmd;
         }
-
     }
 
     private EventDescription readEventDescription(ReadEventCommand readEventCmd) {
@@ -418,5 +419,4 @@ public class SatelEventLogHandler extends SatelThingHandler {
         });
         return result == null ? NOT_AVAILABLE_TEXT : result;
     }
-
 }

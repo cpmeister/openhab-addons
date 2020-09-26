@@ -14,7 +14,7 @@ package org.openhab.binding.miio.internal;
 
 import static org.openhab.binding.miio.internal.MiIoBindingConstants.*;
 
-import java.util.Dictionary;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -25,13 +25,13 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.core.thing.type.ChannelTypeRegistry;
 import org.openhab.binding.miio.internal.basic.MiIoDatabaseWatchService;
 import org.openhab.binding.miio.internal.cloud.CloudConnector;
 import org.openhab.binding.miio.internal.handler.MiIoBasicHandler;
 import org.openhab.binding.miio.internal.handler.MiIoGenericHandler;
 import org.openhab.binding.miio.internal.handler.MiIoUnsupportedHandler;
 import org.openhab.binding.miio.internal.handler.MiIoVacuumHandler;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -51,18 +51,14 @@ public class MiIoHandlerFactory extends BaseThingHandlerFactory {
 
     private MiIoDatabaseWatchService miIoDatabaseWatchService;
     private CloudConnector cloudConnector;
+    private ChannelTypeRegistry channelTypeRegistry;
 
     @Activate
-    public MiIoHandlerFactory(@Reference MiIoDatabaseWatchService miIoDatabaseWatchService,
-            @Reference CloudConnector cloudConnector) {
+    public MiIoHandlerFactory(@Reference ChannelTypeRegistry channelTypeRegistry,
+            @Reference MiIoDatabaseWatchService miIoDatabaseWatchService, @Reference CloudConnector cloudConnector,
+            Map<String, Object> properties) {
         this.miIoDatabaseWatchService = miIoDatabaseWatchService;
         this.cloudConnector = cloudConnector;
-    }
-
-    @Override
-    protected void activate(ComponentContext componentContext) {
-        super.activate(componentContext);
-        Dictionary<String, Object> properties = componentContext.getProperties();
         @Nullable
         String username = (String) properties.get("username");
         @Nullable
@@ -71,6 +67,7 @@ public class MiIoHandlerFactory extends BaseThingHandlerFactory {
         String country = (String) properties.get("country");
         cloudConnector.setCredentials(username, password, country);
         scheduler.submit(() -> cloudConnector.isConnected());
+        this.channelTypeRegistry = channelTypeRegistry;
     }
 
     @Override
@@ -88,7 +85,7 @@ public class MiIoHandlerFactory extends BaseThingHandlerFactory {
             return new MiIoBasicHandler(thing, miIoDatabaseWatchService);
         }
         if (thingTypeUID.equals(THING_TYPE_VACUUM)) {
-            return new MiIoVacuumHandler(thing, miIoDatabaseWatchService, cloudConnector);
+            return new MiIoVacuumHandler(thing, miIoDatabaseWatchService, cloudConnector, channelTypeRegistry);
         }
         return new MiIoUnsupportedHandler(thing, miIoDatabaseWatchService);
     }

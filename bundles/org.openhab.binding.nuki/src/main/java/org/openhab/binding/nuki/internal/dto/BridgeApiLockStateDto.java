@@ -17,12 +17,14 @@ package org.openhab.binding.nuki.internal.dto;
  * endpoint.
  *
  * @author Markus Katter - Initial contribution
+ * @contributer Christian Hoefler - Door sensor integration
  */
 public class BridgeApiLockStateDto {
 
     private int state;
     private String stateName;
     private boolean batteryCritical;
+    private int doorsensorState;
     private boolean success;
 
     public int getState() {
@@ -49,6 +51,14 @@ public class BridgeApiLockStateDto {
         this.batteryCritical = batteryCritical;
     }
 
+    public int getDoorsensorState() {
+        return doorsensorState;
+    }
+
+    public void setDoorsensorState(int doorsensorState) {
+        this.doorsensorState = doorsensorState;
+    }
+
     public boolean isSuccess() {
         return success;
     }
@@ -56,5 +66,4 @@ public class BridgeApiLockStateDto {
     public void setSuccess(boolean success) {
         this.success = success;
     }
-
 }

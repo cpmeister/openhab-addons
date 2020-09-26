@@ -12,12 +12,15 @@
  */
 package org.openhab.binding.netatmo.internal;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * This class holds various unit/measurement conversion methods
  *
  * @author Gaël L'hopital - Initial contribution
  * @author Rob Nielsen - updated heat index
  */
+@NonNullByDefault
 public class WeatherUtils {
 
     /**
@@ -80,5 +83,4 @@ public class WeatherUtils {
         result = temperature + 0.555555556 * (result - 10);
         return result;
     }
-
 }

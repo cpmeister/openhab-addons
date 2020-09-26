@@ -47,6 +47,7 @@ import com.google.gson.Gson;
  * The {@link NukiApiServlet} class is responsible for handling the callbacks from the Nuki Bridge.
  *
  * @author Markus Katter - Initial contribution
+ * @contributer Christian Hoefler - Door sensor integration
  */
 public class NukiApiServlet extends HttpServlet {
 
@@ -161,6 +162,11 @@ public class NukiApiServlet extends HttpServlet {
                         State state = bridgeApiLockStateRequestDto.isBatteryCritical() ? OnOffType.ON : OnOffType.OFF;
                         nsh.handleApiServletUpdate(channel.getUID(), state);
                     }
+                    channel = thing.getChannel(NukiBindingConstants.CHANNEL_SMARTLOCK_DOOR_STATE);
+                    if (channel != null) {
+                        State state = new DecimalType(bridgeApiLockStateRequestDto.getDoorsensorState());
+                        nsh.handleApiServletUpdate(channel.getUID(), state);
+                    }
                     setHeaders(response);
                     response.getWriter().println(gson.toJson(new NukiHttpServerStatusResponseDto("OK")));
                     return;
@@ -210,5 +216,4 @@ public class NukiApiServlet extends HttpServlet {
         response.setCharacterEncoding(CHARSET);
         response.setContentType(APPLICATION_JSON);
     }
-
 }

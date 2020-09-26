@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Polygon;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -49,6 +50,8 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class RRMapDraw {
+
+    private static final float MM = 50.0f;
 
     private static final int MAP_OUTSIDE = 0x00;
     private static final int MAP_WALL = 0x01;
@@ -98,6 +101,10 @@ public class RRMapDraw {
 
     public int getHeight() {
         return rmfp.getImgHeight();
+    }
+
+    public RRMapFileParser getMapParseDetails() {
+        return this.rmfp;
     }
 
     /**
@@ -197,8 +204,8 @@ public class RRMapDraw {
             float prvX = 0;
             float prvY = 0;
             for (float[] point : rmfp.getPaths().get(pathType)) {
-                float x = point[0] * scale;
-                float y = point[1] * scale;
+                float x = toXCoord(point[0]) * scale;
+                float y = toYCoord(point[1]) * scale;
                 if (prvX > 1) {
                     g2d.draw(new Line2D.Float(prvX, prvY, x, y));
                 }
@@ -210,10 +217,10 @@ public class RRMapDraw {
 
     private void drawZones(Graphics2D g2d, float scale) {
         for (float[] point : rmfp.getZones()) {
-            float x = point[0] * scale;
-            float y = point[1] * scale;
-            float x1 = point[2] * scale;
-            float y1 = point[3] * scale;
+            float x = toXCoord(point[0]) * scale;
+            float y = toYCoord(point[1]) * scale;
+            float x1 = toXCoord(point[2]) * scale;
+            float y1 = toYCoord(point[3]) * scale;
             float sx = Math.min(x, x1);
             float w = Math.max(x, x1) - sx;
             float sy = Math.min(y, y1);
@@ -226,14 +233,14 @@ public class RRMapDraw {
     private void drawNoGo(Graphics2D g2d, float scale) {
         for (Integer area : rmfp.getAreas().keySet()) {
             for (float[] point : rmfp.getAreas().get(area)) {
-                float x = point[0] * scale;
-                float y = point[1] * scale;
-                float x1 = point[2] * scale;
-                float y1 = point[3] * scale;
-                float x2 = point[4] * scale;
-                float y2 = point[5] * scale;
-                float x3 = point[6] * scale;
-                float y3 = point[7] * scale;
+                float x = toXCoord(point[0]) * scale;
+                float y = toYCoord(point[1]) * scale;
+                float x1 = toXCoord(point[2]) * scale;
+                float y1 = toYCoord(point[3]) * scale;
+                float x2 = toXCoord(point[4]) * scale;
+                float y2 = toYCoord(point[5]) * scale;
+                float x3 = toXCoord(point[6]) * scale;
+                float y3 = toYCoord(point[7]) * scale;
                 Path2D noGo = new Path2D.Float();
                 noGo.moveTo(x, y);
                 noGo.lineTo(x1, y1);
@@ -252,10 +259,10 @@ public class RRMapDraw {
         Stroke stroke = new BasicStroke(3 * scale);
         g2d.setStroke(stroke);
         for (float[] point : rmfp.getWalls()) {
-            float x = point[0] * scale;
-            float y = point[1] * scale;
-            float x1 = point[2] * scale;
-            float y1 = point[3] * scale;
+            float x = toXCoord(point[0]) * scale;
+            float y = toYCoord(point[1]) * scale;
+            float x1 = toXCoord(point[2]) * scale;
+            float y1 = toYCoord(point[3]) * scale;
             g2d.setColor(Color.RED);
             g2d.draw(new Line2D.Float(x, y, x1, y1));
         }
@@ -266,13 +273,17 @@ public class RRMapDraw {
         Stroke stroke = new BasicStroke(2 * scale);
         g2d.setStroke(stroke);
         g2d.setColor(COLOR_CHARGER_HALO);
-        drawCircle(g2d, rmfp.getChargerX() * scale, rmfp.getChargerY() * scale, radius);
-        drawCenteredImg(g2d, scale / 8, "charger.png", rmfp.getChargerX() * scale, rmfp.getChargerY() * scale);
+        final float chargerX = toXCoord(rmfp.getChargerX()) * scale;
+        final float chargerY = toYCoord(rmfp.getChargerY()) * scale;
+        drawCircle(g2d, chargerX, chargerY, radius);
+        drawCenteredImg(g2d, scale / 8, "charger.png", chargerX, chargerY);
         radius = 3 * scale;
         g2d.setColor(COLOR_ROBO);
-        drawCircle(g2d, rmfp.getRoboX() * scale, rmfp.getRoboY() * scale, radius);
+        final float roboX = toXCoord(rmfp.getRoboX()) * scale;
+        final float roboY = toYCoord(rmfp.getRoboY()) * scale;
+        drawCircle(g2d, roboX, roboY, radius);
         if (scale > 1.5) {
-            drawCenteredImg(g2d, scale / 15, "robo.png", rmfp.getRoboX() * scale, rmfp.getRoboY() * scale);
+            drawCenteredImg(g2d, scale / 15, "robo.png", roboX, roboY);
         }
     }
 
@@ -300,8 +311,8 @@ public class RRMapDraw {
     }
 
     private void drawGoTo(Graphics2D g2d, float scale) {
-        float x = rmfp.getGotoX() * scale;
-        float y = rmfp.getGotoY() * scale;
+        float x = toXCoord(rmfp.getGotoX()) * scale;
+        float y = toYCoord(rmfp.getGotoY()) * scale;
         if (!(x == 0 && y == 0)) {
             g2d.setStroke(new BasicStroke());
             g2d.setColor(Color.YELLOW);
@@ -331,19 +342,43 @@ public class RRMapDraw {
         } catch (IOException e) {
             logger.debug("Error loading image ohlogo.png:: {}", e.getMessage());
         }
-        Font font = new Font("Helvetica", Font.BOLD, 14);
+        String fontName = getAvailableFont("Helvetica,Arial,Roboto,Verdana,Times,Serif,Dialog".split(","));
+        if (fontName == null) {
+            return; // no available fonts to draw text
+        }
+        Font font = new Font(fontName, Font.BOLD, 14);
         g2d.setFont(font);
         String message = "Openhab rocks your Xiaomi vacuum!";
         FontMetrics fontMetrics = g2d.getFontMetrics();
         int stringWidth = fontMetrics.stringWidth(message);
         if ((stringWidth + textPos) > rmfp.getImgWidth() * scale) {
-            font = new Font("Helvetica ", Font.BOLD,
+            font = new Font(fontName, Font.BOLD,
                     (int) Math.floor(14 * (rmfp.getImgWidth() * scale - textPos - offset * scale) / stringWidth));
             g2d.setFont(font);
         }
         int stringHeight = fontMetrics.getAscent();
         g2d.setPaint(Color.white);
         g2d.drawString(message, textPos, height - offset * scale - stringHeight / 2);
+    }
+
+    private @Nullable String getAvailableFont(String[] preferedFonts) {
+        final GraphicsEnvironment gEv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        if (gEv == null) {
+            return null;
+        }
+        String[] fonts = gEv.getAvailableFontFamilyNames();
+        if (fonts.length == 0) {
+            return null;
+        }
+        for (int j = 0; j < preferedFonts.length; j++) {
+            for (int i = 0; i < fonts.length; i++) {
+                if (fonts[i].equalsIgnoreCase(preferedFonts[j])) {
+                    return preferedFonts[j];
+                }
+            }
+        }
+        // Preferred fonts not available... just go with the first one
+        return fonts[0];
     }
 
     private @Nullable URL getImageUrl(String image) {
@@ -382,6 +417,14 @@ public class RRMapDraw {
 
     public boolean writePic(String filename, String formatName, float scale) throws IOException {
         return ImageIO.write(getImage(scale), formatName, new File(filename));
+    }
+
+    private float toXCoord(float x) {
+        return rmfp.getImgWidth() + rmfp.getLeft() - (x / MM);
+    }
+
+    private float toYCoord(float y) {
+        return y / MM - rmfp.getTop();
     }
 
     @Override

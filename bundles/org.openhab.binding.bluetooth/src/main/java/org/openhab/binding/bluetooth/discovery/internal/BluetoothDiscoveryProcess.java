@@ -66,7 +66,7 @@ public class BluetoothDiscoveryProcess implements Supplier<DiscoveryResult>, Blu
     private final Condition serviceDiscoveryCondition = serviceDiscoveryLock.newCondition();
     private final Condition infoDiscoveryCondition = serviceDiscoveryLock.newCondition();
 
-    private final BluetoothDevice device;
+    private final BluetoothDeviceSnapshot device;
     private final Collection<BluetoothDiscoveryParticipant> participants;
     private final Set<BluetoothAdapter> adapters;
 
@@ -77,8 +77,8 @@ public class BluetoothDiscoveryProcess implements Supplier<DiscoveryResult>, Blu
      */
     private volatile @Nullable GattCharacteristic ongoingGattCharacteristic;
 
-    public BluetoothDiscoveryProcess(BluetoothDevice device, Collection<BluetoothDiscoveryParticipant> participants,
-            Set<BluetoothAdapter> adapters) {
+    public BluetoothDiscoveryProcess(BluetoothDeviceSnapshot device,
+            Collection<BluetoothDiscoveryParticipant> participants, Set<BluetoothAdapter> adapters) {
         this.participants = participants;
         this.device = device;
         this.adapters = adapters;
@@ -117,7 +117,7 @@ public class BluetoothDiscoveryProcess implements Supplier<DiscoveryResult>, Blu
                         }
                     } catch (RuntimeException ex) {
                         logger.warn("Error occurred during bluetooth discovery for device {} on adapter {}", address,
-                                device.getAdapter().getAddress(), ex);
+                                device.getAdapter().getUID(), ex);
                     }
                 }
             }
@@ -372,4 +372,7 @@ public class BluetoothDiscoveryProcess implements Supplier<DiscoveryResult>, Blu
     public void onDescriptorUpdate(BluetoothDescriptor bluetoothDescriptor) {
     }
 
+    @Override
+    public void onAdapterChanged(BluetoothAdapter adapter) {
+    }
 }

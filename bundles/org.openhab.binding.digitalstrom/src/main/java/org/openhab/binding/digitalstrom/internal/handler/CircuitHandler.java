@@ -180,13 +180,12 @@ public class CircuitHandler extends BaseThingHandler implements DeviceStatusList
                 }
             }
         }
-
     }
 
     @Override
     public void onDeviceRemoved(GeneralDeviceInformation device) {
         if (device instanceof Circuit) {
-            this.circuit = null;
+            this.circuit = (Circuit) device;
             if (this.getThing().getStatus().equals(ThingStatus.ONLINE)) {
                 if (!((Device) circuit).isPresent()) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
@@ -309,5 +308,4 @@ public class CircuitHandler extends BaseThingHandler implements DeviceStatusList
     public String getDeviceStatusListenerID() {
         return this.dSID;
     }
-
 }
