@@ -110,42 +110,51 @@ public class GattChannelHandler {
 
     public List<Channel> buildChannels() {
         List<Channel> channels = new ArrayList<>();
-        Characteristic gattChar = gattParser.getCharacteristic(characteristic.getUuid().toString());
-
         String charUUID = characteristic.getUuid().toString();
+        Characteristic gattChar = gattParser.getCharacteristic(charUUID);
+        if (gattChar != null) {
+            List<Field> fields = gattParser.getFields(charUUID);
 
-        List<Field> fields = gattParser.getFields(charUUID);
-
-        String label = null;
-        // check if the characteristic has only on field, if so use its name as label
-        if (fields.size() == 1) {
-            label = gattParser.getCharacteristic(charUUID).getName();
-        }
-
-        Map<String, List<Field>> fieldsMapping = fields.stream().collect(Collectors.groupingBy(Field::getName));
-
-        for (List<Field> fieldList : fieldsMapping.values()) {
-            if (fieldList.size() > 1) {
-                if (fieldList.get(0).isFlagField() || fieldList.get(0).isOpCodesField()) {
-                    logger.debug("Skipping flags/op codes field: {}.", charUUID);
-                } else {
-                    logger.warn("Multiple fields with the same name found: {} / {}. Skipping these fields.", charUUID,
-                            fieldList.get(0).getName());
-                }
-                continue;
+            String label = null;
+            // check if the characteristic has only on field, if so use its name as label
+            if (fields.size() == 1) {
+                label = gattChar.getName();
             }
-            Field field = fieldList.get(0);
 
-            if (isFieldSupported(field)) {
-                Channel channel = buildFieldChannel(field, label, !gattChar.isValidForWrite());
-                if (channel != null) {
-                    channels.add(channel);
+            Map<String, List<Field>> fieldsMapping = fields.stream().collect(Collectors.groupingBy(Field::getName));
+
+            for (List<Field> fieldList : fieldsMapping.values()) {
+                if (fieldList.size() > 1) {
+                    if (fieldList.get(0).isFlagField() || fieldList.get(0).isOpCodesField()) {
+                        logger.debug("Skipping flags/op codes field: {}.", charUUID);
+                    } else {
+                        logger.warn("Multiple fields with the same name found: {} / {}. Skipping these fields.",
+                                charUUID, fieldList.get(0).getName());
+                    }
+                    continue;
                 }
-            } else {
-                logger.warn("GATT field is not supported: {} / {} / {}", charUUID, field.getName(), field.getFormat());
+                Field field = fieldList.get(0);
+
+                if (isFieldSupported(field)) {
+                    Channel channel = buildFieldChannel(field, label, !gattChar.isValidForWrite());
+                    if (channel != null) {
+                        channels.add(channel);
+                    }
+                } else {
+                    logger.warn("GATT field is not supported: {} / {} / {}", charUUID, field.getName(),
+                            field.getFormat());
+                }
             }
         }
         return channels;
+    }
+
+    public boolean canRead() {
+        return gattParser.isValidForRead(characteristic.getUuid().toString());
+    }
+
+    public boolean canWrite() {
+        return gattParser.isValidForWrite(characteristic.getUuid().toString());
     }
 
     private boolean isAdvanced() {
@@ -174,12 +183,12 @@ public class GattChannelHandler {
 
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(BluetoothBindingConstants.BINDING_ID, channelType);
         return ChannelBuilder.create(channelUID, acceptedType).withType(channelTypeUID)
-                .withProperties(getFieldProperties(field)).withLabel(label).build();
+                .withProperties(getChannelProperties(field.getName())).withLabel(label).build();
     }
 
     private ChannelUID getChannelUID(Field field) {
         String channelId = BluetoothBindingConstants.CHANNEL_CHARACTERISTIC + "-" + characteristic.getUuid() + "-"
-                + field.getName();
+                + BluetoothChannelUtils.encodeFieldName(field.getName());
 
         return new ChannelUID(callback.getThingUID(), channelId);
     }
@@ -190,16 +199,16 @@ public class GattChannelHandler {
         if (index == -1) {
             throw new IllegalArgumentException("ChannelUID '" + channelUID + "' is not a valid GATT channel format");
         }
-        String fieldName = channelId.substring(index + 1);
-        if (fieldName.isEmpty()) {
+        String encodedFieldName = channelId.substring(index + 1);
+        if (encodedFieldName.isEmpty()) {
             return null;
         }
-        return fieldName;
+        return BluetoothChannelUtils.decodeFieldName(encodedFieldName);
     }
 
-    private Map<String, String> getFieldProperties(Field field) {
+    private Map<String, String> getChannelProperties(String fieldName) {
         Map<String, String> properties = new HashMap<>();
-        properties.put(BluetoothBindingConstants.PROPERTY_FIELD_NAME, field.getName());
+        properties.put(BluetoothBindingConstants.PROPERTY_FIELD_NAME, fieldName);
         properties.put(BluetoothBindingConstants.PROPERTY_SERVICE_UUID,
                 characteristic.getService().getUuid().toString());
         properties.put(BluetoothBindingConstants.PROPERTY_CHARACTERISTIC_UUID, characteristic.getUuid().toString());

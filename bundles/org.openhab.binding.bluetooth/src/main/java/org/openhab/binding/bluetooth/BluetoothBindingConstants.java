@@ -41,6 +41,7 @@ public class BluetoothBindingConstants {
 
     public static final String PROPERTY_TXPOWER = "txpower";
     public static final String PROPERTY_MAXCONNECTIONS = "maxconnections";
+    public static final String PROPERTY_SOFTWARE_VERSION = "softwareVersion";
 
     // Field properties
     public static final String PROPERTY_FIELD_NAME = "FieldName";

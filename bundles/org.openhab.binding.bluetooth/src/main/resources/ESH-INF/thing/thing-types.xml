@@ -11,7 +11,7 @@
 			<bridge-type-ref id="bluez"/>
 		</supported-bridge-type-refs>
 
-		<label>Bluetooth Device</label>
+		<label>Beacon Bluetooth Device</label>
 		<description>A generic Bluetooth device in beacon-mode</description>
 		<channels>
 			<channel id="rssi" typeId="rssi"/>

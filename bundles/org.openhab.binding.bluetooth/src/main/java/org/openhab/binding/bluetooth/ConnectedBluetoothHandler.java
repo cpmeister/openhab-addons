@@ -57,11 +57,16 @@ public class ConnectedBluetoothHandler extends BeaconBluetoothHandler {
         super.initialize();
 
         connectionJob = scheduler.scheduleWithFixedDelay(() -> {
-            if (device.getConnectionState() != ConnectionState.CONNECTED) {
-                device.connect();
-                // we do not set the Thing status here, because we will anyhow receive a call to onConnectionStateChange
+            try {
+                if (device.getConnectionState() != ConnectionState.CONNECTED) {
+                    device.connect();
+                    // we do not set the Thing status here, because we will anyhow receive a call to
+                    // onConnectionStateChange
+                }
+                updateRSSI();
+            } catch (RuntimeException ex) {
+                logger.warn("Unexpected error occurred", ex);
             }
-            updateRSSI();
         }, 0, 30, TimeUnit.SECONDS);
     }
 
@@ -71,18 +76,7 @@ public class ConnectedBluetoothHandler extends BeaconBluetoothHandler {
             connectionJob.cancel(true);
             connectionJob = null;
         }
-        scheduler.submit(() -> {
-            try {
-                deviceLock.lock();
-                if (device != null) {
-                    device.removeListener(this);
-                    device.disconnect();
-                    device = null;
-                }
-            } finally {
-                deviceLock.unlock();
-            }
-        });
+        super.dispose();
     }
 
     @Override

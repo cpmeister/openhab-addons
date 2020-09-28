@@ -15,6 +15,8 @@ package org.openhab.binding.bluetooth;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -25,7 +27,9 @@ import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
 import org.eclipse.smarthome.core.types.State;
+import org.openhab.binding.bluetooth.BluetoothDevice.ConnectionState;
 import org.openhab.binding.bluetooth.internal.ChannelHandlerCallback;
 import org.openhab.binding.bluetooth.internal.GattChannelHandler;
 import org.slf4j.Logger;
@@ -47,6 +51,7 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
 
     private final ChannelCallback channelCallback = new ChannelCallback();
     private final BluetoothGattParser gattParser;
+    private @Nullable Future<?> readCharacteristicJob = null;
 
     public GenericBluetoothHandler(Thing thing, BluetoothGattParser gattParser) {
         super(thing);
@@ -54,10 +59,39 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
     }
 
     @Override
+    public void initialize() {
+        super.initialize();
+
+        readCharacteristicJob = scheduler.scheduleWithFixedDelay(() -> {
+            if (device.getConnectionState() == ConnectionState.CONNECTED) {
+                if (resolved) {
+                    for (BluetoothCharacteristic characteristic : deviceCharacteristics) {
+                        device.readCharacteristic(characteristic);
+                    }
+                } else {
+                    // if we are connected and still haven't been able to resolve the services, try disconnecting and
+                    // trying connecting again
+                    device.disconnect();
+                }
+            }
+        }, 15, 30, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        Future<?> future = readCharacteristicJob;
+        if (future != null) {
+            future.cancel(true);
+        }
+    }
+
+    @Override
     public void onServicesDiscovered() {
         if (!resolved) {
             resolved = true;
-            logger.debug("Service discovery completed for '{}'", address);
+            logger.warn("Service discovery completed for '{}'", address);
             updateThingChannels();
         }
     }
@@ -67,7 +101,7 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
         super.onCharacteristicReadComplete(characteristic, status);
         if (status == BluetoothCompletionStatus.SUCCESS) {
             byte[] data = characteristic.getByteValue();
-            channelHandlers.get(characteristic).handleCharacteristicUpdate(data);
+            getGattChannelHandler(characteristic).handleCharacteristicUpdate(data);
         }
     }
 
@@ -75,23 +109,40 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
     public void onCharacteristicUpdate(BluetoothCharacteristic characteristic) {
         super.onCharacteristicUpdate(characteristic);
         byte[] data = characteristic.getByteValue();
-        channelHandlers.get(characteristic).handleCharacteristicUpdate(data);
+        getGattChannelHandler(characteristic).handleCharacteristicUpdate(data);
     }
 
     private void updateThingChannels() {
         List<Channel> channels = device.getServices().stream()//
                 .flatMap(service -> service.getCharacteristics().stream())//
-                .flatMap(characteristic -> buildChannels(characteristic).stream())//
+                .flatMap(characteristic -> {
+                    logger.trace("{} processing characteristic {}", address, characteristic.getUuid());
+                    GattChannelHandler handler = getGattChannelHandler(characteristic);
+                    if (handler.canRead()) {
+                        deviceCharacteristics.add(characteristic);
+                    }
+                    return handler.buildChannels().stream();
+                })//
                 .collect(Collectors.toList());
 
-        Thing newThing = editThing().withChannels(channels).build();
-        updateThing(newThing);
+        ThingBuilder builder = editThing();
+        boolean changed = false;
+        for (Channel channel : channels) {
+            logger.trace("{} attempting to add channel {}", address, channel.getLabel());
+            // we only want to add each channel, not replace all of them
+            if (getThing().getChannel(channel.getUID()) == null) {
+                changed = true;
+                builder.withChannel(channel);
+            }
+        }
+        if (changed) {
+            updateThing(builder.build());
+        }
     }
 
-    private List<Channel> buildChannels(BluetoothCharacteristic characteristic) {
-        GattChannelHandler handler = new GattChannelHandler(channelCallback, gattParser, characteristic);
-        channelHandlers.put(characteristic, handler);
-        return handler.buildChannels();
+    private GattChannelHandler getGattChannelHandler(BluetoothCharacteristic characteristic) {
+        return channelHandlers.computeIfAbsent(characteristic,
+                ch -> new GattChannelHandler(channelCallback, gattParser, ch));
     }
 
     private class ChannelCallback implements ChannelHandlerCallback {

@@ -12,9 +12,9 @@
  */
 package org.openhab.binding.bluetooth.internal;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Optional;
@@ -49,14 +49,17 @@ public class BluetoothChannelUtils {
     private static final Logger logger = LoggerFactory.getLogger(BluetoothChannelUtils.class);
 
     public static String encodeFieldID(Field field) {
-        try {
-            String requirements = Optional.ofNullable(field.getRequirements()).orElse(Collections.emptyList()).stream()
-                    .collect(Collectors.joining());
-            return Base64.getEncoder().encodeToString((field.getName() + requirements).getBytes("UTF-8")).replace("=",
-                    "");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
+        String requirements = Optional.ofNullable(field.getRequirements()).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.joining());
+        return encodeFieldName(field.getName() + requirements);
+    }
+
+    public static String encodeFieldName(String fieldName) {
+        return Base64.getEncoder().encodeToString(fieldName.getBytes(StandardCharsets.UTF_8)).replace("=", "");
+    }
+
+    public static String decodeFieldName(String encodedFieldName) {
+        return new String(Base64.getDecoder().decode(encodedFieldName), StandardCharsets.UTF_8);
     }
 
     public static @Nullable String getItemType(Field field) {
@@ -72,6 +75,11 @@ public class BluetoothChannelUtils {
             case SINT:
             case FLOAT_IEE754:
             case FLOAT_IEE11073:
+                BluetoothUnit unit = BluetoothUnit.findByType(field.getUnit());
+                if (unit != null) {
+                    // TODO
+                    // return "Number:" + unit.getUnit().getDimension();
+                }
                 return "Number";
             case UTF8S:
             case UTF16S:

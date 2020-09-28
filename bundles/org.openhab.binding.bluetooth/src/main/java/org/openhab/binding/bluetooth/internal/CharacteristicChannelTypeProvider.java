@@ -169,7 +169,6 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
     }
 
     private static @Nullable String getUnit(Field field) {
-        // TODO move this to GattParser
         String gattUnit = field.getUnit();
         if (gattUnit != null) {
 
