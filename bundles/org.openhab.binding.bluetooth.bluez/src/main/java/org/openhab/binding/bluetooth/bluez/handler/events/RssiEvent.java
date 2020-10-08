@@ -14,7 +14,7 @@ package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.bluetooth.BluetoothAddress;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -22,7 +22,7 @@ import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
  *
  */
 @NonNullByDefault
-public class RssiEvent extends DBusBlueZEvent {
+public class RssiEvent extends BlueZEvent {
 
     private short rssi;
 

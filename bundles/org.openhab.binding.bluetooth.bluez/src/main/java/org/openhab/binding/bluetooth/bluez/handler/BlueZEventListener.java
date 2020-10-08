@@ -21,9 +21,9 @@ import org.openhab.binding.bluetooth.BluetoothAddress;
  *
  */
 @NonNullByDefault
-public interface DBusBlueZEventListener {
+public interface BlueZEventListener {
 
-    public void onDBusBlueZEvent(DBusBlueZEvent event);
+    public void onDBusBlueZEvent(BlueZEvent event);
 
     public BluetoothAddress getAddress();
 

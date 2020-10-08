@@ -29,7 +29,7 @@ public class DBusBlueZUtilsTest {
 
         // /org/bluez/hci0/dev_A4_34_D9_ED_D3_74/service0026/char0027
 
-        BluetoothAddress addr = DBusBlueZUtils.dbusPathToMac("/org/bluez/dsqdq/dsqdsq/ds/dd");
+        BluetoothAddress addr = BlueZUtils.dbusPathToMac("/org/bluez/dsqdq/dsqdsq/ds/dd");
         assertNull(addr);
 
         // addr = DBusBlueZUtils.dbusPathToMac("/org/bluez/hci0/dev_00!CC!3F!B2!7E!60");
@@ -42,7 +42,7 @@ public class DBusBlueZUtilsTest {
 
         // /org/bluez/hci0/dev_00_CC_3F_B2_7E_60
 
-        BluetoothAddress addr1 = DBusBlueZUtils.dbusPathToMac("/org/bluez/hci0/dev_00_CC_3F_B2_7E_60");
+        BluetoothAddress addr1 = BlueZUtils.dbusPathToMac("/org/bluez/hci0/dev_00_CC_3F_B2_7E_60");
 
         assertNotNull(addr1);
         assertEquals(new BluetoothAddress("00:cc:3f:b2:7e:60".toUpperCase()), addr1);
@@ -54,7 +54,7 @@ public class DBusBlueZUtilsTest {
 
         // /org/bluez/hci0/dev_A4_34_D9_ED_D3_74/service0026/char0027
 
-        BluetoothAddress addr2 = DBusBlueZUtils
+        BluetoothAddress addr2 = BlueZUtils
                 .dbusPathToMac("/org/bluez/hci0/dev_A4_34_D9_ED_D3_74/service0026/char0027");
 
         assertNotNull(addr2);

@@ -25,18 +25,13 @@ import org.openhab.binding.bluetooth.BluetoothAddress;
  *
  */
 @NonNullByDefault
-public class DBusBlueZUtils {
+public class BlueZUtils {
 
-    private DBusBlueZUtils() {
+    private static final Pattern PATTERN_MAC = Pattern.compile("/org/bluez/([^/]+)/dev_([^/]+).*");
+    private static final Pattern PATTERN_ADAPTER_NAME = Pattern.compile("/org/bluez/([^/]+)");
 
-    }
+    private BlueZUtils() {
 
-    public static void sleep(int ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     /**
@@ -46,8 +41,7 @@ public class DBusBlueZUtils {
      * @return
      */
     public static @Nullable BluetoothAddress dbusPathToMac(String dbusPath) {
-        Pattern p = Pattern.compile("/org/bluez/([^/]+)/dev_([^/]+).*");
-        Matcher m = p.matcher(dbusPath);
+        Matcher m = PATTERN_MAC.matcher(dbusPath);
         if (!m.matches()) {
             return null;
         } else {
@@ -57,8 +51,7 @@ public class DBusBlueZUtils {
     }
 
     public static @Nullable String dbusPathToAdapterName(String dbusPath) {
-        Pattern p = Pattern.compile("/org/bluez/([^/]+)");
-        Matcher m = p.matcher(dbusPath);
+        Matcher m = PATTERN_ADAPTER_NAME.matcher(dbusPath);
         if (!m.matches()) {
             return null;
         } else {

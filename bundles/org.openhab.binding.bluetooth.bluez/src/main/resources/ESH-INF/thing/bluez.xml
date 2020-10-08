@@ -5,7 +5,7 @@
 
 	<bridge-type id="bluez">
 		<label>Bluetooth BlueZ Adapter</label>
-		<description>Linux built-in Bluetooth support (DBus)</description>
+		<description>Linux built-in Bluetooth support</description>
 
 		<representation-property>address</representation-property>
 

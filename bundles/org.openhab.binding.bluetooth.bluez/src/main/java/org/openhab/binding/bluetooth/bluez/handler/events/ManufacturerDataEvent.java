@@ -16,7 +16,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.bluetooth.BluetoothAddress;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -24,7 +24,7 @@ import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
  *
  */
 @NonNullByDefault
-public class ManufacturerDataEvent extends DBusBlueZEvent {
+public class ManufacturerDataEvent extends BlueZEvent {
 
     private Map<Short, byte[]> data;
 

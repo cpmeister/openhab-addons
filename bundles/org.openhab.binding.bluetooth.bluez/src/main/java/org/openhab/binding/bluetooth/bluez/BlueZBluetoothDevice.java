@@ -30,9 +30,9 @@ import org.openhab.binding.bluetooth.BluetoothCharacteristic;
 import org.openhab.binding.bluetooth.BluetoothCompletionStatus;
 import org.openhab.binding.bluetooth.BluetoothDescriptor;
 import org.openhab.binding.bluetooth.BluetoothService;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZBridgeHandler;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEventListener;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZBridgeHandler;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEventListener;
 import org.openhab.binding.bluetooth.bluez.handler.events.CharacteristicUpdateEvent;
 import org.openhab.binding.bluetooth.bluez.handler.events.ConnectedEvent;
 import org.openhab.binding.bluetooth.bluez.handler.events.ManufacturerDataEvent;
@@ -57,9 +57,9 @@ import com.github.hypfvieh.bluetooth.wrapper.BluetoothGattService;
  *
  */
 @NonNullByDefault
-public class DBusBlueZBluetoothDevice extends BaseBluetoothDevice implements DBusBlueZEventListener {
+public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEventListener {
 
-    private final Logger logger = LoggerFactory.getLogger(DBusBlueZBluetoothDevice.class);
+    private final Logger logger = LoggerFactory.getLogger(BlueZBluetoothDevice.class);
 
     // Device from native lib
     private com.github.hypfvieh.bluetooth.wrapper.@Nullable BluetoothDevice device = null;
@@ -75,7 +75,7 @@ public class DBusBlueZBluetoothDevice extends BaseBluetoothDevice implements DBu
      * @param address the Bluetooth address of the device
      * @param name the name of the device
      */
-    public DBusBlueZBluetoothDevice(DBusBlueZBridgeHandler adapter, BluetoothAddress address) {
+    public BlueZBluetoothDevice(BlueZBridgeHandler adapter, BluetoothAddress address) {
         super(adapter, address);
         logger.debug("Creating DBusBlueZ device with address '{}'", address);
     }
@@ -242,7 +242,7 @@ public class DBusBlueZBluetoothDevice extends BaseBluetoothDevice implements DBu
     }
 
     @Override
-    public void onDBusBlueZEvent(DBusBlueZEvent event) {
+    public void onDBusBlueZEvent(BlueZEvent event) {
         logger.debug("onDBusBlueZEvent(): {}", event);
 
         switch (event.getEventType()) {

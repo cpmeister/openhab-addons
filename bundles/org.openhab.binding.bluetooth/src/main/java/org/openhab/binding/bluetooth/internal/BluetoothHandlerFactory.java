@@ -20,10 +20,13 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.openhab.binding.bluetooth.BeaconBluetoothHandler;
 import org.openhab.binding.bluetooth.BluetoothBindingConstants;
 import org.openhab.binding.bluetooth.ConnectedBluetoothHandler;
 import org.osgi.service.component.annotations.Component;
+
+import com.github.hypfvieh.bluetooth.DeviceManager;
 
 /**
  * The {@link BluetoothHandlerFactory} is responsible for creating things and thing handlers.
@@ -38,6 +41,8 @@ public class BluetoothHandlerFactory extends BaseThingHandlerFactory {
         SUPPORTED_THING_TYPES_UIDS.add(BluetoothBindingConstants.THING_TYPE_BEACON);
         SUPPORTED_THING_TYPES_UIDS.add(BluetoothBindingConstants.THING_TYPE_CONNECTED);
     }
+
+    private final BlueZPropertiesChangedHandler propertiesChangedHandler = new BlueZPropertiesChangedHandler();
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -56,4 +61,20 @@ public class BluetoothHandlerFactory extends BaseThingHandlerFactory {
 
         return null;
     }
+
+    private static DeviceManager getDeviceManager() throws DBusException {
+        try {
+            // if this is the first call to the library, this call
+            // should throw an exception (that we are catching)
+            return DeviceManager.getInstance();
+
+            // Experimental - seems reuse does not work
+            // this.deviceManager.closeConnection();
+            // DeviceManager.createInstance(false);
+        } catch (IllegalStateException e) {
+            // Exception caused by first call to the library
+            return DeviceManager.createInstance(false);
+        }
+    }
+
 }

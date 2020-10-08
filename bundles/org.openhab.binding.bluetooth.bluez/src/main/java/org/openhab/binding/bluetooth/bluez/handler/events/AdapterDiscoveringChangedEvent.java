@@ -12,14 +12,14 @@
  */
 package org.openhab.binding.bluetooth.bluez.handler.events;
 
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
  * @author Benjamin Lafois - Initial Contribution
  *
  */
-public class AdapterDiscoveringChangedEvent extends DBusBlueZEvent {
+public class AdapterDiscoveringChangedEvent extends BlueZEvent {
 
     private boolean discovering;
 

@@ -14,7 +14,7 @@ package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.bluetooth.BluetoothAddress;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -22,7 +22,7 @@ import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
  *
  */
 @NonNullByDefault
-public class TXPowerEvent extends DBusBlueZEvent {
+public class TXPowerEvent extends BlueZEvent {
 
     private short txPower;
 

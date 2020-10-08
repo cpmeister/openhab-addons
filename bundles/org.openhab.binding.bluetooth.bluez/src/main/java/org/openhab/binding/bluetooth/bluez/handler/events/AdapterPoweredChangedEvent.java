@@ -13,7 +13,7 @@
 package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -21,7 +21,7 @@ import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZEvent;
  *
  */
 @NonNullByDefault
-public class AdapterPoweredChangedEvent extends DBusBlueZEvent {
+public class AdapterPoweredChangedEvent extends BlueZEvent {
 
     private boolean powered;
 

@@ -25,9 +25,10 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.openhab.binding.bluetooth.AbstractBluetoothBridgeHandler;
 import org.openhab.binding.bluetooth.BluetoothAddress;
-import org.openhab.binding.bluetooth.bluez.DBusBlueZBluetoothDevice;
+import org.openhab.binding.bluetooth.bluez.BlueZBluetoothDevice;
 import org.openhab.binding.bluetooth.bluez.handler.events.AdapterDiscoveringChangedEvent;
 import org.openhab.binding.bluetooth.bluez.handler.events.AdapterPoweredChangedEvent;
+import org.openhab.binding.bluetooth.bluez.internal.BlueZPropertiesChangedHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,18 +37,18 @@ import com.github.hypfvieh.bluetooth.wrapper.BluetoothAdapter;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice;
 
 /**
- * The {@link DBusBlueZBridgeHandler} is responsible for talking to the BlueZ stack, using DBus Unix Socket.
+ * The {@link BlueZBridgeHandler} is responsible for talking to the BlueZ stack, using DBus Unix Socket.
  * This Binding does not use any JNI.
- * It provides a private interface for {@link DBusBlueZBluetoothDevice}s to access the stack and provides top
+ * It provides a private interface for {@link BlueZBluetoothDevice}s to access the stack and provides top
  * level adaptor functionality for scanning and arbitration.
  *
  * @author Benjamin Lafois - Initial contribution and API
  */
 @NonNullByDefault
-public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusBlueZBluetoothDevice>
-        implements DBusBlueZEventListener {
+public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBluetoothDevice>
+        implements BlueZEventListener {
 
-    private final Logger logger = LoggerFactory.getLogger(DBusBlueZBridgeHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(BlueZBridgeHandler.class);
 
     // ADAPTER from BlueZ-DBus Library
     private @NonNullByDefault({}) BluetoothAdapter adapter;
@@ -56,7 +57,7 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
     // Our BT address
     private @NonNullByDefault({}) BluetoothAddress adapterAddress;
 
-    private DBusBlueZPropertiesChangedHandler propertiesChangedHandler = new DBusBlueZPropertiesChangedHandler();
+    private BlueZPropertiesChangedHandler propertiesChangedHandler = new BlueZPropertiesChangedHandler();
 
     private final ReentrantLock lockDiscoveryJob = new ReentrantLock();
 
@@ -78,14 +79,34 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
      *
      * @param bridge the bridge definition for this handler
      */
-    public DBusBlueZBridgeHandler(Bridge bridge) {
+    public BlueZBridgeHandler(Bridge bridge) {
         super(bridge);
     }
 
     @Override
     public void initialize() {
         super.initialize();
-        initializeInternal();
+
+        // Load configuration
+        final BlueZAdapterConfiguration configuration = getConfigAs(BlueZAdapterConfiguration.class);
+        if (configuration.address != null) {
+            this.adapterAddress = new BluetoothAddress(configuration.address.toUpperCase());
+        } else {
+            // If configuration does not contain adapter address to use, exit with error.
+            logger.info("Adapter MAC address not provided");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "address not set");
+            return;
+        }
+
+        logger.debug("Creating BlueZ adapter with address '{}'", adapterAddress);
+
+        if (!initializeDeviceManager()) {
+            // Device manager not initialized so exiting.
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR, "Library error.");
+            return;
+        }
+
+        initializeAdapter();
     }
 
     /**
@@ -100,15 +121,11 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
         propertiesChangedHandler.addListener(this);
 
         try {
-            initializeDeviceManagerInternal();
+            this.deviceManager = getDeviceManager();
         } catch (DBusException e1) {
-            logger.error("failed create instance caused by D-BUS.", e1);
+            logger.warn("failed create instance caused by D-BUS.", e1);
             return false;
         }
-
-        // This call will return for sure the DM, otherwize createInstance
-        // would have failed previously
-        this.deviceManager = DeviceManager.getInstance();
 
         if (this.deviceManager != null) {
             logger.debug("Device Manager correctly instanciated");
@@ -143,18 +160,18 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
         return (this.deviceManager != null);
     }
 
-    private void initializeDeviceManagerInternal() throws DBusException {
+    private static DeviceManager getDeviceManager() throws DBusException {
         try {
             // if this is the first call to the library, this call
             // should throw an exception (that we are catching)
-            this.deviceManager = DeviceManager.getInstance();
+            return DeviceManager.getInstance();
 
             // Experimental - seems reuse does not work
             // this.deviceManager.closeConnection();
             // DeviceManager.createInstance(false);
         } catch (IllegalStateException e) {
             // Exception caused by first call to the library
-            DeviceManager.createInstance(false);
+            return DeviceManager.createInstance(false);
         }
     }
 
@@ -204,30 +221,6 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
         }
 
         return false;
-    }
-
-    private void initializeInternal() {
-
-        // Load configuration
-        final DBusBlueZAdapterConfiguration configuration = getConfigAs(DBusBlueZAdapterConfiguration.class);
-        if (configuration.address != null) {
-            this.adapterAddress = new BluetoothAddress(configuration.address.toUpperCase());
-        } else {
-            // If configuration does not contain adapter address to use, exit with error.
-            logger.info("Adapter MAC address not provided");
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "address not set");
-            return;
-        }
-
-        logger.debug("Creating BlueZ adapter with address '{}'", adapterAddress);
-
-        if (!initializeDeviceManager()) {
-            // Device manager not initialized so exiting.
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR, "Library error.");
-            return;
-        }
-
-        initializeAdapter();
     }
 
     /**
@@ -335,7 +328,7 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
                         // For some reasons, sometimes the address is null..
                         continue;
                     }
-                    DBusBlueZBluetoothDevice device = getDevice(new BluetoothAddress(dBusBlueZDevice.getAddress()));
+                    BlueZBluetoothDevice device = getDevice(new BluetoothAddress(dBusBlueZDevice.getAddress()));
                     device.updateDBusBlueZDevice(dBusBlueZDevice);
                     deviceDiscovered(device);
                 }
@@ -357,15 +350,15 @@ public class DBusBlueZBridgeHandler extends AbstractBluetoothBridgeHandler<DBusB
     }
 
     @Override
-    protected DBusBlueZBluetoothDevice createDevice(BluetoothAddress address) {
+    protected BlueZBluetoothDevice createDevice(BluetoothAddress address) {
         logger.debug("createDevice {}", address);
-        DBusBlueZBluetoothDevice device = new DBusBlueZBluetoothDevice(this, address);
+        BlueZBluetoothDevice device = new BlueZBluetoothDevice(this, address);
         this.propertiesChangedHandler.addListener(device);
         return device;
     }
 
     @Override
-    public void onDBusBlueZEvent(DBusBlueZEvent event) {
+    public void onDBusBlueZEvent(BlueZEvent event) {
         String adapterName = event.getAdapter();
         logger.debug("Adapter name: {}", adapterName);
         if (adapterName == null) {

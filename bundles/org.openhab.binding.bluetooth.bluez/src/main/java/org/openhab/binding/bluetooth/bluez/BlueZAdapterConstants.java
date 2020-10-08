@@ -17,22 +17,22 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.openhab.binding.bluetooth.BluetoothBindingConstants;
 
 /**
- * The {@link DBusBlueZAdapterConstants} class defines common constants, which are
+ * The {@link BlueZAdapterConstants} class defines common constants, which are
  * used across the whole binding.
  *
  * @author Benjamin Lafois - Initial contribution and API
  */
 @NonNullByDefault
-public class DBusBlueZAdapterConstants {
+public class BlueZAdapterConstants {
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_DBUSBLUEZ = new ThingTypeUID(BluetoothBindingConstants.BINDING_ID,
+    public static final ThingTypeUID THING_TYPE_BLUEZ = new ThingTypeUID(BluetoothBindingConstants.BINDING_ID,
             "bluez");
 
     // Properties
     public static final String PROPERTY_ADDRESS = "address";
 
-    private DBusBlueZAdapterConstants() {
+    private BlueZAdapterConstants() {
     }
 
 }

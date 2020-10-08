@@ -27,22 +27,22 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.bluetooth.BluetoothAdapter;
-import org.openhab.binding.bluetooth.bluez.DBusBlueZAdapterConstants;
-import org.openhab.binding.bluetooth.bluez.handler.DBusBlueZBridgeHandler;
+import org.openhab.binding.bluetooth.bluez.BlueZAdapterConstants;
+import org.openhab.binding.bluetooth.bluez.handler.BlueZBridgeHandler;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * The {@link DBusBlueZHandlerFactory} is responsible for creating things and thing
+ * The {@link BlueZHandlerFactory} is responsible for creating things and thing
  * handlers.
  *
  * @author Benjamin Lafois - Initial contribution and API
  */
 @Component(service = ThingHandlerFactory.class, configurationPid = "binding.bluetooth.dbusbluez")
-public class DBusBlueZHandlerFactory extends BaseThingHandlerFactory {
+public class BlueZHandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(DBusBlueZAdapterConstants.THING_TYPE_DBUSBLUEZ);
+            .singleton(BlueZAdapterConstants.THING_TYPE_BLUEZ);
 
     private final Map<ThingUID, ServiceRegistration<?>> serviceRegs = new HashMap<>();
 
@@ -55,8 +55,8 @@ public class DBusBlueZHandlerFactory extends BaseThingHandlerFactory {
     protected ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (thingTypeUID.equals(DBusBlueZAdapterConstants.THING_TYPE_DBUSBLUEZ)) {
-            DBusBlueZBridgeHandler handler = new DBusBlueZBridgeHandler((Bridge) thing);
+        if (thingTypeUID.equals(BlueZAdapterConstants.THING_TYPE_BLUEZ)) {
+            BlueZBridgeHandler handler = new BlueZBridgeHandler((Bridge) thing);
             registerBluetoothAdapter(handler);
             return handler;
         } else {
