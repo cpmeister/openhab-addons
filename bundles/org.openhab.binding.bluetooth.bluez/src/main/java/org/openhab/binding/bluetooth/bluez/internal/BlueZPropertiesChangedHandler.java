@@ -62,9 +62,7 @@ public class BlueZPropertiesChangedHandler extends AbstractPropertiesChangedHand
 
     private void notifyListeners(BlueZEvent event) {
         for (BlueZEventListener listener : this.listeners) {
-            if (listener.getAddress().equals(event.getDevice())) {
-                listener.onDBusBlueZEvent(event);
-            }
+            listener.onDBusBlueZEvent(event);
         }
     }
 
@@ -120,7 +118,6 @@ public class BlueZPropertiesChangedHandler extends AbstractPropertiesChangedHand
 
         logger.debug("PropertiesPath: {}", properties.getPath());
         logger.debug("PropertiesChanged: {}", properties.getPropertiesChanged());
-
     }
 
     private void onDiscoveringUpdate(String dbusPath, boolean discovering) {
@@ -203,5 +200,4 @@ public class BlueZPropertiesChangedHandler extends AbstractPropertiesChangedHand
             notifyListeners(event);
         }
     }
-
 }

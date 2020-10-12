@@ -97,15 +97,6 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
     }
 
     @Override
-    public BluetoothAddress getAddress() {
-        BluetoothAddress address = adapterAddress;
-        if (address == null) {
-            throw new IllegalStateException();
-        }
-        return address;
-    }
-
-    @Override
     public void dispose() {
         deviceManagerFactory.getPropertiesChangedHandler().removeListener(this);
         logger.debug("Termination of DBus BlueZ handler");
@@ -198,6 +189,11 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
     }
 
     @Override
+    public @Nullable BluetoothAddress getAddress() {
+        return adapterAddress;
+    }
+
+    @Override
     protected BlueZBluetoothDevice createDevice(BluetoothAddress address) {
         logger.debug("createDevice {}", address);
         BlueZBluetoothDevice device = new BlueZBluetoothDevice(this, address);
@@ -240,14 +236,11 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
                     break;
             }
         }
-
     }
 
     private void onDiscoveringChanged(AdapterDiscoveringChangedEvent event) {
-
     }
 
     private void onPoweredChange(AdapterPoweredChangedEvent event) {
     }
-
 }

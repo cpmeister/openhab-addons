@@ -4,7 +4,6 @@
 
 	<feature name="openhab-binding-bluetooth-bluuki" description="Bluetooth Binding Blukii" version="${project.version}">
 		<feature>openhab-runtime-base</feature>
-		<feature>openhab-transport-serial</feature>
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.binding.bluetooth/${project.version}</bundle>
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.binding.bluetooth.blukii/${project.version}</bundle>
 	</feature>

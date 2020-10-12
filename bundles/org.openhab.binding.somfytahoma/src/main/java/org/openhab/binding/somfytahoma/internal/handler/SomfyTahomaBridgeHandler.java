@@ -32,12 +32,13 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import org.eclipse.smarthome.config.core.status.ConfigStatusMessage;
 import org.eclipse.smarthome.core.thing.*;
-import org.eclipse.smarthome.core.thing.binding.ConfigStatusBridgeHandler;
+import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
+import org.eclipse.smarthome.core.thing.binding.ThingHandlerService;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.io.net.http.HttpClientFactory;
 import org.openhab.binding.somfytahoma.internal.config.SomfyTahomaConfig;
+import org.openhab.binding.somfytahoma.internal.discovery.SomfyTahomaItemDiscoveryService;
 import org.openhab.binding.somfytahoma.internal.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ import com.google.gson.JsonSyntaxException;
  * @author Ondrej Pecta - Initial contribution
  */
 @NonNullByDefault
-public class SomfyTahomaBridgeHandler extends ConfigStatusBridgeHandler {
+public class SomfyTahomaBridgeHandler extends BaseBridgeHandler {
 
     private final Logger logger = LoggerFactory.getLogger(SomfyTahomaBridgeHandler.class);
 
@@ -307,8 +308,8 @@ public class SomfyTahomaBridgeHandler extends ConfigStatusBridgeHandler {
     }
 
     @Override
-    public Collection<ConfigStatusMessage> getConfigStatus() {
-        return Collections.emptyList();
+    public Collection<Class<? extends ThingHandlerService>> getServices() {
+        return Collections.singleton(SomfyTahomaItemDiscoveryService.class);
     }
 
     @Override
@@ -321,12 +322,10 @@ public class SomfyTahomaBridgeHandler extends ConfigStatusBridgeHandler {
         logger.debug("Doing cleanup");
         stopPolling();
         executions.clear();
-        if (httpClient != null) {
-            try {
-                httpClient.stop();
-            } catch (Exception e) {
-                logger.debug("Error during http client stopping", e);
-            }
+        try {
+            httpClient.stop();
+        } catch (Exception e) {
+            logger.debug("Error during http client stopping", e);
         }
     }
 
@@ -342,17 +341,17 @@ public class SomfyTahomaBridgeHandler extends ConfigStatusBridgeHandler {
      * Stops this thing's polling future
      */
     private void stopPolling() {
-        if (pollFuture != null && !pollFuture.isCancelled()) {
-            pollFuture.cancel(true);
-            pollFuture = null;
+        ScheduledFuture<?> localPollFuture = pollFuture;
+        if (localPollFuture != null && !localPollFuture.isCancelled()) {
+            localPollFuture.cancel(true);
         }
-        if (statusFuture != null && !statusFuture.isCancelled()) {
-            statusFuture.cancel(true);
-            statusFuture = null;
+        ScheduledFuture<?> localStatusFuture = statusFuture;
+        if (localStatusFuture != null && !localStatusFuture.isCancelled()) {
+            localStatusFuture.cancel(true);
         }
-        if (reconciliationFuture != null && !reconciliationFuture.isCancelled()) {
-            reconciliationFuture.cancel(true);
-            reconciliationFuture = null;
+        ScheduledFuture<?> localReconciliationFuture = reconciliationFuture;
+        if (localReconciliationFuture != null && !localReconciliationFuture.isCancelled()) {
+            localReconciliationFuture.cancel(true);
         }
     }
 
@@ -752,7 +751,8 @@ public class SomfyTahomaBridgeHandler extends ConfigStatusBridgeHandler {
                 return th.getProperties().get(NAME_STATE).replace("\"", "");
             }
             // Return label from OH2
-            return th.getLabel() != null ? th.getLabel().replace("\"", "") : "";
+            String label = th.getLabel();
+            return label != null ? label.replace("\"", "") : "";
         }
         return "null";
     }

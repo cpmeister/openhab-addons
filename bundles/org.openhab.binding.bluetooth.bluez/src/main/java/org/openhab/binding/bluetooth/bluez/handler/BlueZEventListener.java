@@ -13,7 +13,6 @@
 package org.openhab.binding.bluetooth.bluez.handler;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.BluetoothAddress;
 
 /**
  *
@@ -24,7 +23,4 @@ import org.openhab.binding.bluetooth.BluetoothAddress;
 public interface BlueZEventListener {
 
     public void onDBusBlueZEvent(BlueZEvent event);
-
-    public BluetoothAddress getAddress();
-
 }

@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public abstract class SomfyTahomaBaseThingHandler extends BaseThingHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(SomfyTahomaBaseThingHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private HashMap<String, Integer> typeTable = new HashMap<>();
     protected HashMap<String, String> stateNames = new HashMap<>();
 
@@ -121,39 +121,45 @@ public abstract class SomfyTahomaBaseThingHandler extends BaseThingHandler {
     }
 
     protected void sendCommand(String cmd, String param) {
-        if (getBridgeHandler() != null) {
-            getBridgeHandler().sendCommand(url, cmd, param);
+        SomfyTahomaBridgeHandler handler = getBridgeHandler();
+        if (handler != null) {
+            handler.sendCommand(url, cmd, param);
         }
     }
 
     protected void refresh(String channel) {
-        if (getBridgeHandler() != null && stateNames.containsKey(channel)) {
-            getBridgeHandler().refresh(url, stateNames.get(channel));
+        SomfyTahomaBridgeHandler handler = getBridgeHandler();
+        if (handler != null && stateNames.containsKey(channel)) {
+            handler.refresh(url, stateNames.get(channel));
         }
     }
 
     protected void executeActionGroup() {
-        if (getBridgeHandler() != null) {
-            getBridgeHandler().executeActionGroup(url);
+        SomfyTahomaBridgeHandler handler = getBridgeHandler();
+        if (handler != null) {
+            handler.executeActionGroup(url);
         }
     }
 
     protected @Nullable String getCurrentExecutions() {
-        if (getBridgeHandler() != null) {
-            return getBridgeHandler().getCurrentExecutions(url);
+        SomfyTahomaBridgeHandler handler = getBridgeHandler();
+        if (handler != null) {
+            return handler.getCurrentExecutions(url);
         }
         return null;
     }
 
     protected void cancelExecution(String executionId) {
-        if (getBridgeHandler() != null) {
-            getBridgeHandler().cancelExecution(executionId);
+        SomfyTahomaBridgeHandler handler = getBridgeHandler();
+        if (handler != null) {
+            handler.cancelExecution(executionId);
         }
     }
 
     protected SomfyTahomaStatus getTahomaStatus(String id) {
-        if (getBridgeHandler() != null) {
-            return getBridgeHandler().getTahomaStatus(id);
+        SomfyTahomaBridgeHandler handler = getBridgeHandler();
+        if (handler != null) {
+            return handler.getTahomaStatus(id);
         }
         return new SomfyTahomaStatus();
     }

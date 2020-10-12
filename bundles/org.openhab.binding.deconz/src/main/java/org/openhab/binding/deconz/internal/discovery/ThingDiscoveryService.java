@@ -33,6 +33,7 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerService;
+import org.openhab.binding.deconz.internal.Util;
 import org.openhab.binding.deconz.internal.dto.BridgeFullState;
 import org.openhab.binding.deconz.internal.dto.LightMessage;
 import org.openhab.binding.deconz.internal.dto.SensorMessage;
@@ -120,16 +121,16 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
         properties.put(Thing.PROPERTY_MODEL_ID, light.modelid);
 
         if (light.ctmax != null && light.ctmin != null) {
-            int ctmax = (light.ctmax > ZCL_CT_MAX) ? ZCL_CT_MAX : light.ctmax;
-            properties.put(PROPERTY_CT_MAX, Integer.toString(ctmax));
-
-            int ctmin = (light.ctmin < ZCL_CT_MIN) ? ZCL_CT_MIN : light.ctmin;
-            properties.put(PROPERTY_CT_MIN, Integer.toString(ctmin));
+            properties.put(PROPERTY_CT_MAX,
+                    Integer.toString(Util.constrainToRange(light.ctmax, ZCL_CT_MIN, ZCL_CT_MAX)));
+            properties.put(PROPERTY_CT_MIN,
+                    Integer.toString(Util.constrainToRange(light.ctmin, ZCL_CT_MIN, ZCL_CT_MAX)));
         }
 
         switch (lightType) {
             case ON_OFF_LIGHT:
             case ON_OFF_PLUGIN_UNIT:
+            case SMART_PLUG:
                 thingTypeUID = THING_TYPE_ONOFF_LIGHT;
                 break;
             case DIMMABLE_LIGHT:
@@ -149,13 +150,16 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
             case WINDOW_COVERING_DEVICE:
                 thingTypeUID = THING_TYPE_WINDOW_COVERING;
                 break;
+            case WARNING_DEVICE:
+                thingTypeUID = THING_TYPE_WARNING_DEVICE;
+                break;
             case CONFIGURATION_TOOL:
                 // ignore configuration tool device
                 return;
             default:
                 logger.debug(
                         "Found light: {} ({}), type {} but no thing type defined for that type. This should be reported.",
-                        light.modelid, light.name, lightType);
+                        light.modelid, light.name, light.type);
                 return;
         }
 
@@ -188,7 +192,11 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
         } else if (sensor.type.contains("Presence")) { // ZHAPresence, CLIPPrensence
             thingTypeUID = THING_TYPE_PRESENCE_SENSOR;
         } else if (sensor.type.contains("Switch")) { // ZHASwitch
-            thingTypeUID = THING_TYPE_SWITCH;
+            if (sensor.modelid.contains("RGBW")) {
+                thingTypeUID = THING_TYPE_COLOR_CONTROL;
+            } else {
+                thingTypeUID = THING_TYPE_SWITCH;
+            }
         } else if (sensor.type.contains("LightLevel")) { // ZHALightLevel
             thingTypeUID = THING_TYPE_LIGHT_SENSOR;
         } else if (sensor.type.contains("ZHATemperature")) { // ZHATemperature

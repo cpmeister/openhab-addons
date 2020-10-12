@@ -34,6 +34,8 @@ public enum HomekitAccessoryType {
     MOTION_SENSOR("MotionSensor"),
     OCCUPANCY_SENSOR("OccupancySensor"),
     WINDOW_COVERING("WindowCovering"),
+    DOOR("Door"),
+    WINDOW("Window"),
     SMOKE_SENSOR("SmokeSensor"),
     CARBON_MONOXIDE_SENSOR("CarbonMonoxideSensor"),
     CARBON_DIOXIDE_SENSOR("CarbonDioxideSensor"),
@@ -44,6 +46,8 @@ public enum HomekitAccessoryType {
     SPEAKER("Speaker"),
     GARAGE_DOOR_OPENER("GarageDoorOpener"),
     HEATER_COOLER("HeaterCooler"),
+    LIGHT_SENSOR("LightSensor"),
+    AIR_QUALITY_SENSOR("AirQualitySensor"),
     DUMMY("Dummy"),
     @Deprecated()
     BLINDS("Blinds"),

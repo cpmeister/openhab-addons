@@ -56,7 +56,7 @@ public class KeypadMessage extends ADMessage {
 
     public KeypadMessage(String message) throws IllegalArgumentException {
         super(message);
-        List<String> parts = splitMsg(message);
+        List<String> parts = splitMsg(message.replace("!KPM:", ""));
 
         if (parts.size() != 4) {
             throw new IllegalArgumentException("Invalid number of parts in keypad message");
@@ -125,10 +125,10 @@ public class KeypadMessage extends ADMessage {
     }
 
     /**
-     * Returns an int containing the address mask of the message
+     * Returns a long containing the address mask of the message
      */
-    public int getIntAddressMask() {
-        return Integer.parseInt(getAddressMask(), 16);
+    public long getLongAddressMask() {
+        return Long.parseLong(getAddressMask(), 16);
     }
 
     /**
