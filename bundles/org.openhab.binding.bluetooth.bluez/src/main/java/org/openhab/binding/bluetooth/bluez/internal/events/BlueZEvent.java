@@ -21,7 +21,7 @@ import org.openhab.binding.bluetooth.BluetoothAddress;
 
 /**
  *
- * @author Benjamin Lafois
+ * @author Benjamin Lafois - Initial Contribution
  *
  */
 @NonNullByDefault

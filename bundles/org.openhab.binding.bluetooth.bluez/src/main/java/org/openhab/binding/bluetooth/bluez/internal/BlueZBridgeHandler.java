@@ -13,7 +13,6 @@
 package org.openhab.binding.bluetooth.bluez.internal;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -93,7 +92,7 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
 
         deviceManagerFactory.getPropertiesChangedHandler().addListener(this);
 
-        discoveryJob = scheduler.scheduleWithFixedDelay(this::initializeAndRefreshDevices, 0, 10, TimeUnit.SECONDS);
+        discoveryJob = scheduler.scheduleWithFixedDelay(this::initializeAndRefreshDevices, 5, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -116,11 +115,15 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
     }
 
     private static @Nullable BluetoothAdapter findAdapter(DeviceManager deviceManager, String address) {
-        return Optional.ofNullable(deviceManager.getAdapters()).flatMap(adapters -> {
-            return adapters.stream().filter(
-                    btAdapter -> btAdapter.getAddress() != null && btAdapter.getAddress().equalsIgnoreCase(address))
-                    .findFirst();
-        }).orElse(null);
+        List<BluetoothAdapter> adapters = deviceManager.getAdapters();
+        if (adapters != null) {
+            for (BluetoothAdapter btAdapter : adapters) {
+                if (btAdapter.getAddress() != null && btAdapter.getAddress().equalsIgnoreCase(address)) {
+                    return btAdapter;
+                }
+            }
+        }
+        return null;
     }
 
     private boolean validateAdapter(DeviceManager deviceManager) {
@@ -145,8 +148,8 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
 
         // now lets make sure that discovery is turned on
         if (!Boolean.TRUE.equals(localAdapter.isDiscovering())) {
-            localAdapter.startDiscovery();
             // we will check for devices next time around
+            localAdapter.startDiscovery();
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.DUTY_CYCLE, "Starting discovery");
             return false;
         }
@@ -170,8 +173,10 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
             }
 
             // now lets refresh devices
-            List<BluetoothDevice> bluezDevices = deviceManager.getDevices(adapterAddress.toString());
+            List<BluetoothDevice> bluezDevices = deviceManager.getDevices(adapterAddress.toString(), true);
+            logger.debug("Found {} Bluetooth devices.", bluezDevices.size());
             for (BluetoothDevice bluezDevice : bluezDevices) {
+                // logger.debug("discovered device {}", bluezDevice);
                 if (bluezDevice.getAddress() == null) {
                     // For some reasons, sometimes the address is null..
                     continue;
@@ -181,9 +186,10 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
                 deviceDiscovered(device);
             }
             updateStatus(ThingStatus.ONLINE);
-        } catch (RuntimeException ex) {
+        } catch (Exception ex) {
             // don't know what kind of exception the bluez library might throw at us so lets catch them here so our
             // scheduler loop doesn't get terminated
+            logger.warn("Unknown exception", ex);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, ex.getMessage());
         }
     }
@@ -205,14 +211,15 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
 
         BluetoothAdapter localAdapter = this.adapter;
         String adapterName = event.getAdapterName();
-        logger.debug("Adapter name: {}", adapterName);
         if (adapterName == null || localAdapter == null) {
             // We cannot be sure that this event concerns this adapter.. So ignore message
             return;
         }
-        String localName = localAdapter.getName();
+        String localName = localAdapter.getDeviceName();
 
-        logger.debug("AdapterPoweredChangedEvent. Adapter={}. AdapterBridge={}", adapterName, localName);
+        // logger.debug("Received event {}. Adapter={}. AdapterBridge={}", event.getClass().getSimpleName(),
+        // adapterName,
+        // localName);
         if (!adapterName.equals(localName)) {
             // does not concern this adapter
             return;

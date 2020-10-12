@@ -59,11 +59,17 @@ public class ConnectedBluetoothHandler extends BeaconBluetoothHandler {
         connectionJob = scheduler.scheduleWithFixedDelay(() -> {
             try {
                 if (device.getConnectionState() != ConnectionState.CONNECTED) {
+                    updateRSSI();
                     device.connect();
                     // we do not set the Thing status here, because we will anyhow receive a call to
                     // onConnectionStateChange
+                } else {
+                    // just in case it was already connected to begin with
+                    updateStatus(ThingStatus.ONLINE);
+                    if (!resolved && !device.discoverServices()) {
+                        logger.debug("Error while discovering services");
+                    }
                 }
-                updateRSSI();
             } catch (RuntimeException ex) {
                 logger.warn("Unexpected error occurred", ex);
             }

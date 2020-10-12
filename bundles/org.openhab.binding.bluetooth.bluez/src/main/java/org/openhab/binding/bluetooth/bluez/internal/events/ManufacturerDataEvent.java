@@ -18,7 +18,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  *
- * @author Benjamin Lafois
+ * @author Benjamin Lafois - Initial Contribution
  *
  */
 @NonNullByDefault

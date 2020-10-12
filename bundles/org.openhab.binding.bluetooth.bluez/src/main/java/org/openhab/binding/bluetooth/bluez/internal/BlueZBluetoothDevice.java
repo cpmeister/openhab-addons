@@ -14,6 +14,7 @@ package org.openhab.binding.bluetooth.bluez.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +27,7 @@ import org.eclipse.smarthome.core.util.HexUtils;
 import org.freedesktop.dbus.errors.NoReply;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.types.UInt16;
 import org.openhab.binding.bluetooth.BaseBluetoothDevice;
 import org.openhab.binding.bluetooth.BluetoothAddress;
 import org.openhab.binding.bluetooth.BluetoothCharacteristic;
@@ -82,6 +84,72 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
         logger.debug("Creating DBusBlueZ device with address '{}'", address);
     }
 
+    public synchronized void updateBlueZDevice(@Nullable BluetoothDevice blueZDevice) {
+        if (this.device != null && this.device == blueZDevice) {
+            // logger.debug("Objects representing the BT device {} has not changed. Exiting function.", address);
+            return;
+        }
+        logger.debug("updateBlueZDevice({})", blueZDevice);
+
+        this.device = blueZDevice;
+
+        if (blueZDevice == null) {
+            return;
+        }
+
+        Short rssi = blueZDevice.getRssi();
+        if (rssi != null) {
+            this.rssi = rssi.intValue();
+        }
+        this.name = blueZDevice.getName();
+        Map<UInt16, byte[]> manData = blueZDevice.getManufacturerData();
+        if (manData != null) {
+            manData.entrySet().stream().map(Map.Entry::getKey).filter(Objects::nonNull).findFirst()
+                    .ifPresent((UInt16 manufacturerId) ->
+                    // Convert to unsigned int to match the convention in BluetoothCompanyIdentifiers
+                    this.manufacturer = manufacturerId.intValue() & 0xFFFF);
+        }
+
+        if (Boolean.TRUE.equals(blueZDevice.isConnected())) {
+            setConnectionState(ConnectionState.CONNECTED);
+        }
+
+        discoverServices();
+    }
+
+    /**
+     * Clean up and release memory.
+     */
+    @Override
+    public void dispose() {
+        BluetoothDevice dev = device;
+        if (dev != null) {
+            try {
+                dev.getAdapter().removeDevice(dev.getRawDevice());
+            } catch (DBusException ex) {
+                if (ex.getMessage().contains("Does Not Exist")) {
+                    // this happens when the underlying device has already been removed
+                    // but we don't have a way to check if that is the case beforehand so
+                    // we will just eat the error here.
+                } else {
+                    logger.debug("Exception occurred when trying to remove inactive device '{}': {}", address,
+                            ex.getMessage());
+                }
+            } catch (RuntimeException ex) {
+                // try to catch any other exceptions
+                logger.debug("Exception occurred when trying to remove inactive device '{}': {}", address,
+                        ex.getMessage());
+            }
+        }
+    }
+
+    private void setConnectionState(ConnectionState state) {
+        if (this.connectionState != state) {
+            this.connectionState = state;
+            notifyListeners(BluetoothEventType.CONNECTION_STATE, new BluetoothConnectionStatusNotification(state));
+        }
+    }
+
     @Override
     public boolean connect() {
         logger.debug("Connect({})", device);
@@ -113,6 +181,9 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
 
             } else {
                 logger.debug("Device was already connected");
+                // we might be stuck in another state atm so we need to trigger a connected in this case
+                setConnectionState(ConnectionState.CONNECTED);
+                return true;
             }
         }
         return false;
@@ -121,7 +192,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     @Override
     public boolean disconnect() {
         BluetoothDevice dev = device;
-        if (dev != null && dev.isConnected()) {
+        if (dev != null) {
             logger.debug("Disconnecting '{}'", address);
             return dev.disconnect();
         }
@@ -368,48 +439,6 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
             notifyListeners(BluetoothEventType.SERVICES_DISCOVERED);
         }
         return true;
-    }
-
-    public synchronized void updateBlueZDevice(BluetoothDevice blueZDevice) {
-        logger.debug("updateBlueZDevice({})", blueZDevice);
-        if (this.device != null && this.device == blueZDevice) {
-            logger.debug("Objects representing the BT device has not changed. Exiting function.");
-            return;
-        }
-
-        this.device = blueZDevice;
-
-        updateLastSeenTime();
-
-        this.name = blueZDevice.getName();
-
-        if (Boolean.TRUE.equals(blueZDevice.isConnected())) {
-            this.connectionState = ConnectionState.CONNECTED;
-        }
-
-        discoverServices();
-    }
-
-    /**
-     * Clean up and release memory.
-     */
-    @Override
-    public void dispose() {
-        BluetoothDevice dev = device;
-        if (dev != null) {
-            try {
-                dev.getAdapter().removeDevice(dev.getRawDevice());
-            } catch (DBusException ex) {
-                if (ex.getMessage().contains("Does Not Exist")) {
-                    // this happens when the underlying device has already been removed
-                    // but we don't have a way to check if that is the case beforehand so
-                    // we will just eat the error here.
-                } else {
-                    logger.debug("Exception occurred when trying to remove inactive device '{}': {}", dev.getAddress(),
-                            ex.getMessage());
-                }
-            }
-        }
     }
 
     @Override

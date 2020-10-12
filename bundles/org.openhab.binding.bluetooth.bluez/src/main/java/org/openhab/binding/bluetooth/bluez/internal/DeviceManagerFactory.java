@@ -38,7 +38,7 @@ import com.github.hypfvieh.bluetooth.DeviceManager;
  *
  */
 @NonNullByDefault
-@Component(service = DeviceManagerFactory.class)
+@Component(service = DeviceManagerFactory.class, immediate = true)
 public class DeviceManagerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(DeviceManagerFactory.class);
@@ -53,6 +53,7 @@ public class DeviceManagerFactory {
     }
 
     public @Nullable DeviceManager getDeviceManager() {
+        // we can cheat the null checker with casting here
         CompletableFuture<@Nullable DeviceManager> future = (CompletableFuture<@Nullable DeviceManager>) this.deviceManagerFuture;
         if (future != null) {
             return future.getNow(null);
@@ -62,6 +63,7 @@ public class DeviceManagerFactory {
 
     @Activate
     public void initialize() {
+        logger.debug("initializing DeviceManagerFactory");
         ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1,
                 new NamedThreadFactory("bluetooth.bluez-init", true));
 
@@ -75,7 +77,6 @@ public class DeviceManagerFactory {
                 // if this is the first call to the library, this call
                 // should throw an exception (that we are catching)
                 return DeviceManager.getInstance();
-
                 // Experimental - seems reuse does not work
             } catch (IllegalStateException e) {
                 // Exception caused by first call to the library
@@ -118,8 +119,10 @@ public class DeviceManagerFactory {
             @Override
             public void run() {
                 try {
+                    logger.debug("Registering property handler attempt: {}", retryCount + 1);
                     deviceManager.registerPropertyHandler(changeHandler);
                     future.complete(deviceManager);
+                    logger.debug("Successfully registered property handler");
                 } catch (DBusException e) {
                     if (retryCount < 3) {
                         retryCount++;

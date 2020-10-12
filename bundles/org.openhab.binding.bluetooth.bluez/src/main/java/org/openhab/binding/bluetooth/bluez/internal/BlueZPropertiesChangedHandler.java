@@ -16,9 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.core.common.ThreadPoolManager;
 import org.freedesktop.dbus.DBusMap;
 import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
 import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
@@ -46,11 +48,14 @@ import org.slf4j.LoggerFactory;
  *
  */
 @NonNullByDefault
+
 public class BlueZPropertiesChangedHandler extends AbstractPropertiesChangedHandler {
 
     private final Logger logger = LoggerFactory.getLogger(BlueZPropertiesChangedHandler.class);
 
     private final Set<BlueZEventListener> listeners = new CopyOnWriteArraySet<>();
+
+    private final ScheduledExecutorService scheduler = ThreadPoolManager.getScheduledPool("bluetooth");
 
     public void addListener(BlueZEventListener listener) {
         this.listeners.add(listener);
@@ -78,46 +83,50 @@ public class BlueZPropertiesChangedHandler extends AbstractPropertiesChangedHand
             return;
         }
 
-        changedProperties.forEach((key, variant) -> {
-            switch (key) {
-                case "RSSI":
-                    // Signal Update
-                    onRSSIUpdate(properties.getPath(), (Short) variant.getValue());
-                    break;
-                case "TxPower":
-                    // TxPower
-                    onTXPowerUpdate(properties.getPath(), (Short) variant.getValue());
-                    break;
-                case "Value":
-                    // Characteristc value updated
-                    onValueUpdate(properties.getPath(), (byte[]) variant.getValue());
-                    break;
-                case "Connected":
-                    onConnectedUpdate(properties.getPath(), (boolean) variant.getValue());
-                    break;
-                case "Name":
-                    onNameUpdate(properties.getPath(), (String) variant.getValue());
-                    break;
-                case "Alias":
-                    // TODO
-                    break;
-                case "ManufacturerData":
-                    onManufacturerDataUpdate(properties.getPath(), variant);
-                    break;
-                case "Powered":
-                    onPoweredUpdate(properties.getPath(), (boolean) variant.getValue());
-                    break;
-                case "Discovering":
-                    onDiscoveringUpdate(properties.getPath(), (boolean) variant.getValue());
-                    break;
-                case "ServicesResolved":
-                    onServicesResolved(properties.getPath(), (boolean) variant.getValue());
-                    break;
-            }
-        });
+        // do this asynchronously so that we don't slow things down for the dbus event dispatcher
+        scheduler.execute(() -> {
 
-        logger.debug("PropertiesPath: {}", properties.getPath());
-        logger.debug("PropertiesChanged: {}", properties.getPropertiesChanged());
+            changedProperties.forEach((key, variant) -> {
+                switch (key) {
+                    case "RSSI":
+                        // Signal Update
+                        onRSSIUpdate(properties.getPath(), (Short) variant.getValue());
+                        break;
+                    case "TxPower":
+                        // TxPower
+                        onTXPowerUpdate(properties.getPath(), (Short) variant.getValue());
+                        break;
+                    case "Value":
+                        // Characteristc value updated
+                        onValueUpdate(properties.getPath(), (byte[]) variant.getValue());
+                        break;
+                    case "Connected":
+                        onConnectedUpdate(properties.getPath(), (boolean) variant.getValue());
+                        break;
+                    case "Name":
+                        onNameUpdate(properties.getPath(), (String) variant.getValue());
+                        break;
+                    case "Alias":
+                        // TODO
+                        break;
+                    case "ManufacturerData":
+                        onManufacturerDataUpdate(properties.getPath(), variant);
+                        break;
+                    case "Powered":
+                        onPoweredUpdate(properties.getPath(), (boolean) variant.getValue());
+                        break;
+                    case "Discovering":
+                        onDiscoveringUpdate(properties.getPath(), (boolean) variant.getValue());
+                        break;
+                    case "ServicesResolved":
+                        onServicesResolved(properties.getPath(), (boolean) variant.getValue());
+                        break;
+                }
+            });
+
+            logger.debug("PropertiesPath: {}", properties.getPath());
+            logger.debug("PropertiesChanged: {}", properties.getPropertiesChanged());
+        });
     }
 
     private void onDiscoveringUpdate(String dbusPath, boolean discovering) {

@@ -12,11 +12,14 @@
  */
 package org.openhab.binding.bluetooth.bluez.internal.events;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  *
  * @author Benjamin Lafois - Initial Contribution
  *
  */
+@NonNullByDefault
 public class AdapterDiscoveringChangedEvent extends BlueZEvent {
 
     private boolean discovering;
