@@ -13,7 +13,6 @@
 package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.BluetoothAddress;
 import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
@@ -26,8 +25,8 @@ public class ConnectedEvent extends BlueZEvent {
 
     private boolean connected;
 
-    public ConnectedEvent(BluetoothAddress address, boolean connected) {
-        super(EventType.CONNECTED, address);
+    public ConnectedEvent(String dbusPath, boolean connected) {
+        super(dbusPath, EventType.CONNECTED);
         this.connected = connected;
     }
 

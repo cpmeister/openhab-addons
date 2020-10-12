@@ -18,11 +18,13 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.bluez.exceptions.BluezFailedException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.common.ThreadPoolManager;
 import org.eclipse.smarthome.core.util.HexUtils;
 import org.freedesktop.dbus.errors.NoReply;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.openhab.binding.bluetooth.BaseBluetoothDevice;
 import org.openhab.binding.bluetooth.BluetoothAddress;
@@ -45,6 +47,7 @@ import org.openhab.binding.bluetooth.notification.BluetoothScanNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothGattCharacteristic;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothGattDescriptor;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothGattService;
@@ -62,7 +65,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     private final Logger logger = LoggerFactory.getLogger(BlueZBluetoothDevice.class);
 
     // Device from native lib
-    private com.github.hypfvieh.bluetooth.wrapper.@Nullable BluetoothDevice device = null;
+    private @Nullable BluetoothDevice device = null;
 
     private final ScheduledExecutorService scheduler = ThreadPoolManager.getScheduledPool("bluetooth");
 
@@ -84,7 +87,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     public boolean connect() {
         logger.debug("Connect({})", device);
 
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev != null) {
             if (Boolean.FALSE.equals(dev.isConnected())) {
                 try {
@@ -118,28 +121,23 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
 
     @Override
     public boolean disconnect() {
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev != null && dev.isConnected()) {
             logger.debug("Disconnecting '{}'", address);
-            try {
-                return dev.disconnect();
-            } catch (Exception e) {
-                logger.debug("Exception occurred when trying to disconnect device '{}': {}", dev.getAddress(),
-                        e.getMessage());
-            }
+            return dev.disconnect();
         }
         return false;
     }
 
     private void ensureConnected() {
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev == null || !dev.isConnected()) {
             throw new IllegalStateException("DBusBlueZ device is not set or not connected");
         }
     }
 
     private @Nullable BluetoothGattCharacteristic getDBusBlueZCharacteristicByUUID(String uuid) {
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev == null) {
             return null;
         }
@@ -154,7 +152,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     }
 
     private @Nullable BluetoothGattCharacteristic getDBusBlueZCharacteristicByDBusPath(String dBusPath) {
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev == null) {
             return null;
         }
@@ -171,7 +169,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     }
 
     private @Nullable BluetoothGattDescriptor getDBusBlueZDescriptorByUUID(String uuid) {
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev == null) {
             return null;
         }
@@ -196,7 +194,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
 
             try {
                 c.startNotify();
-            } catch (Exception e) {
+            } catch (DBusException e) {
                 if (e.getMessage().contains("Already notifying")) {
                     return false;
                 } else if (e.getMessage().contains("In Progress")) {
@@ -231,7 +229,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
                 notifyListeners(BluetoothEventType.CHARACTERISTIC_WRITE_COMPLETE, characteristic,
                         BluetoothCompletionStatus.SUCCESS);
 
-            } catch (Exception e) {
+            } catch (DBusException e) {
                 logger.debug("Exception occurred when trying to write characteristic '{}': {}",
                         characteristic.getUuid(), e.getMessage());
                 notifyListeners(BluetoothEventType.CHARACTERISTIC_WRITE_COMPLETE, characteristic,
@@ -244,6 +242,9 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     @Override
     public void onDBusBlueZEvent(BlueZEvent event) {
         logger.debug("onDBusBlueZEvent(): {}", event);
+        if (!this.address.equals(event.getDevice())) {
+            return;
+        }
 
         switch (event.getEventType()) {
             case RSSI_UPDATE:
@@ -325,9 +326,10 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
     }
 
     private void onRssiUpdate(RssiEvent event) {
-        this.rssi = (int) event.getRssi();
+        int rssiTmp = event.getRssi();
+        this.rssi = rssiTmp;
         BluetoothScanNotification notification = new BluetoothScanNotification();
-        notification.setRssi(this.rssi);
+        notification.setRssi(rssiTmp);
         notifyListeners(BluetoothEventType.SCAN_RECORD, notification);
     }
 
@@ -339,7 +341,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
 
     @Override
     public boolean discoverServices() {
-        com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dev = device;
+        BluetoothDevice dev = device;
         if (dev == null) {
             return false;
         }
@@ -370,21 +372,20 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
         return true;
     }
 
-    public synchronized void updateDBusBlueZDevice(
-            com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice dBusBlueZDevice) {
-        logger.debug("updateDBusBlueZDevice({})", dBusBlueZDevice);
-        if (this.device != null && this.device == dBusBlueZDevice) {
+    public synchronized void updateBlueZDevice(BluetoothDevice blueZDevice) {
+        logger.debug("updateBlueZDevice({})", blueZDevice);
+        if (this.device != null && this.device == blueZDevice) {
             logger.debug("Objects representing the BT device has not changed. Exiting function.");
             return;
         }
 
-        this.device = dBusBlueZDevice;
+        this.device = blueZDevice;
 
         updateLastSeenTime();
 
-        this.name = dBusBlueZDevice.getName();
+        this.name = blueZDevice.getName();
 
-        if (Boolean.TRUE.equals(dBusBlueZDevice.isConnected())) {
+        if (Boolean.TRUE.equals(blueZDevice.isConnected())) {
             this.connectionState = ConnectionState.CONNECTED;
         }
 
@@ -396,7 +397,21 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
      */
     @Override
     public void dispose() {
-        this.device = null;
+        BluetoothDevice dev = device;
+        if (dev != null) {
+            try {
+                dev.getAdapter().removeDevice(dev.getRawDevice());
+            } catch (DBusException ex) {
+                if (ex.getMessage().contains("Does Not Exist")) {
+                    // this happens when the underlying device has already been removed
+                    // but we don't have a way to check if that is the case beforehand so
+                    // we will just eat the error here.
+                } else {
+                    logger.debug("Exception occurred when trying to remove inactive device '{}': {}", dev.getAddress(),
+                            ex.getMessage());
+                }
+            }
+        }
     }
 
     @Override
@@ -413,7 +428,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
                 characteristic.setValue(value);
                 notifyListeners(BluetoothEventType.CHARACTERISTIC_READ_COMPLETE, characteristic,
                         BluetoothCompletionStatus.SUCCESS);
-            } catch (Exception e) {
+            } catch (DBusException e) {
                 logger.debug("Exception occurred when trying to read characteristic '{}': {}", characteristic.getUuid(),
                         e.getMessage());
                 notifyListeners(BluetoothEventType.CHARACTERISTIC_READ_COMPLETE, characteristic,
@@ -430,7 +445,7 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
         if (c != null) {
             try {
                 c.stopNotify();
-            } catch (Exception e) {
+            } catch (BluezFailedException e) {
                 if (e.getMessage().contains("In Progress")) {
                     // let's retry in 10 seconds
                     scheduler.schedule(() -> disableNotifications(characteristic), 10, TimeUnit.SECONDS);
@@ -447,13 +462,13 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
 
     @Override
     public boolean enableNotifications(BluetoothDescriptor descriptor) {
-        // TODO Auto-generated method stub
+        // Not sure if it is possible to implement this
         return false;
     }
 
     @Override
     public boolean disableNotifications(BluetoothDescriptor descriptor) {
-        // TODO Auto-generated method stub
+        // Not sure if it is possible to implement this
         return false;
     }
 

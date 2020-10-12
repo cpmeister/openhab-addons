@@ -12,6 +12,9 @@
  */
 package org.openhab.binding.bluetooth.bluez.handler;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.bluetooth.BluetoothAddress;
@@ -23,6 +26,9 @@ import org.openhab.binding.bluetooth.BluetoothAddress;
  */
 @NonNullByDefault
 public class BlueZEvent {
+
+    private static final Pattern PATTERN_ADAPTER_MAC = Pattern
+            .compile("/org/bluez/(?<adapterName>[^/]+)(/dev_(?<deviceMac>[^/]+).*)?");
 
     public enum EventType {
         RSSI_UPDATE,
@@ -36,19 +42,29 @@ public class BlueZEvent {
         ADAPTER_DISCOVERING_CHANGED
     }
 
+    private String dbusPath;
     private EventType eventType;
 
     private @Nullable BluetoothAddress device;
-    private @Nullable String adapter;
+    private @Nullable String adapterName;
 
-    public BlueZEvent(EventType eventType, BluetoothAddress device) {
+    public BlueZEvent(String dbusPath, EventType eventType) {
+        this.dbusPath = dbusPath;
         this.eventType = eventType;
-        this.device = device;
+
+        Matcher matcher = PATTERN_ADAPTER_MAC.matcher(dbusPath);
+        if (matcher.find()) {
+            this.adapterName = matcher.group("adapterName");
+
+            String mac = matcher.group("deviceMac");
+            if (mac != null) {
+                this.device = new BluetoothAddress(mac.replace('_', ':'));
+            }
+        }
     }
 
-    public BlueZEvent(EventType eventType, String adapter) {
-        this.eventType = eventType;
-        this.adapter = adapter;
+    public String getDbusPath() {
+        return dbusPath;
     }
 
     public EventType getEventType() {
@@ -59,8 +75,8 @@ public class BlueZEvent {
         return device;
     }
 
-    public @Nullable String getAdapter() {
-        return adapter;
+    public @Nullable String getAdapterName() {
+        return adapterName;
     }
 
     @Override

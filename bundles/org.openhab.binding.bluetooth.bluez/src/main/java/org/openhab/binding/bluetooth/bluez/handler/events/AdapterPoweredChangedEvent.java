@@ -25,8 +25,8 @@ public class AdapterPoweredChangedEvent extends BlueZEvent {
 
     private boolean powered;
 
-    public AdapterPoweredChangedEvent(String adapter, boolean powered) {
-        super(EventType.ADAPTER_POWERED_CHANGED, adapter);
+    public AdapterPoweredChangedEvent(String dbusPath, boolean powered) {
+        super(dbusPath, EventType.ADAPTER_POWERED_CHANGED);
         this.powered = powered;
     }
 

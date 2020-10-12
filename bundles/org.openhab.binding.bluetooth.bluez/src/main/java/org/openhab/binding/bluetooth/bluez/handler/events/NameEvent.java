@@ -13,7 +13,6 @@
 package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.BluetoothAddress;
 import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
@@ -26,8 +25,8 @@ public class NameEvent extends BlueZEvent {
 
     private String name;
 
-    public NameEvent(BluetoothAddress address, String name) {
-        super(EventType.NAME, address);
+    public NameEvent(String dbusPath, String name) {
+        super(dbusPath, EventType.NAME);
         this.name = name;
     }
 

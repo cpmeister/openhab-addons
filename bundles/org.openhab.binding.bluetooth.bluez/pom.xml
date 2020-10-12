@@ -20,7 +20,6 @@
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>bluez-dbus-osgi</artifactId>
 			<version>0.1.3</version>
-			<!--  <version>0.1.1</version>  -->
 			<scope>provided</scope>
 		</dependency>
 

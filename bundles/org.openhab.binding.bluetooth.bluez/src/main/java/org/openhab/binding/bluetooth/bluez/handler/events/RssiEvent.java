@@ -13,7 +13,6 @@
 package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.BluetoothAddress;
 import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
@@ -26,8 +25,8 @@ public class RssiEvent extends BlueZEvent {
 
     private short rssi;
 
-    public RssiEvent(BluetoothAddress address, short rssi) {
-        super(EventType.RSSI_UPDATE, address);
+    public RssiEvent(String dbusPath, short rssi) {
+        super(dbusPath, EventType.RSSI_UPDATE);
         this.rssi = rssi;
     }
 

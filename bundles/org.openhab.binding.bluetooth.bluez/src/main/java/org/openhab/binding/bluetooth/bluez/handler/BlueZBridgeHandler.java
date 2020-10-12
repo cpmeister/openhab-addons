@@ -13,22 +13,22 @@
 package org.openhab.binding.bluetooth.bluez.handler;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
-import org.freedesktop.dbus.exceptions.DBusException;
 import org.openhab.binding.bluetooth.AbstractBluetoothBridgeHandler;
 import org.openhab.binding.bluetooth.BluetoothAddress;
 import org.openhab.binding.bluetooth.bluez.BlueZBluetoothDevice;
 import org.openhab.binding.bluetooth.bluez.handler.events.AdapterDiscoveringChangedEvent;
 import org.openhab.binding.bluetooth.bluez.handler.events.AdapterPoweredChangedEvent;
-import org.openhab.binding.bluetooth.bluez.internal.BlueZPropertiesChangedHandler;
+import org.openhab.binding.bluetooth.bluez.internal.DeviceManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,36 +51,25 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
     private final Logger logger = LoggerFactory.getLogger(BlueZBridgeHandler.class);
 
     // ADAPTER from BlueZ-DBus Library
-    private @NonNullByDefault({}) BluetoothAdapter adapter;
-    private @NonNullByDefault({}) DeviceManager deviceManager;
+    private @Nullable BluetoothAdapter adapter;
 
     // Our BT address
-    private @NonNullByDefault({}) BluetoothAddress adapterAddress;
+    private @Nullable BluetoothAddress adapterAddress;
 
-    private BlueZPropertiesChangedHandler propertiesChangedHandler = new BlueZPropertiesChangedHandler();
-
-    private final ReentrantLock lockDiscoveryJob = new ReentrantLock();
+    // private final ReentrantLock lockDiscoveryJob = new ReentrantLock();
 
     private @Nullable ScheduledFuture<?> discoveryJob;
 
-    /**
-     * Because sometimes, some adapters can't clean devices which have disappeared if they are still scanning, it was
-     * decided to stop scanning for 1 minute every 5 minutes
-     */
-    private @Nullable ScheduledFuture<?> discoveringStopRecycleJob;
-    private @Nullable ScheduledFuture<?> discoveringStartRecycleJob;
-
-    private @Nullable ScheduledFuture<?> bindingReset;
-
-    private @Nullable Boolean discovering;
+    private final DeviceManagerFactory deviceManagerFactory;
 
     /**
      * Constructor
      *
      * @param bridge the bridge definition for this handler
      */
-    public BlueZBridgeHandler(Bridge bridge) {
+    public BlueZBridgeHandler(Bridge bridge, DeviceManagerFactory deviceManagerFactory) {
         super(bridge);
+        this.deviceManagerFactory = deviceManagerFactory;
     }
 
     @Override
@@ -100,185 +89,31 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
 
         logger.debug("Creating BlueZ adapter with address '{}'", adapterAddress);
 
-        if (!initializeDeviceManager()) {
-            // Device manager not initialized so exiting.
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR, "Library error.");
-            return;
-        }
+        updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.CONFIGURATION_PENDING, "Initializing");
 
-        initializeAdapter();
-    }
+        deviceManagerFactory.getPropertiesChangedHandler().addListener(this);
 
-    /**
-     * This function initializes the library
-     *
-     * @return True if succeeded initializing the library, false otherwise
-     * @throws InterruptedException
-     */
-    private boolean initializeDeviceManager() {
-        logger.debug("Initializing Device Manager");
-
-        propertiesChangedHandler.addListener(this);
-
-        try {
-            this.deviceManager = getDeviceManager();
-        } catch (DBusException e1) {
-            logger.warn("failed create instance caused by D-BUS.", e1);
-            return false;
-        }
-
-        if (this.deviceManager != null) {
-            logger.debug("Device Manager correctly instanciated");
-
-            // a handler must be instanciated to get all notifications
-            // from DBUS (new device, RSSI update, characteristic notification...)
-            // Because it can fail, we give it 3 attempts before definitely giving up
-            for (int i = 0; i < 3; i++) {
-                try {
-                    this.deviceManager.registerPropertyHandler(this.propertiesChangedHandler);
-                    return true;
-                } catch (DBusException e) {
-                    // Shoudl not happen..
-                    // logger.error("Error registering properties changed handler", e);
-                    try {
-                        Thread.sleep(5 * 1000);
-                    } catch (InterruptedException e1) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-            logger.error("Failed registering DBUS Property Handler after 3 attempts. Giving up.");
-            propertiesChangedHandler.removeListener(this);
-            this.deviceManager.closeConnection();
-            bindingReset = scheduler.schedule(this::initialize, 5, TimeUnit.MINUTES);
-            return false;
-        } else {
-            // should normally not happen..
-            logger.debug("Device Manager could not be instanciated but no error.");
-        }
-
-        return (this.deviceManager != null);
-    }
-
-    private static DeviceManager getDeviceManager() throws DBusException {
-        try {
-            // if this is the first call to the library, this call
-            // should throw an exception (that we are catching)
-            return DeviceManager.getInstance();
-
-            // Experimental - seems reuse does not work
-            // this.deviceManager.closeConnection();
-            // DeviceManager.createInstance(false);
-        } catch (IllegalStateException e) {
-            // Exception caused by first call to the library
-            return DeviceManager.createInstance(false);
-        }
-    }
-
-    /**
-     * This function finds the adapter providing the address in param
-     *
-     * @return
-     */
-    private boolean initializeAdapterInternal() {
-
-        List<BluetoothAdapter> adapters = this.deviceManager.getAdapters();
-
-        if (adapters == null || adapters.isEmpty()) {
-            return false;
-        }
-
-        for (BluetoothAdapter btAdapter : adapters) {
-            if (btAdapter.getAddress() != null
-                    && btAdapter.getAddress().equalsIgnoreCase(this.adapterAddress.toString())) {
-                // Found the good adapter
-                this.adapter = btAdapter;
-
-                if (!this.adapter.isPowered()) {
-                    // Turn of adapter, and let it time to come up
-                    this.adapter.setPowered(true);
-                    try {
-                        Thread.sleep(5 * 1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-
-                // logger.debug("Turning off adapter...");
-                // // Power cycle OFF / ON for a clean start
-                // this.adapter.setPowered(false);
-                // logger.debug("Adapter state: {}", this.adapter.isPowered());
-                //
-                // // Only restart the adapter 1 second at least after stopping it. stop/start too quick will not work.
-                // scheduler.schedule(() -> {
-                // logger.debug("Turning on adapter...");
-                // this.adapter.setPowered(true);
-                // logger.debug("Adapter DBUS path: {}", this.adapter.getDbusPath());
-                // }, 1, TimeUnit.SECONDS);
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * When it is called - discovering MUST be stopped for 1 minute.
-     */
-    private void recycleDiscoveringStop() {
-        setDiscovering(false);
-        discoveringStartRecycleJob = scheduler.schedule(this::recycleDiscoveringStart, 1, TimeUnit.MINUTES);
-    }
-
-    private void recycleDiscoveringStart() {
-        setDiscovering(true);
-    }
-
-    private void initializeAdapter() {
-        if (!initializeAdapterInternal()) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR,
-                    "Bluetooth adapter could not be found.");
-            // Re-schedule adapter discovery in case it gets connected later
-            // TODO: not sure about this
-            // this.adapterDiscoveryJob =
-            // scheduler.scheduleAtFixedRate(this::initializeInternal, 5, 5,
-            // TimeUnit.MINUTES);
-            return;
-        }
-
-        // Beyond this point, lib is initialized and adapter was found.
-        updateStatus(ThingStatus.ONLINE);
-
-        this.discoveryJob = scheduler.scheduleAtFixedRate(this::refreshDevices, 30, 30, TimeUnit.SECONDS);
-        this.discoveringStopRecycleJob = scheduler.scheduleAtFixedRate(this::recycleDiscoveringStop, 10, 10,
-                TimeUnit.MINUTES);
-        setDiscovering(true);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public @Nullable Boolean isDiscovering() {
-        // The status reported by the object "adapter" is not accurate. So we use internal status.
-        // boolean scanning = this.adapter.isDiscovering();
-        logger.debug("Is adapter currently discovering : {}", discovering);
-        return discovering;
+        discoveryJob = scheduler.scheduleWithFixedDelay(this::initializeAndRefreshDevices, 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
     public BluetoothAddress getAddress() {
-        return adapterAddress;
+        BluetoothAddress address = adapterAddress;
+        if (address == null) {
+            throw new IllegalStateException();
+        }
+        return address;
     }
 
     @Override
     public void dispose() {
+        deviceManagerFactory.getPropertiesChangedHandler().removeListener(this);
         logger.debug("Termination of DBus BlueZ handler");
 
-        if (this.discoveryJob != null) {
-            this.discoveryJob.cancel(true);
-            this.discoveryJob = null;
+        Future<?> job = discoveryJob;
+        if (job != null) {
+            job.cancel(false);
+            discoveryJob = null;
         }
 
         if (this.adapter != null) {
@@ -286,124 +121,133 @@ public class BlueZBridgeHandler extends AbstractBluetoothBridgeHandler<BlueZBlue
             this.adapter = null;
         }
 
-        if (this.bindingReset != null) {
-            this.bindingReset.cancel(true);
-            this.bindingReset = null;
-        }
-
-        if (this.deviceManager != null) {
-            this.deviceManager.closeConnection();
-            this.deviceManager = null;
-        }
-
         super.dispose();
     }
 
-    private void setDiscovering(boolean status) {
-        // we need to make sure the adapter is powered first
-        // if (!adapter.isPowered()) {
-        // adapter.setPowered(true);
-        // }
-
-        if (status) {
-            adapter.startDiscovery();
-        } else {
-            adapter.stopDiscovery();
-        }
+    private static @Nullable BluetoothAdapter findAdapter(DeviceManager deviceManager, String address) {
+        return Optional.ofNullable(deviceManager.getAdapters()).flatMap(adapters -> {
+            return adapters.stream().filter(
+                    btAdapter -> btAdapter.getAddress() != null && btAdapter.getAddress().equalsIgnoreCase(address))
+                    .findFirst();
+        }).orElse(null);
     }
 
-    private void refreshDevices() {
-        logger.debug("refreshDevices()");
-
-        if (lockDiscoveryJob.tryLock()) {
-
-            try {
-
-                List<BluetoothDevice> dBusBlueZDevices = this.deviceManager.getDevices(true);
-
-                logger.debug("Found {} Bluetooth devices.", dBusBlueZDevices.size());
-
-                for (BluetoothDevice dBusBlueZDevice : dBusBlueZDevices) {
-                    if (dBusBlueZDevice.getAddress() == null) {
-                        // For some reasons, sometimes the address is null..
-                        continue;
-                    }
-                    BlueZBluetoothDevice device = getDevice(new BluetoothAddress(dBusBlueZDevice.getAddress()));
-                    device.updateDBusBlueZDevice(dBusBlueZDevice);
-                    deviceDiscovered(device);
-                }
-
-                // if (this.discovering == null || Boolean.FALSE.equals(discovering)) {
-                // setDiscovering(true);
-                // }
-
-            } catch (Exception e) {
-                logger.error("Error in refresh process", e);
-            } finally {
-                lockDiscoveryJob.unlock();
-            }
-
-        } else {
-            logger.debug("Lock is already taken. Cannot refresh.");
+    private boolean validateAdapter(DeviceManager deviceManager) {
+        // next lets check if we can find our adapter in the manager.
+        BluetoothAdapter localAdapter = adapter;
+        if (localAdapter == null) {
+            localAdapter = adapter = findAdapter(deviceManager, adapterAddress.toString());
+        }
+        if (localAdapter == null) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                    "Native adapter could not be found for address '" + adapterAddress + "'");
+            return false;
+        }
+        // now lets confirm that the adapter is powered
+        if (!localAdapter.isPowered()) {
+            localAdapter.setPowered(true);
+            // give the device some time to power on
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.DUTY_CYCLE,
+                    "Adapter is not powered, attempting to turn on...");
+            return false;
         }
 
+        // now lets make sure that discovery is turned on
+        if (!Boolean.TRUE.equals(localAdapter.isDiscovering())) {
+            localAdapter.startDiscovery();
+            // we will check for devices next time around
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.DUTY_CYCLE, "Starting discovery");
+            return false;
+        }
+        return true;
+    }
+
+    private void initializeAndRefreshDevices() {
+        logger.debug("initializeAndRefreshDevice()");
+
+        try {
+            // first check if the device manager is ready
+            DeviceManager deviceManager = deviceManagerFactory.getDeviceManager();
+            if (deviceManager == null) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        "Bluez DeviceManager not available yet.");
+                return;
+            }
+
+            if (!validateAdapter(deviceManager)) {
+                return;
+            }
+
+            // now lets refresh devices
+            List<BluetoothDevice> bluezDevices = deviceManager.getDevices(adapterAddress.toString());
+            for (BluetoothDevice bluezDevice : bluezDevices) {
+                if (bluezDevice.getAddress() == null) {
+                    // For some reasons, sometimes the address is null..
+                    continue;
+                }
+                BlueZBluetoothDevice device = getDevice(new BluetoothAddress(bluezDevice.getAddress()));
+                device.updateBlueZDevice(bluezDevice);
+                deviceDiscovered(device);
+            }
+            updateStatus(ThingStatus.ONLINE);
+        } catch (RuntimeException ex) {
+            // don't know what kind of exception the bluez library might throw at us so lets catch them here so our
+            // scheduler loop doesn't get terminated
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, ex.getMessage());
+        }
     }
 
     @Override
     protected BlueZBluetoothDevice createDevice(BluetoothAddress address) {
         logger.debug("createDevice {}", address);
         BlueZBluetoothDevice device = new BlueZBluetoothDevice(this, address);
-        this.propertiesChangedHandler.addListener(device);
         return device;
     }
 
     @Override
     public void onDBusBlueZEvent(BlueZEvent event) {
-        String adapterName = event.getAdapter();
+
+        BluetoothAdapter localAdapter = this.adapter;
+        String adapterName = event.getAdapterName();
         logger.debug("Adapter name: {}", adapterName);
-        if (adapterName == null) {
+        if (adapterName == null || localAdapter == null) {
             // We cannot be sure that this event concerns this adapter.. So ignore message
             return;
         }
+        String localName = localAdapter.getName();
 
-        logger.debug("AdapterPoweredChangedEvent. Adapter={}. AdapterBridge={}", event.getAdapter(),
-                this.adapter.getName());
-        if (adapterName.equals(this.adapter.getName())) {
+        logger.debug("AdapterPoweredChangedEvent. Adapter={}. AdapterBridge={}", adapterName, localName);
+        if (!adapterName.equals(localName)) {
             // does not concern this adapter
             return;
         }
 
-        switch (event.getEventType()) {
-            case ADAPTER_POWERED_CHANGED:
-                onPoweredChange((AdapterPoweredChangedEvent) event);
-                break;
-            case ADAPTER_DISCOVERING_CHANGED:
-                onDiscoveringChanged((AdapterDiscoveringChangedEvent) event);
-                break;
-            default:
-                break;
+        BluetoothAddress address = event.getDevice();
+
+        if (address != null) {
+            // this event is for a device, so see if we contain that particular device
+            BlueZBluetoothDevice device = getDevice(address);
+            device.onDBusBlueZEvent(event);
+        } else {
+            switch (event.getEventType()) {
+                case ADAPTER_POWERED_CHANGED:
+                    onPoweredChange((AdapterPoweredChangedEvent) event);
+                    break;
+                case ADAPTER_DISCOVERING_CHANGED:
+                    onDiscoveringChanged((AdapterDiscoveringChangedEvent) event);
+                    break;
+                default:
+                    break;
+            }
         }
+
     }
 
     private void onDiscoveringChanged(AdapterDiscoveringChangedEvent event) {
-        // TODO Auto-generated method stub
 
     }
 
     private void onPoweredChange(AdapterPoweredChangedEvent event) {
-        if (event.isPowered()) {
-            // Adapter has been turned on (externally)
-            this.discoveryJob = scheduler.scheduleAtFixedRate(this::refreshDevices, 30, 30, TimeUnit.SECONDS);
-            updateStatus(ThingStatus.ONLINE);
-        } else {
-            // Adapter has been turned off (externally)
-            // Disable discovery job
-            if (this.discoveryJob != null) {
-                this.discoveryJob.cancel(true);
-                this.discoveryJob = null;
-            }
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "adapter turned off");
-        }
     }
 
 }

@@ -13,7 +13,6 @@
 package org.openhab.binding.bluetooth.bluez.handler.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.BluetoothAddress;
 import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
@@ -24,21 +23,15 @@ import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 @NonNullByDefault
 public class CharacteristicUpdateEvent extends BlueZEvent {
 
-    private String dbusPath;
     private byte[] data;
 
-    public CharacteristicUpdateEvent(BluetoothAddress address, String dbusPath, byte[] data) {
-        super(EventType.CHARACTERISTIC_NOTIFY, address);
-        this.dbusPath = dbusPath;
+    public CharacteristicUpdateEvent(String dbusPath, byte[] data) {
+        super(dbusPath, EventType.CHARACTERISTIC_NOTIFY);
         this.data = data;
     }
 
     public byte[] getData() {
         return data;
-    }
-
-    public String getDbusPath() {
-        return dbusPath;
     }
 
 }

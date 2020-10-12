@@ -23,8 +23,8 @@ public class AdapterDiscoveringChangedEvent extends BlueZEvent {
 
     private boolean discovering;
 
-    public AdapterDiscoveringChangedEvent(String adapter, boolean discovering) {
-        super(EventType.ADAPTER_DISCOVERING_CHANGED, adapter);
+    public AdapterDiscoveringChangedEvent(String dbusPath, boolean discovering) {
+        super(dbusPath, EventType.ADAPTER_DISCOVERING_CHANGED);
         this.discovering = discovering;
     }
 
