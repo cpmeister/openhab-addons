@@ -83,5 +83,4 @@ public class BlueZEvent {
     public String toString() {
         return "EventType: " + eventType + ", Device: " + device;
     }
-
 }

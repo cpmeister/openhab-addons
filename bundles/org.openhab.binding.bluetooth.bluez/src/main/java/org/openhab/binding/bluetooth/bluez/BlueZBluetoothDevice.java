@@ -272,7 +272,6 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
                 logger.debug("Unsupported event: {}", event.getEventType());
                 break;
         }
-
     }
 
     private void onServicesResolved(ServicesResolvedEvent event) {
@@ -471,5 +470,4 @@ public class BlueZBluetoothDevice extends BaseBluetoothDevice implements BlueZEv
         // Not sure if it is possible to implement this
         return false;
     }
-
 }

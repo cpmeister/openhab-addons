@@ -33,5 +33,4 @@ public class ConnectedEvent extends BlueZEvent {
     public boolean isConnected() {
         return connected;
     }
-
 }

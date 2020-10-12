@@ -31,5 +31,4 @@ public class AdapterDiscoveringChangedEvent extends BlueZEvent {
     public boolean isDiscovering() {
         return discovering;
     }
-
 }

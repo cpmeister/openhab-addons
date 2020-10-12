@@ -95,5 +95,4 @@ public class BlueZHandlerFactory extends BaseThingHandlerFactory {
             }
         }
     }
-
 }

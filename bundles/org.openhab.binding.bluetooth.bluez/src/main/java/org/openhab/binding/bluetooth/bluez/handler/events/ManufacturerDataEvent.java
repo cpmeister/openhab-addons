@@ -35,5 +35,4 @@ public class ManufacturerDataEvent extends BlueZEvent {
     public Map<Short, byte[]> getData() {
         return data;
     }
-
 }

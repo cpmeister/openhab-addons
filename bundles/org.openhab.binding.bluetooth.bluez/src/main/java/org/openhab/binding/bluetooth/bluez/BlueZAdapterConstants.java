@@ -26,13 +26,11 @@ import org.openhab.binding.bluetooth.BluetoothBindingConstants;
 public class BlueZAdapterConstants {
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_BLUEZ = new ThingTypeUID(BluetoothBindingConstants.BINDING_ID,
-            "bluez");
+    public static final ThingTypeUID THING_TYPE_BLUEZ = new ThingTypeUID(BluetoothBindingConstants.BINDING_ID, "bluez");
 
     // Properties
     public static final String PROPERTY_ADDRESS = "address";
 
     private BlueZAdapterConstants() {
     }
-
 }

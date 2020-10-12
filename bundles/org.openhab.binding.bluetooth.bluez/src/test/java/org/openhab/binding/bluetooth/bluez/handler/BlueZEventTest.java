@@ -45,5 +45,4 @@ public class BlueZEventTest {
         assertEquals("hci0", event.getAdapterName());
         assertEquals(new BluetoothAddress("A4:34:D9:ED:D3:74"), event.getDevice());
     }
-
 }

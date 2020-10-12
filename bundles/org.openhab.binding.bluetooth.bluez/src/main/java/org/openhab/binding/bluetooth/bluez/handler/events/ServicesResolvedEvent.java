@@ -33,5 +33,4 @@ public class ServicesResolvedEvent extends BlueZEvent {
     public boolean isResolved() {
         return resolved;
     }
-
 }

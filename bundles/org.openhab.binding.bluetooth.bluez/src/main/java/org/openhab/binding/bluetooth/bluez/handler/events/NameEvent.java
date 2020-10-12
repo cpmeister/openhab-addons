@@ -33,5 +33,4 @@ public class NameEvent extends BlueZEvent {
     public String getName() {
         return name;
     }
-
 }

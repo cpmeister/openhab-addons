@@ -33,5 +33,4 @@ public class TXPowerEvent extends BlueZEvent {
     public short getTxPower() {
         return this.txPower;
     }
-
 }

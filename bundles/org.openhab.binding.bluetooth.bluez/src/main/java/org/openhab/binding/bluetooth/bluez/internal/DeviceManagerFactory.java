@@ -124,7 +124,6 @@ public class DeviceManagerFactory {
                     }
                 }
             }
-
         }
         RegisterHandlerTask task = new RegisterHandlerTask();
         task.run();
@@ -157,5 +156,4 @@ public class DeviceManagerFactory {
             return super.cancel(mayInterruptIfRunning);
         }
     }
-
 }

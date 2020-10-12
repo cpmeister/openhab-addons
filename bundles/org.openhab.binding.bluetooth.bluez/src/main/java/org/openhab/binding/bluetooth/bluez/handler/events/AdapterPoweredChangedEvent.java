@@ -33,5 +33,4 @@ public class AdapterPoweredChangedEvent extends BlueZEvent {
     public boolean isPowered() {
         return powered;
     }
-
 }

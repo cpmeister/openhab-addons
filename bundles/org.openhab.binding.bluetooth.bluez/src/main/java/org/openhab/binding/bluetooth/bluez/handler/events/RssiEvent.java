@@ -33,5 +33,4 @@ public class RssiEvent extends BlueZEvent {
     public short getRssi() {
         return rssi;
     }
-
 }

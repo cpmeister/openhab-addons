@@ -33,5 +33,4 @@ public class CharacteristicUpdateEvent extends BlueZEvent {
     public byte[] getData() {
         return data;
     }
-
 }
