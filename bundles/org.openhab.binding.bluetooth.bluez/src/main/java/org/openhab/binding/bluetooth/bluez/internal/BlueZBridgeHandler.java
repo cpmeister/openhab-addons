@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler;
+package org.openhab.binding.bluetooth.bluez.internal;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,10 +25,10 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.openhab.binding.bluetooth.AbstractBluetoothBridgeHandler;
 import org.openhab.binding.bluetooth.BluetoothAddress;
-import org.openhab.binding.bluetooth.bluez.BlueZBluetoothDevice;
-import org.openhab.binding.bluetooth.bluez.handler.events.AdapterDiscoveringChangedEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.AdapterPoweredChangedEvent;
-import org.openhab.binding.bluetooth.bluez.internal.DeviceManagerFactory;
+import org.openhab.binding.bluetooth.bluez.internal.events.AdapterDiscoveringChangedEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.AdapterPoweredChangedEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.BlueZEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.BlueZEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

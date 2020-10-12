@@ -46,14 +46,18 @@ public class DeviceManagerFactory {
     private final BlueZPropertiesChangedHandler changeHandler = new BlueZPropertiesChangedHandler();
 
     private @Nullable DeviceManager deviceManager;
-    // private @Nullable CompletableFuture<DeviceManager> deviceManagerFuture;
+    private @Nullable CompletableFuture<DeviceManager> deviceManagerFuture;
 
     public BlueZPropertiesChangedHandler getPropertiesChangedHandler() {
         return changeHandler;
     }
 
     public @Nullable DeviceManager getDeviceManager() {
-        return deviceManager;
+        CompletableFuture<@Nullable DeviceManager> future = (CompletableFuture<@Nullable DeviceManager>) this.deviceManagerFuture;
+        if (future != null) {
+            return future.getNow(null);
+        }
+        return null;
     }
 
     @Activate
@@ -66,7 +70,7 @@ public class DeviceManagerFactory {
 
         this.scheduler = scheduler;
 
-        callAsync(() -> {
+        this.deviceManagerFuture = callAsync(() -> {
             try {
                 // if this is the first call to the library, this call
                 // should throw an exception (that we are catching)
@@ -78,10 +82,11 @@ public class DeviceManagerFactory {
                 return DeviceManager.createInstance(false);
             }
         }, scheduler)//
-                .thenCompose(devManager -> registerPropertyHandler(devManager, scheduler))//
-                .whenComplete((devManager, th) -> {
+                .thenApply(devManager -> {
                     this.deviceManager = devManager;
-
+                    return devManager;
+                }).thenCompose(devManager -> registerPropertyHandler(devManager, scheduler))//
+                .whenComplete((devManager, th) -> {
                     if (th != null) {
                         logger.warn("Failed to initialize DeviceManager: {}", th.getMessage());
                     }

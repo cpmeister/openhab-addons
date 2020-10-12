@@ -10,10 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler.events;
+package org.openhab.binding.bluetooth.bluez.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -21,16 +20,16 @@ import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
  *
  */
 @NonNullByDefault
-public class ServicesResolvedEvent extends BlueZEvent {
+public class CharacteristicUpdateEvent extends BlueZEvent {
 
-    private boolean resolved;
+    private byte[] data;
 
-    public ServicesResolvedEvent(String dbusPath, boolean resolved) {
-        super(dbusPath, EventType.SERVICES_RESOLVED);
-        this.resolved = resolved;
+    public CharacteristicUpdateEvent(String dbusPath, byte[] data) {
+        super(dbusPath, EventType.CHARACTERISTIC_NOTIFY);
+        this.data = data;
     }
 
-    public boolean isResolved() {
-        return resolved;
+    public byte[] getData() {
+        return data;
     }
 }

@@ -10,12 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler.events;
-
-import java.util.Map;
+package org.openhab.binding.bluetooth.bluez.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -23,16 +20,16 @@ import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
  *
  */
 @NonNullByDefault
-public class ManufacturerDataEvent extends BlueZEvent {
+public class AdapterPoweredChangedEvent extends BlueZEvent {
 
-    private Map<Short, byte[]> data;
+    private boolean powered;
 
-    public ManufacturerDataEvent(String dbusPath, Map<Short, byte[]> data) {
-        super(dbusPath, EventType.MANUFACTURER_DATA);
-        this.data = data;
+    public AdapterPoweredChangedEvent(String dbusPath, boolean powered) {
+        super(dbusPath, EventType.ADAPTER_POWERED_CHANGED);
+        this.powered = powered;
     }
 
-    public Map<Short, byte[]> getData() {
-        return data;
+    public boolean isPowered() {
+        return powered;
     }
 }

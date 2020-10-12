@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler;
+package org.openhab.binding.bluetooth.bluez.internal.events;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

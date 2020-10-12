@@ -10,17 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler;
+package org.openhab.binding.bluetooth.bluez.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.bluetooth.BaseBluetoothBridgeHandlerConfiguration;
 
 /**
+ * Configuration properties for a bridge.
  *
- * @author Benjamin Lafois
- *
+ * @author Benjamin Lafois - Initial contribution
  */
-@NonNullByDefault
-public interface BlueZEventListener {
+public class BlueZAdapterConfiguration extends BaseBluetoothBridgeHandlerConfiguration {
 
-    public void onDBusBlueZEvent(BlueZEvent event);
+    public String address;
 }

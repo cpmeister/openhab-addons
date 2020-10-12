@@ -10,12 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler;
+package org.openhab.binding.bluetooth.bluez.internal;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.openhab.binding.bluetooth.BluetoothAddress;
+import org.openhab.binding.bluetooth.bluez.internal.events.BlueZEvent;
 
 /**
  *

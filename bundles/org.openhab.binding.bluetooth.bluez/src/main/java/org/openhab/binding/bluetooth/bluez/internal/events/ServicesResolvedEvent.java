@@ -10,10 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler.events;
+package org.openhab.binding.bluetooth.bluez.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -21,16 +20,16 @@ import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
  *
  */
 @NonNullByDefault
-public class RssiEvent extends BlueZEvent {
+public class ServicesResolvedEvent extends BlueZEvent {
 
-    private short rssi;
+    private boolean resolved;
 
-    public RssiEvent(String dbusPath, short rssi) {
-        super(dbusPath, EventType.RSSI_UPDATE);
-        this.rssi = rssi;
+    public ServicesResolvedEvent(String dbusPath, boolean resolved) {
+        super(dbusPath, EventType.SERVICES_RESOLVED);
+        this.resolved = resolved;
     }
 
-    public short getRssi() {
-        return rssi;
+    public boolean isResolved() {
+        return resolved;
     }
 }

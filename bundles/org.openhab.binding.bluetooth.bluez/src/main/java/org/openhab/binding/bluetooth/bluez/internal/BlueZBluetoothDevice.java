@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez;
+package org.openhab.binding.bluetooth.bluez.internal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,16 +32,15 @@ import org.openhab.binding.bluetooth.BluetoothCharacteristic;
 import org.openhab.binding.bluetooth.BluetoothCompletionStatus;
 import org.openhab.binding.bluetooth.BluetoothDescriptor;
 import org.openhab.binding.bluetooth.BluetoothService;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZBridgeHandler;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEventListener;
-import org.openhab.binding.bluetooth.bluez.handler.events.CharacteristicUpdateEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.ConnectedEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.ManufacturerDataEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.NameEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.RssiEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.ServicesResolvedEvent;
-import org.openhab.binding.bluetooth.bluez.handler.events.TXPowerEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.BlueZEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.BlueZEventListener;
+import org.openhab.binding.bluetooth.bluez.internal.events.CharacteristicUpdateEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.ConnectedEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.ManufacturerDataEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.NameEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.RssiEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.ServicesResolvedEvent;
+import org.openhab.binding.bluetooth.bluez.internal.events.TXPowerEvent;
 import org.openhab.binding.bluetooth.notification.BluetoothConnectionStatusNotification;
 import org.openhab.binding.bluetooth.notification.BluetoothScanNotification;
 import org.slf4j.Logger;

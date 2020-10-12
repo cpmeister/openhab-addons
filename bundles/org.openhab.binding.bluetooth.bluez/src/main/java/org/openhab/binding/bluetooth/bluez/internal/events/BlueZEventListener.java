@@ -10,10 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler.events;
+package org.openhab.binding.bluetooth.bluez.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -21,16 +20,7 @@ import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
  *
  */
 @NonNullByDefault
-public class AdapterPoweredChangedEvent extends BlueZEvent {
+public interface BlueZEventListener {
 
-    private boolean powered;
-
-    public AdapterPoweredChangedEvent(String dbusPath, boolean powered) {
-        super(dbusPath, EventType.ADAPTER_POWERED_CHANGED);
-        this.powered = powered;
-    }
-
-    public boolean isPowered() {
-        return powered;
-    }
+    public void onDBusBlueZEvent(BlueZEvent event);
 }

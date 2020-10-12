@@ -29,8 +29,6 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.bluetooth.BluetoothAdapter;
-import org.openhab.binding.bluetooth.bluez.BlueZAdapterConstants;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZBridgeHandler;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

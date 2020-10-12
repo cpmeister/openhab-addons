@@ -10,10 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.bluetooth.bluez.handler.events;
+package org.openhab.binding.bluetooth.bluez.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
 
 /**
  *
@@ -21,16 +20,16 @@ import org.openhab.binding.bluetooth.bluez.handler.BlueZEvent;
  *
  */
 @NonNullByDefault
-public class TXPowerEvent extends BlueZEvent {
+public class RssiEvent extends BlueZEvent {
 
-    private short txPower;
+    private short rssi;
 
-    public TXPowerEvent(String dbusPath, short txpower) {
-        super(dbusPath, EventType.TXPOWER);
-        this.txPower = txpower;
+    public RssiEvent(String dbusPath, short rssi) {
+        super(dbusPath, EventType.RSSI_UPDATE);
+        this.rssi = rssi;
     }
 
-    public short getTxPower() {
-        return this.txPower;
+    public short getRssi() {
+        return rssi;
     }
 }
