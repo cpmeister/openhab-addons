@@ -85,6 +85,13 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             if (device.getConnectionState() == ConnectionState.CONNECTED) {
                 if (resolved) {
                     for (CharacteristicHandler charHandler : charHandlers.values()) {
+                        if (charHandler.isAdvanced()
+                                && charHandler.hasProperty(BluetoothCharacteristic.PROPERTY_NOTIFY)) {
+
+                            // channelHandlers.
+
+                            device.enableNotifications(charHandler.characteristic);
+                        }
                         if (charHandler.canRead()) {
                             device.readCharacteristic(charHandler.characteristic);
                             try {
@@ -336,13 +343,16 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
                     .build();
         }
 
+        public boolean hasProperty(int propertyMask) {
+            return (characteristic.getProperties() & propertyMask) > 0;
+        }
+
         public boolean canRead() {
             String charUUID = getCharacteristicUUID();
             if (gattParser.isKnownCharacteristic(charUUID)) {
                 return gattParser.isValidForRead(charUUID);
             }
-            // TODO: need to evaluate this from characteristic properties, but such properties aren't support yet
-            return true;
+            return hasProperty(BluetoothCharacteristic.PROPERTY_READ);
         }
 
         public boolean canWrite() {
@@ -350,11 +360,11 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             if (gattParser.isKnownCharacteristic(charUUID)) {
                 return gattParser.isValidForWrite(charUUID);
             }
-            // TODO: need to evaluate this from characteristic properties, but such properties aren't support yet
-            return true;
+            return hasProperty(
+                    BluetoothCharacteristic.PROPERTY_WRITE | BluetoothCharacteristic.PROPERTY_WRITE_NO_RESPONSE);
         }
 
-        private boolean isAdvanced() {
+        public boolean isAdvanced() {
             return !gattParser.isKnownCharacteristic(getCharacteristicUUID());
         }
 
@@ -375,7 +385,7 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             logger.debug("Building a new channel for a field: {}", channelUID.getId());
 
             ChannelTypeUID channelTypeUID = channelTypeProvider.registerChannelType(getCharacteristicUUID(),
-                    isAdvanced(), readOnly, field);
+                    isAdvanced(), characteristic.getProperties(), field);
 
             return ChannelBuilder.create(channelUID, acceptedType).withType(channelTypeUID)
                     .withProperties(getChannelProperties(field.getName())).withLabel(label).build();

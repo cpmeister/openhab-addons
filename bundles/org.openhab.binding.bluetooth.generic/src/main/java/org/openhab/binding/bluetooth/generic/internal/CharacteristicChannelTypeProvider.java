@@ -13,6 +13,7 @@
 package org.openhab.binding.bluetooth.generic.internal;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.bluetooth.BluetoothBindingConstants;
+import org.openhab.binding.bluetooth.BluetoothCharacteristic;
 import org.openhab.core.thing.type.ChannelType;
 import org.openhab.core.thing.type.ChannelTypeBuilder;
 import org.openhab.core.thing.type.ChannelTypeProvider;
@@ -66,11 +68,17 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
     public @Nullable ChannelType getChannelType(ChannelTypeUID channelTypeUID, @Nullable Locale locale) {
         if (isValidUID(channelTypeUID)) {
             return cache.computeIfAbsent(channelTypeUID, uid -> {
+                // characteristic-advncd-10-00002a04-0000-1000-8000-00805f9b34fb-Battery_Level
                 String channelID = uid.getId();
                 boolean advanced = "advncd".equals(channelID.substring(15, 21));
-                boolean readOnly = "readable".equals(channelID.substring(22, 30));
-                String characteristicUUID = channelID.substring(31, 67);
-                String fieldName = channelID.substring(68, channelID.length());
+                int properties;
+                try {
+                    properties = Integer.parseUnsignedInt(channelID.substring(22, 24), 16);
+                } catch (NumberFormatException ex) {
+                    return null;
+                }
+                String characteristicUUID = channelID.substring(25, 61);
+                String fieldName = channelID.substring(62, channelID.length());
 
                 if (gattParser.isKnownCharacteristic(characteristicUUID)) {
                     List<Field> fields = gattParser.getFields(characteristicUUID).stream()
@@ -83,7 +91,7 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
                         return null;
                     }
                     Field field = fields.get(0);
-                    return buildChannelType(uid, advanced, readOnly, field);
+                    return buildChannelType(uid, advanced, properties, field);
                 }
                 return null;
             });
@@ -114,20 +122,22 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         return true;
     }
 
-    public ChannelTypeUID registerChannelType(String characteristicUUID, boolean advanced, boolean readOnly,
+    public ChannelTypeUID registerChannelType(String characteristicUUID, boolean advanced, int properties,
             Field field) {
-        // characteristic-advncd-readable-00002a04-0000-1000-8000-00805f9b34fb-Battery_Level
-        String channelType = String.format(CHANNEL_TYPE_NAME_PATTERN, advanced ? "advncd" : "simple",
-                readOnly ? "readable" : "writable", characteristicUUID, BluetoothChannelUtils.encodeFieldID(field));
+        // characteristic-advncd-10-00002a04-0000-1000-8000-00805f9b34fb-Battery_Level
+
+        String propStr = String.format("%02x", properties);
+
+        String channelType = String.format(CHANNEL_TYPE_NAME_PATTERN, advanced ? "advncd" : "simple", propStr,
+                characteristicUUID, BluetoothChannelUtils.encodeFieldID(field));
 
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(BluetoothBindingConstants.BINDING_ID, channelType);
-        cache.computeIfAbsent(channelTypeUID, uid -> buildChannelType(uid, advanced, readOnly, field));
+        cache.computeIfAbsent(channelTypeUID, uid -> buildChannelType(uid, advanced, properties, field));
         logger.debug("registered channel type: {}", channelTypeUID);
         return channelTypeUID;
     }
 
-    private ChannelType buildChannelType(ChannelTypeUID channelTypeUID, boolean advanced, boolean readOnly,
-            Field field) {
+    private ChannelType buildChannelType(ChannelTypeUID channelTypeUID, boolean advanced, int properties, Field field) {
         List<StateOption> options = getStateOptions(field);
         String itemType = BluetoothChannelUtils.getItemType(field);
 
@@ -138,6 +148,10 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         if (itemType.equals("Switch")) {
             options = Collections.emptyList();
         }
+
+        // we consider it readOnly if it cannot be written to
+        boolean readOnly = (properties
+                & (BluetoothCharacteristic.PROPERTY_WRITE | BluetoothCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0;
 
         StateDescriptionFragmentBuilder stateDescBuilder = StateDescriptionFragmentBuilder.create()//
                 .withPattern(getPattern(field))//
@@ -152,10 +166,16 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         if (max != null) {
             stateDescBuilder = stateDescBuilder.withMaximum(max);
         }
-        return ChannelTypeBuilder.state(channelTypeUID, field.getName(), itemType)//
+        ChannelTypeBuilder<?> builder = ChannelTypeBuilder.state(channelTypeUID, field.getName(), itemType)//
                 .isAdvanced(advanced)//
                 .withDescription(field.getInformativeText())//
-                .withStateDescriptionFragment(stateDescBuilder.build()).build();
+                .withStateDescriptionFragment(stateDescBuilder.build());
+
+        if ((properties & BluetoothCharacteristic.PROPERTY_NOTIFY) > 0) {
+            builder.withConfigDescriptionURI(URI.create("channel-type:bluetooth:notifyChannel"));
+        }
+
+        return builder.build();
     }
 
     private static String getPattern(Field field) {
