@@ -17,19 +17,46 @@ import java.util.UUID;
 
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import javax.measure.quantity.Acceleration;
+import javax.measure.quantity.AmountOfSubstance;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Area;
+import javax.measure.quantity.CatalyticActivity;
 import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.ElectricCapacitance;
 import javax.measure.quantity.ElectricCharge;
+import javax.measure.quantity.ElectricConductance;
+import javax.measure.quantity.ElectricCurrent;
+import javax.measure.quantity.ElectricInductance;
+import javax.measure.quantity.ElectricPotential;
+import javax.measure.quantity.ElectricResistance;
+import javax.measure.quantity.Energy;
+import javax.measure.quantity.Force;
 import javax.measure.quantity.Frequency;
+import javax.measure.quantity.Illuminance;
 import javax.measure.quantity.Length;
+import javax.measure.quantity.LuminousFlux;
+import javax.measure.quantity.LuminousIntensity;
+import javax.measure.quantity.MagneticFlux;
+import javax.measure.quantity.MagneticFluxDensity;
 import javax.measure.quantity.Mass;
+import javax.measure.quantity.Power;
+import javax.measure.quantity.Pressure;
+import javax.measure.quantity.RadiationDoseAbsorbed;
+import javax.measure.quantity.RadiationDoseEffective;
+import javax.measure.quantity.Radioactivity;
+import javax.measure.quantity.SolidAngle;
 import javax.measure.quantity.Speed;
+import javax.measure.quantity.Temperature;
+import javax.measure.quantity.Time;
+import javax.measure.quantity.Volume;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.bluetooth.BluetoothBindingConstants;
 import org.openhab.core.library.dimension.ArealDensity;
+import org.openhab.core.library.dimension.Density;
+import org.openhab.core.library.dimension.Intensity;
 import org.openhab.core.library.dimension.VolumetricFlowRate;
 import org.openhab.core.library.unit.ImperialUnits;
 import org.openhab.core.library.unit.MetricPrefix;
@@ -52,54 +79,56 @@ import tec.uom.se.unit.TransformedUnit;
 public enum BluetoothUnit {
 
     UNITLESS(0x2700, "org.bluetooth.unit.unitless", Units.ONE),
-    METRE(0x2701, "org.bluetooth.unit.length.metre", SIUnits.METRE),
-    KILOGRAM(0x2702, "org.bluetooth.unit.mass.kilogram", SIUnits.KILOGRAM),
-    SECOND(0x2703, "org.bluetooth.unit.time.second", Units.SECOND),
-    AMPERE(0x2704, "org.bluetooth.unit.electric_current.ampere", Units.AMPERE),
-    KELVIN(0x2705, "org.bluetooth.unit.thermodynamic_temperature.kelvin", Units.KELVIN),
-    MOLE(0x2706, "org.bluetooth.unit.amount_of_substance.mole", Units.MOLE),
-    CANDELA(0x2707, "org.bluetooth.unit.luminous_intensity.candela", Units.CANDELA),
-    SQUARE_METRES(0x2710, "org.bluetooth.unit.area.square_metres", SIUnits.SQUARE_METRE),
-    CUBIC_METRES(0x2711, "org.bluetooth.unit.volume.cubic_metres", SIUnits.CUBIC_METRE),
-    METRE_PER_SECOND(0x2712, "org.bluetooth.unit.velocity.metres_per_second", Units.METRE_PER_SECOND),
+    METRE(0x2701, "org.bluetooth.unit.length.metre", SIUnits.METRE, Length.class),
+    KILOGRAM(0x2702, "org.bluetooth.unit.mass.kilogram", SIUnits.KILOGRAM, Mass.class),
+    SECOND(0x2703, "org.bluetooth.unit.time.second", Units.SECOND, Time.class),
+    AMPERE(0x2704, "org.bluetooth.unit.electric_current.ampere", Units.AMPERE, ElectricCurrent.class),
+    KELVIN(0x2705, "org.bluetooth.unit.thermodynamic_temperature.kelvin", Units.KELVIN, Temperature.class),
+    MOLE(0x2706, "org.bluetooth.unit.amount_of_substance.mole", Units.MOLE, AmountOfSubstance.class),
+    CANDELA(0x2707, "org.bluetooth.unit.luminous_intensity.candela", Units.CANDELA, LuminousIntensity.class),
+    SQUARE_METRES(0x2710, "org.bluetooth.unit.area.square_metres", SIUnits.SQUARE_METRE, Area.class),
+    CUBIC_METRES(0x2711, "org.bluetooth.unit.volume.cubic_metres", SIUnits.CUBIC_METRE, Volume.class),
+    METRE_PER_SECOND(0x2712, "org.bluetooth.unit.velocity.metres_per_second", Units.METRE_PER_SECOND, Speed.class),
     METRE_PER_SQUARE_SECOND(0X2713, "org.bluetooth.unit.acceleration.metres_per_second_squared",
-            Units.METRE_PER_SQUARE_SECOND),
+            Units.METRE_PER_SQUARE_SECOND, Acceleration.class),
     WAVENUMBER(0x2714, "org.bluetooth.unit.wavenumber.reciprocal_metre", Units.ONE),
     KILOGRAM_PER_CUBIC_METRE(0x2715, "org.bluetooth.unit.density.kilogram_per_cubic_metre",
-            Units.KILOGRAM_PER_CUBICMETRE),
+            Units.KILOGRAM_PER_CUBICMETRE, Density.class),
     KILOGRAM_PER_SQUARE_METRE(0x2716, "org.bluetooth.unit.surface_density.kilogram_per_square_metre",
-            BUnits.KILOGRAM_PER_SQUARE_METER),
+            BUnits.KILOGRAM_PER_SQUARE_METER, ArealDensity.class),
     CUBIC_METRE_PER_KILOGRAM(0x2717, "org.bluetooth.unit.specific_volume.cubic_metre_per_kilogram", Units.ONE),
     AMPERE_PER_SQUARE_METRE(0x2718, "org.bluetooth.unit.current_density.ampere_per_square_metre", Units.ONE),
     AMPERE_PER_METRE(0x2719, "org.bluetooth.unit.magnetic_field_strength.ampere_per_metre", Units.ONE),
     MOLE_PER_CUBIC_METRE(0x271A, "org.bluetooth.unit.amount_concentration.mole_per_cubic_metre", Units.ONE),
     CONCENTRATION_KILOGRAM_PER_CUBIC_METRE(0x271B, "org.bluetooth.unit.mass_concentration.kilogram_per_cubic_metre",
-            Units.KILOGRAM_PER_CUBICMETRE),
+            Units.KILOGRAM_PER_CUBICMETRE, Density.class),
     CANDELA_PER_SQUARE_METRE(0x271C, "org.bluetooth.unit.luminance.candela_per_square_metre", Units.ONE),
     REFRACTIVE_INDEX(0x271D, "org.bluetooth.unit.refractive_index", Units.ONE),
     RELATIVE_PERMEABILITY(0x271E, "org.bluetooth.unit.relative_permeability", Units.ONE),
-    RADIAN(0x2720, "org.bluetooth.unit.plane_angle.radian", Units.RADIAN),
-    STERADIAN(0x2721, "org.bluetooth.unit.solid_angle.steradian", Units.STERADIAN),
-    HERTZ(0x2722, "org.bluetooth.unit.frequency.hertz", Units.HERTZ),
-    NEWTON(0x2723, "org.bluetooth.unit.force.newton", Units.NEWTON),
-    PASCAL(0x2724, "org.bluetooth.unit.pressure.pascal", SIUnits.PASCAL),
-    JOULE(0x2725, "org.bluetooth.unit.energy.joule", Units.JOULE),
-    WATT(0x2726, "org.bluetooth.unit.power.watt", Units.WATT),
-    COULOMB(0x2727, "org.bluetooth.unit.electric_charge.coulomb", Units.COULOMB),
-    VOLT(0x2728, "org.bluetooth.unit.electric_potential_difference.volt", Units.VOLT),
-    FARAD(0x2729, "org.bluetooth.unit.capacitance.farad", Units.FARAD),
-    OHM(0x272A, "org.bluetooth.unit.electric_resistance.ohm", Units.OHM),
-    SIEMENS(0x272B, "org.bluetooth.unit.electric_conductance.siemens", Units.SIEMENS),
-    WEBER(0x272C, "org.bluetooth.unit.magnetic_flux.weber", Units.WEBER),
-    TESLA(0x272D, "org.bluetooth.unit.magnetic_flux_density.tesla", Units.TESLA),
-    HENRY(0x272E, "org.bluetooth.unit.inductance.henry", Units.HENRY),
-    DEGREE_CELSIUS(0x272F, "org.bluetooth.unit.thermodynamic_temperature.degree_celsius", SIUnits.CELSIUS),
-    LUMEN(0x2730, "org.bluetooth.unit.luminous_flux.lumen", Units.LUMEN),
-    LUX(0x2731, "org.bluetooth.unit.illuminance.lux", Units.LUX),
-    BECQUEREL(0x2732, "org.bluetooth.unit.activity_referred_to_a_radionuclide.becquerel", Units.BECQUEREL),
-    GRAY(0x2733, "org.bluetooth.unit.absorbed_dose.gray", Units.GRAY),
-    SIEVERT(0x2734, "org.bluetooth.unit.dose_equivalent.sievert", Units.SIEVERT),
-    KATAL(0x2735, "org.bluetooth.unit.catalytic_activity.katal", Units.KATAL),
+    RADIAN(0x2720, "org.bluetooth.unit.plane_angle.radian", Units.RADIAN, Angle.class),
+    STERADIAN(0x2721, "org.bluetooth.unit.solid_angle.steradian", Units.STERADIAN, SolidAngle.class),
+    HERTZ(0x2722, "org.bluetooth.unit.frequency.hertz", Units.HERTZ, Frequency.class),
+    NEWTON(0x2723, "org.bluetooth.unit.force.newton", Units.NEWTON, Force.class),
+    PASCAL(0x2724, "org.bluetooth.unit.pressure.pascal", SIUnits.PASCAL, Pressure.class),
+    JOULE(0x2725, "org.bluetooth.unit.energy.joule", Units.JOULE, Energy.class),
+    WATT(0x2726, "org.bluetooth.unit.power.watt", Units.WATT, Power.class),
+    COULOMB(0x2727, "org.bluetooth.unit.electric_charge.coulomb", Units.COULOMB, ElectricCharge.class),
+    VOLT(0x2728, "org.bluetooth.unit.electric_potential_difference.volt", Units.VOLT, ElectricPotential.class),
+    FARAD(0x2729, "org.bluetooth.unit.capacitance.farad", Units.FARAD, ElectricCapacitance.class),
+    OHM(0x272A, "org.bluetooth.unit.electric_resistance.ohm", Units.OHM, ElectricResistance.class),
+    SIEMENS(0x272B, "org.bluetooth.unit.electric_conductance.siemens", Units.SIEMENS, ElectricConductance.class),
+    WEBER(0x272C, "org.bluetooth.unit.magnetic_flux.weber", Units.WEBER, MagneticFlux.class),
+    TESLA(0x272D, "org.bluetooth.unit.magnetic_flux_density.tesla", Units.TESLA, MagneticFluxDensity.class),
+    HENRY(0x272E, "org.bluetooth.unit.inductance.henry", Units.HENRY, ElectricInductance.class),
+    DEGREE_CELSIUS(0x272F, "org.bluetooth.unit.thermodynamic_temperature.degree_celsius", SIUnits.CELSIUS,
+            Temperature.class),
+    LUMEN(0x2730, "org.bluetooth.unit.luminous_flux.lumen", Units.LUMEN, LuminousFlux.class),
+    LUX(0x2731, "org.bluetooth.unit.illuminance.lux", Units.LUX, Illuminance.class),
+    BECQUEREL(0x2732, "org.bluetooth.unit.activity_referred_to_a_radionuclide.becquerel", Units.BECQUEREL,
+            Radioactivity.class),
+    GRAY(0x2733, "org.bluetooth.unit.absorbed_dose.gray", Units.GRAY, RadiationDoseAbsorbed.class),
+    SIEVERT(0x2734, "org.bluetooth.unit.dose_equivalent.sievert", Units.SIEVERT, RadiationDoseEffective.class),
+    KATAL(0x2735, "org.bluetooth.unit.catalytic_activity.katal", Units.KATAL, CatalyticActivity.class),
     PASCAL_SECOND(0x2740, "org.bluetooth.unit.dynamic_viscosity.pascal_second", Units.ONE),
     NEWTON_METRE(0x2741, "org.bluetooth.unit.moment_of_force.newton_metre", Units.ONE),
     NEWTON_PER_METRE(0x2742, "org.bluetooth.unit.surface_tension.newton_per_metre", Units.ONE),
@@ -129,63 +158,70 @@ public enum BluetoothUnit {
             BUnits.WATT_PER_STERADIAN_PER_SQUARE_METRE),
     KATAL_PER_CUBIC_METRE(0x2757, "org.bluetooth.unit.catalytic_activity_concentration.katal_per_cubic_metre",
             Units.ONE),
-    MINUTE(0x2760, "org.bluetooth.unit.time.minute", Units.MINUTE),
-    HOUR(0x2761, "org.bluetooth.unit.time.hour", Units.HOUR),
-    DAY(0x2762, "org.bluetooth.unit.time.day", Units.DAY),
-    ANGLE_DEGREE(0x2763, "org.bluetooth.unit.plane_angle.degree", Units.DEGREE_ANGLE),
-    ANGLE_MINUTE(0x2764, "org.bluetooth.unit.plane_angle.minute", BUnits.MINUTE_ANGLE),
-    ANGLE_SECOND(0x2765, "org.bluetooth.unit.plane_angle.second", BUnits.SECOND_ANGLE),
-    HECTARE(0x2766, "org.bluetooth.unit.area.hectare", BUnits.HECTARE),
-    LITRE(0x2767, "org.bluetooth.unit.volume.litre", Units.LITRE),
-    TONNE(0x2768, "org.bluetooth.unit.mass.tonne", MetricPrefix.KILO(SIUnits.KILOGRAM)),
-    BAR(0x2780, "org.bluetooth.unit.pressure.bar", Units.BAR),
-    MILLIMETRE_OF_MERCURY(0x2781, "org.bluetooth.unit.pressure.millimetre_of_mercury", Units.MILLIMETRE_OF_MERCURY),
+    MINUTE(0x2760, "org.bluetooth.unit.time.minute", Units.MINUTE, Time.class),
+    HOUR(0x2761, "org.bluetooth.unit.time.hour", Units.HOUR, Time.class),
+    DAY(0x2762, "org.bluetooth.unit.time.day", Units.DAY, Time.class),
+    ANGLE_DEGREE(0x2763, "org.bluetooth.unit.plane_angle.degree", Units.DEGREE_ANGLE, Angle.class),
+    ANGLE_MINUTE(0x2764, "org.bluetooth.unit.plane_angle.minute", BUnits.MINUTE_ANGLE, Angle.class),
+    ANGLE_SECOND(0x2765, "org.bluetooth.unit.plane_angle.second", BUnits.SECOND_ANGLE, Angle.class),
+    HECTARE(0x2766, "org.bluetooth.unit.area.hectare", BUnits.HECTARE, Area.class),
+    LITRE(0x2767, "org.bluetooth.unit.volume.litre", Units.LITRE, Volume.class),
+    TONNE(0x2768, "org.bluetooth.unit.mass.tonne", MetricPrefix.MEGA(SIUnits.GRAM), Mass.class),
+    BAR(0x2780, "org.bluetooth.unit.pressure.bar", Units.BAR, Pressure.class),
+    MILLIMETRE_OF_MERCURY(0x2781, "org.bluetooth.unit.pressure.millimetre_of_mercury", Units.MILLIMETRE_OF_MERCURY,
+            Pressure.class),
     ÅNGSTRÖM(0x2782, "org.bluetooth.unit.length.ångström", Units.ONE),
     NAUTICAL_MILE(0x2783, "org.bluetooth.unit.length.nautical_mile", BUnits.NAUTICAL_MILE),
     BARN(0x2784, "org.bluetooth.unit.area.barn", BUnits.BARN),
-    KNOT(0x2785, "org.bluetooth.unit.velocity.knot", Units.KNOT),
+    KNOT(0x2785, "org.bluetooth.unit.velocity.knot", Units.KNOT, Speed.class),
     NEPER(0x2786, "org.bluetooth.unit.logarithmic_radio_quantity.neper", Units.ONE),
     BEL(0x2787, "org.bluetooth.unit.logarithmic_radio_quantity.bel", Units.ONE),
-    YARD(0x27A0, "org.bluetooth.unit.length.yard", ImperialUnits.YARD),
+    YARD(0x27A0, "org.bluetooth.unit.length.yard", ImperialUnits.YARD, Length.class),
     PARSEC(0x27A1, "org.bluetooth.unit.length.parsec", Units.ONE),
-    INCH(0x27A2, "org.bluetooth.unit.length.inch", ImperialUnits.INCH),
-    FOOT(0x27A3, "org.bluetooth.unit.length.foot", ImperialUnits.FOOT),
-    MILE(0x27A4, "org.bluetooth.unit.length.mile", ImperialUnits.MILE),
+    INCH(0x27A2, "org.bluetooth.unit.length.inch", ImperialUnits.INCH, Length.class),
+    FOOT(0x27A3, "org.bluetooth.unit.length.foot", ImperialUnits.FOOT, Length.class),
+    MILE(0x27A4, "org.bluetooth.unit.length.mile", ImperialUnits.MILE, Length.class),
     POUND_FORCE_PER_SQUARE_INCH(0x27A5, "org.bluetooth.unit.pressure.pound_force_per_square_inch", Units.ONE),
-    KILOMETRE_PER_HOUR(0x27A6, "org.bluetooth.unit.velocity.kilometre_per_hour", SIUnits.KILOMETRE_PER_HOUR),
-    MILES_PER_HOUR(0x27A7, "org.bluetooth.unit.velocity.mile_per_hour", ImperialUnits.MILES_PER_HOUR),
+    KILOMETRE_PER_HOUR(0x27A6, "org.bluetooth.unit.velocity.kilometre_per_hour", SIUnits.KILOMETRE_PER_HOUR,
+            Speed.class),
+    MILES_PER_HOUR(0x27A7, "org.bluetooth.unit.velocity.mile_per_hour", ImperialUnits.MILES_PER_HOUR, Speed.class),
     REVOLUTION_PER_MINUTE(0x27A8, "org.bluetooth.unit.angular_velocity.revolution_per_minute",
             BUnits.REVOLUTION_PER_MINUTE),
     GRAM_CALORIE(0x27A9, "org.bluetooth.unit.energy.gram_calorie", Units.ONE),
     KILOGRAM_CALORIE(0x27AA, "org.bluetooth.unit.energy.kilogram_calorie", Units.ONE),
-    KILOWATT_HOUR(0x27AB, "org.bluetooth.unit.energy.kilowatt_hour", Units.KILOWATT_HOUR),
+    KILOWATT_HOUR(0x27AB, "org.bluetooth.unit.energy.kilowatt_hour", Units.KILOWATT_HOUR, Energy.class),
     DEGREE_FAHRENHEIT(0x27AC, "org.bluetooth.unit.thermodynamic_temperature.degree_fahrenheit",
-            ImperialUnits.FAHRENHEIT),
-    PERCENTAGE(0x27AD, "org.bluetooth.unit.percentage", Units.PERCENT),
+            ImperialUnits.FAHRENHEIT, Temperature.class),
+    PERCENTAGE(0x27AD, "org.bluetooth.unit.percentage", Units.PERCENT, Dimensionless.class),
     PER_MILLE(0x27AE, "org.bluetooth.unit.per_mille", Units.ONE),
     BEATS_PER_MINUTE(0x27AF, "org.bluetooth.unit.period.beats_per_minute", BUnits.BEATS_PER_MINUTE),
-    AMPERE_HOURS(0x27B0, "org.bluetooth.unit.electric_charge.ampere_hours", BUnits.AMPERE_HOUR),
+    AMPERE_HOURS(0x27B0, "org.bluetooth.unit.electric_charge.ampere_hours", Units.AMPERE_HOUR, ElectricCharge.class),
     MILLIGRAM_PER_DECILITRE(0x27B1, "org.bluetooth.unit.mass_density.milligram_per_decilitre", Units.ONE),
     MILLIMOLE_PER_LITRE(0x27B2, "org.bluetooth.unit.mass_density.millimole_per_litre", Units.ONE),
-    YEAR(0x27B3, "org.bluetooth.unit.time.year", Units.YEAR),
+    YEAR(0x27B3, "org.bluetooth.unit.time.year", Units.YEAR, Time.class),
     MONTH(0x27B4, "org.bluetooth.unit.time.month", Units.ONE),
     COUNT_PER_CUBIC_METRE(0x27B5, "org.bluetooth.unit.concentration.count_per_cubic_metre", Units.ONE),
-    WATT_PER_SQUARE_METRE(0x27B6, "org.bluetooth.unit.irradiance.watt_per_square_metre", Units.IRRADIANCE),
+    WATT_PER_SQUARE_METRE(0x27B6, "org.bluetooth.unit.irradiance.watt_per_square_metre", Units.IRRADIANCE,
+            Intensity.class),
     MILLILITER_PER_KILOGRAM_PER_MINUTE(0x27B7, "org.bluetooth.unit.transfer_rate.milliliter_per_kilogram_per_minute",
             Units.ONE),
-    POUND(0x27B8, "org.bluetooth.unit.mass.pound", BUnits.POUND),
+    POUND(0x27B8, "org.bluetooth.unit.mass.pound", BUnits.POUND, Mass.class),
     METABOLIC_EQUIVALENT(0x27B9, "org.bluetooth.unit.metabolic_equivalent", Units.ONE),
     STEP_PER_MINUTE(0x27BA, "org.bluetooth.unit.step_per_minute", BUnits.STEP_PER_MINUTE),
     STROKE_PER_MINUTE(0x27BC, "org.bluetooth.unit.stroke_per_minute", BUnits.STROKE_PER_MINUTE),
-    KILOMETER_PER_MINUTE(0x27BD, "org.bluetooth.unit.velocity.kilometer_per_minute", BUnits.KILOMETRE_PER_MINUTE),
+    KILOMETER_PER_MINUTE(0x27BD, "org.bluetooth.unit.velocity.kilometer_per_minute", BUnits.KILOMETRE_PER_MINUTE,
+            Speed.class),
     LUMEN_PER_WATT(0x27BE, "org.bluetooth.unit.luminous_efficacy.lumen_per_watt", BUnits.LUMEN_PER_WATT),
     LUMEN_HOUR(0x27BF, "org.bluetooth.unit.luminous_energy.lumen_hour", BUnits.LUMEN_HOUR),
     LUX_HOUR(0x27C0, "org.bluetooth.unit.luminous_exposure.lux_hour", BUnits.LUX_HOUR),
     GRAM_PER_SECOND(0x27C1, "org.bluetooth.unit.mass_flow.gram_per_second", BUnits.GRAM_PER_SECOND),
-    LITRE_PER_SECOND(0x27C2, "org.bluetooth.unit.volume_flow.litre_per_second", BUnits.LITRE_PER_SECOND),
+    LITRE_PER_SECOND(0x27C2, "org.bluetooth.unit.volume_flow.litre_per_second", BUnits.LITRE_PER_SECOND,
+            VolumetricFlowRate.class),
     DECIBEL_SPL(0x27C3, "org.bluetooth.unit.sound_pressure.decibel_spl", Units.ONE),
-    PARTS_PER_MILLION(0x27C4, "org.bluetooth.unit.concentration.parts_per_million", Units.PARTS_PER_MILLION),
-    PARTS_PER_BILLION(0x27C5, "org.bluetooth.unit.concentration.parts_per_billion", Units.PARTS_PER_BILLION);
+    PARTS_PER_MILLION(0x27C4, "org.bluetooth.unit.concentration.parts_per_million", Units.PARTS_PER_MILLION,
+            Dimensionless.class),
+    PARTS_PER_BILLION(0x27C5, "org.bluetooth.unit.concentration.parts_per_billion", Units.PARTS_PER_BILLION,
+            Dimensionless.class);
 
     private UUID uuid;
 
@@ -193,10 +229,18 @@ public enum BluetoothUnit {
 
     private Unit<?> unit;
 
-    private BluetoothUnit(long key, String type, Unit<?> unit) {
-        this.uuid = new UUID((key << 32) | 0x1000, BluetoothBindingConstants.BLUETOOTH_BASE_UUID);
+    private @Nullable Class<? extends Quantity<?>> quantityClass;
+
+    private <Q extends Quantity<Q>> BluetoothUnit(long key, String type, Unit<Q> unit) {
+        this(key, type, unit, null);
+    }
+
+    private <Q extends Quantity<Q>> BluetoothUnit(long key, String type, Unit<Q> unit,
+            @Nullable Class<Q> quantityClass) {
+        this.uuid = BluetoothBindingConstants.createBluetoothUUID(key);
         this.type = type;
         this.unit = unit;
+        this.quantityClass = quantityClass;
     }
 
     public static @Nullable BluetoothUnit findByType(String type) {
@@ -218,6 +262,11 @@ public enum BluetoothUnit {
 
     public Unit<?> getUnit() {
         return unit;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <Q extends Quantity<Q>> @Nullable Class<Q> getQuantityClass() {
+        return (Class<Q>) quantityClass;
     }
 
     /**
@@ -290,9 +339,6 @@ public enum BluetoothUnit {
 
         public static final Unit<LuminousEnergy> LUMEN_HOUR = addUnit(
                 new ProductUnit<LuminousEnergy>(Units.LUMEN.multiply(Units.HOUR)));
-
-        public static final Unit<ElectricCharge> AMPERE_HOUR = addUnit(
-                new ProductUnit<ElectricCharge>(Units.AMPERE.multiply(Units.HOUR)));
 
         public static final Unit<LuminousExposure> LUX_HOUR = addUnit(
                 new ProductUnit<LuminousExposure>(Units.LUX.multiply(Units.HOUR)));

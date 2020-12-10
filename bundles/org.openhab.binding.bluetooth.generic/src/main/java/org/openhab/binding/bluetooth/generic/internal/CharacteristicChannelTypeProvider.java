@@ -15,7 +15,6 @@ package org.openhab.binding.bluetooth.generic.internal;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -138,16 +137,13 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
     }
 
     private ChannelType buildChannelType(ChannelTypeUID channelTypeUID, boolean advanced, int properties, Field field) {
-        List<StateOption> options = getStateOptions(field);
         String itemType = BluetoothChannelUtils.getItemType(field);
 
         if (itemType == null) {
             throw new IllegalStateException("Unknown field format type: " + field.getUnit());
         }
 
-        if (itemType.equals("Switch")) {
-            options = Collections.emptyList();
-        }
+        List<StateOption> options = itemType.equals("Switch") ? List.of() : getStateOptions(field);
 
         // we consider it readOnly if it cannot be written to
         boolean readOnly = (properties
@@ -178,17 +174,6 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         return builder.build();
     }
 
-    private static String getPattern(Field field) {
-        String format = getFormat(field);
-        String unit = getUnit(field);
-        StringBuilder pattern = new StringBuilder();
-        pattern.append(format);
-        if (unit != null) {
-            pattern.append(" ").append(unit);
-        }
-        return pattern.toString();
-    }
-
     private static List<StateOption> getStateOptions(Field field) {
         return Optional.ofNullable(field.getEnumerations())//
                 .map(Enumerations::getEnumerations)//
@@ -202,13 +187,23 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         return value != null ? BigDecimal.valueOf(value) : null;
     }
 
+    private static String getPattern(Field field) {
+        String format = getFormat(field);
+        String unit = getUnit(field);
+        StringBuilder pattern = new StringBuilder();
+        pattern.append(format);
+        if (unit != null) {
+            pattern.append(" ").append(unit);
+        }
+        return pattern.toString();
+    }
+
     private static String getFormat(Field field) {
-        String format = "%s";
         Integer decimalExponent = field.getDecimalExponent();
         if (field.getFormat().isReal() && decimalExponent != null && decimalExponent < 0) {
-            format = "%." + Math.abs(decimalExponent) + "f";
+            return "%." + Math.abs(decimalExponent) + "f";
         }
-        return format;
+        return "%s";
     }
 
     private static @Nullable String getUnit(Field field) {
@@ -216,6 +211,9 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         if (gattUnit != null) {
             BluetoothUnit unit = BluetoothUnit.findByType(gattUnit);
             if (unit != null) {
+                if (unit.getQuantityClass() != null) {
+                    return "%unit%";
+                }
                 return unit.getUnit().getSymbol();
             }
         }
