@@ -79,6 +79,7 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
                 String characteristicUUID = channelID.substring(25, 61);
                 String fieldName = channelID.substring(62, channelID.length());
 
+                Field knownField = null;
                 if (gattParser.isKnownCharacteristic(characteristicUUID)) {
                     List<Field> fields = gattParser.getFields(characteristicUUID).stream()
                             .filter(field -> BluetoothChannelUtils.encodeFieldID(field).equals(fieldName))
@@ -89,10 +90,9 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
                                 characteristicUUID, fieldName);
                         return null;
                     }
-                    Field field = fields.get(0);
-                    return buildChannelType(uid, advanced, properties, field);
+                    knownField = fields.get(0);
                 }
-                return null;
+                return buildChannelType(uid, advanced, properties, knownField);
             });
         }
         return null;
@@ -106,29 +106,30 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         if (!channelID.startsWith("characteristic")) {
             return false;
         }
-        if (channelID.length() < 68) {
+        if (channelID.length() < 62) {
             return false;
         }
         if (channelID.charAt(21) != '-') {
             return false;
         }
-        if (channelID.charAt(30) != '-') {
+        if (channelID.charAt(24) != '-') {
             return false;
         }
-        if (channelID.charAt(67) != '-') {
+        if (channelID.charAt(61) != '-') {
             return false;
         }
         return true;
     }
 
     public ChannelTypeUID registerChannelType(String characteristicUUID, boolean advanced, int properties,
-            Field field) {
+            @Nullable Field field) {
         // characteristic-advncd-10-00002a04-0000-1000-8000-00805f9b34fb-Battery_Level
 
         String propStr = String.format("%02x", properties);
+        String fieldId = field != null ? BluetoothChannelUtils.encodeFieldID(field) : "raw";
 
         String channelType = String.format(CHANNEL_TYPE_NAME_PATTERN, advanced ? "advncd" : "simple", propStr,
-                characteristicUUID, BluetoothChannelUtils.encodeFieldID(field));
+                characteristicUUID, fieldId);
 
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(BluetoothBindingConstants.BINDING_ID, channelType);
         cache.computeIfAbsent(channelTypeUID, uid -> buildChannelType(uid, advanced, properties, field));
@@ -136,35 +137,62 @@ public class CharacteristicChannelTypeProvider implements ChannelTypeProvider {
         return channelTypeUID;
     }
 
-    private ChannelType buildChannelType(ChannelTypeUID channelTypeUID, boolean advanced, int properties, Field field) {
-        String itemType = BluetoothChannelUtils.getItemType(field);
+    private ChannelType buildChannelType(ChannelTypeUID channelTypeUID, boolean advanced, int properties,
+            @Nullable Field field) {
 
-        if (itemType == null) {
-            throw new IllegalStateException("Unknown field format type: " + field.getUnit());
+        String label;
+        String description;
+        String itemType;
+        String pattern;
+        List<StateOption> options = List.of();
+
+        if (field != null) {
+            label = field.getName();
+            description = field.getInformativeText();
+            pattern = getPattern(field);
+
+            itemType = BluetoothChannelUtils.getItemType(field);
+
+            if (itemType == null) {
+                throw new IllegalStateException("Unknown field format type: " + field.getUnit());
+            }
+
+            if (!"Switch".equals(itemType)) {
+                options = getStateOptions(field);
+            }
+        } else {
+            label = "Unknown Bluetooth Characteristic";
+            description = "The raw value of unknown characteristics are represented with hexadecimal";
+            itemType = "String";
+            pattern = "%s";
         }
-
-        List<StateOption> options = itemType.equals("Switch") ? List.of() : getStateOptions(field);
 
         // we consider it readOnly if it cannot be written to
         boolean readOnly = (properties
                 & (BluetoothCharacteristic.PROPERTY_WRITE | BluetoothCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0;
 
         StateDescriptionFragmentBuilder stateDescBuilder = StateDescriptionFragmentBuilder.create()//
-                .withPattern(getPattern(field))//
-                .withReadOnly(readOnly)//
-                .withOptions(options);
+                .withPattern(pattern)//
+                .withReadOnly(readOnly);//
 
-        BigDecimal min = toBigDecimal(field.getMinimum());
-        BigDecimal max = toBigDecimal(field.getMaximum());
-        if (min != null) {
-            stateDescBuilder = stateDescBuilder.withMinimum(min);
+        if (!options.isEmpty()) {
+            stateDescBuilder = stateDescBuilder.withOptions(options);
         }
-        if (max != null) {
-            stateDescBuilder = stateDescBuilder.withMaximum(max);
+
+        if (field != null) {
+            BigDecimal min = toBigDecimal(field.getMinimum());
+            BigDecimal max = toBigDecimal(field.getMaximum());
+            if (min != null) {
+                stateDescBuilder = stateDescBuilder.withMinimum(min);
+            }
+            if (max != null) {
+                stateDescBuilder = stateDescBuilder.withMaximum(max);
+            }
         }
-        ChannelTypeBuilder<?> builder = ChannelTypeBuilder.state(channelTypeUID, field.getName(), itemType)//
+
+        ChannelTypeBuilder<?> builder = ChannelTypeBuilder.state(channelTypeUID, label, itemType)//
                 .isAdvanced(advanced)//
-                .withDescription(field.getInformativeText())//
+                .withDescription(description)//
                 .withStateDescriptionFragment(stateDescBuilder.build());
 
         if ((properties & BluetoothCharacteristic.PROPERTY_NOTIFY) > 0) {

@@ -65,7 +65,8 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
 
     private final Logger logger = LoggerFactory.getLogger(GenericBluetoothHandler.class);
     private final Map<BluetoothCharacteristic, CharacteristicHandler> charHandlers = new ConcurrentHashMap<>();
-    private final Map<ChannelUID, CharacteristicHandler> channelHandlers = new ConcurrentHashMap<>();
+    private final Map<ChannelUID, CharacteristicHandler> channelToHandlers = new ConcurrentHashMap<>();
+    private final Map<CharacteristicHandler, List<ChannelUID>> handlerToChannels = new ConcurrentHashMap<>();
     private final BluetoothGattParser gattParser = BluetoothGattParserFactory.getDefault();
     private final CharacteristicChannelTypeProvider channelTypeProvider;
 
@@ -84,13 +85,14 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
         readCharacteristicJob = scheduler.scheduleWithFixedDelay(() -> {
             if (device.getConnectionState() == ConnectionState.CONNECTED) {
                 if (resolved) {
-                    for (CharacteristicHandler charHandler : charHandlers.values()) {
-                        if (charHandler.isAdvanced()
-                                && charHandler.hasProperty(BluetoothCharacteristic.PROPERTY_NOTIFY)) {
-
-                            // channelHandlers.
-
-                            device.enableNotifications(charHandler.characteristic);
+                    handlerToChannels.forEach((charHandler, channelUids) -> {
+                        if (charHandler.hasProperty(BluetoothCharacteristic.PROPERTY_NOTIFY)) {
+                            boolean shouldNotify = channelUids.stream().map(thing::getChannel).anyMatch(channel -> {
+                                return Boolean.TRUE.equals(channel.getConfiguration().get("notify"));
+                            });
+                            if (shouldNotify) {
+                                device.enableNotifications(charHandler.characteristic);
+                            }
                         }
                         if (charHandler.canRead()) {
                             device.readCharacteristic(charHandler.characteristic);
@@ -104,7 +106,7 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
                                 return;
                             }
                         }
-                    }
+                    });
                 } else {
                     // if we are connected and still haven't been able to resolve the services, try disconnecting and
                     // then connecting again
@@ -123,7 +125,8 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
         super.dispose();
 
         charHandlers.clear();
-        channelHandlers.clear();
+        channelToHandlers.clear();
+        handlerToChannels.clear();
     }
 
     @Override
@@ -139,7 +142,7 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
     public void handleCommand(ChannelUID channelUID, Command command) {
         super.handleCommand(channelUID, command);
 
-        CharacteristicHandler handler = channelHandlers.get(channelUID);
+        CharacteristicHandler handler = channelToHandlers.get(channelUID);
         if (handler != null) {
             handler.handleCommand(channelUID, command);
         }
@@ -168,9 +171,11 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
                     logger.trace("{} processing characteristic {}", address, characteristic.getUuid());
                     CharacteristicHandler handler = getCharacteristicHandler(characteristic);
                     List<Channel> chans = handler.buildChannels();
-                    for (Channel channel : chans) {
-                        channelHandlers.put(channel.getUID(), handler);
+                    List<ChannelUID> chanUids = chans.stream().map(Channel::getUID).collect(Collectors.toList());
+                    for (ChannelUID channel : chanUids) {
+                        channelToHandlers.put(channel, handler);
                     }
+                    handlerToChannels.put(handler, chanUids);
                     return chans.stream();
                 })//
                 .collect(Collectors.toList());
@@ -299,32 +304,24 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
                 List<Field> fields = gattParser.getFields(charUUID);
 
                 String label = null;
-                // check if the characteristic has only on field, if so use its name as label
+                // check if the characteristic has only one field, if so use its name as label
                 if (fields.size() == 1) {
                     label = gattChar.getName();
                 }
 
-                Map<String, List<Field>> fieldsMapping = fields.stream().collect(Collectors.groupingBy(Field::getName));
+                Map<String, List<Field>> fieldsMapping = fields.stream()
+                        .filter(field -> !field.isFlagField() && !field.isOpCodesField())
+                        .collect(Collectors.groupingBy(Field::getName));
 
                 for (List<Field> fieldList : fieldsMapping.values()) {
                     Field field = fieldList.get(0);
                     if (fieldList.size() > 1) {
-                        if (field.isFlagField() || field.isOpCodesField()) {
-                            logger.debug("Skipping flags/op codes field: {}.", charUUID);
-                        } else {
-                            logger.warn("Multiple fields with the same name found: {} / {}. Skipping these fields.",
-                                    charUUID, field.getName());
-                        }
+                        logger.warn("Multiple fields with the same name found: {} / {}. Skipping these fields.",
+                                charUUID, field.getName());
                         continue;
                     }
-
                     if (isFieldSupported(field)) {
-                        Channel channel = buildFieldChannel(field, label, !gattChar.isValidForWrite());
-                        if (channel != null) {
-                            channels.add(channel);
-                        } else {
-                            logger.warn("Unable to build channel for field: {}", field.getName());
-                        }
+                        channels.add(buildFieldChannel(field, label));
                     } else {
                         logger.warn("GATT field is not supported: {} / {} / {}", charUUID, field.getName(),
                                 field.getFormat());
@@ -336,11 +333,28 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             return channels;
         }
 
+        private Channel buildFieldChannel(Field field, @Nullable String charLabel) {
+            String label = charLabel != null ? charLabel : field.getName();
+            return buildChannel(field, label);
+        }
+
         private Channel buildUnknownChannel() {
-            ChannelUID channelUID = getChannelUID(null);
-            ChannelTypeUID channelTypeUID = new ChannelTypeUID(BluetoothBindingConstants.BINDING_ID, "char-unknown");
-            return ChannelBuilder.create(channelUID).withType(channelTypeUID).withProperties(getChannelProperties(null))
-                    .build();
+            // TODO use proper label once I add descriptor read/write support.
+            return buildChannel(null, null);
+        }
+
+        private Channel buildChannel(@Nullable Field field, @Nullable String label) {
+            ChannelUID channelUID = getChannelUID(field);
+            logger.debug("Building a new channel for a field: {}", channelUID.getId());
+            ChannelTypeUID channelTypeUID = channelTypeProvider.registerChannelType(getCharacteristicUUID(),
+                    isAdvanced(), characteristic.getProperties(), field);
+            ChannelBuilder builder = ChannelBuilder.create(channelUID)//
+                    .withType(channelTypeUID)//
+                    .withProperties(getChannelProperties(field));
+            if (label != null) {
+                builder = builder.withLabel(label);
+            }
+            return builder.build();
         }
 
         public boolean hasProperty(int propertyMask) {
@@ -369,26 +383,12 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
         }
 
         private boolean isFieldSupported(Field field) {
-            return field.getFormat() != null;
-        }
-
-        private @Nullable Channel buildFieldChannel(Field field, @Nullable String charLabel, boolean readOnly) {
-            String label = charLabel != null ? charLabel : field.getName();
             String acceptedType = BluetoothChannelUtils.getItemType(field);
             if (acceptedType == null) {
                 // unknown field format
-                return null;
+                return false;
             }
-
-            ChannelUID channelUID = getChannelUID(field);
-
-            logger.debug("Building a new channel for a field: {}", channelUID.getId());
-
-            ChannelTypeUID channelTypeUID = channelTypeProvider.registerChannelType(getCharacteristicUUID(),
-                    isAdvanced(), characteristic.getProperties(), field);
-
-            return ChannelBuilder.create(channelUID, acceptedType).withType(channelTypeUID)
-                    .withProperties(getChannelProperties(field.getName())).withLabel(label).build();
+            return field.getFormat() != null;
         }
 
         private ChannelUID getChannelUID(@Nullable Field field) {
@@ -408,7 +408,12 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             long mostSig = uuid.getMostSignificantBits();
 
             if (leastSig == BluetoothBindingConstants.BLUETOOTH_BASE_UUID) {
-                return "0x" + Long.toHexString(mostSig >> 32).toUpperCase();
+                String id = Long.toHexString(mostSig >> 32).toUpperCase();
+                // we want everything padded to a min of four hex characters
+                while (id.length() < 4) {
+                    id = "0" + id;
+                }
+                return "0x" + id;
             }
             return uuid.toString().toUpperCase();
         }
@@ -427,11 +432,16 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
             return BluetoothChannelUtils.decodeFieldName(encodedFieldName);
         }
 
-        private Map<String, String> getChannelProperties(@Nullable String fieldName) {
+        private Map<String, String> getChannelProperties(@Nullable Field field) {
             Map<String, String> properties = new HashMap<>();
-            if (fieldName != null) {
-                properties.put(GenericBindingConstants.PROPERTY_FIELD_NAME, fieldName);
+
+            if (field != null) {
+                String fieldName = field.getName();
+                if (fieldName != null) {
+                    properties.put(GenericBindingConstants.PROPERTY_FIELD_NAME, fieldName);
+                }
             }
+
             properties.put(GenericBindingConstants.PROPERTY_SERVICE_UUID,
                     characteristic.getService().getUuid().toString());
             properties.put(GenericBindingConstants.PROPERTY_CHARACTERISTIC_UUID, getCharacteristicUUID());

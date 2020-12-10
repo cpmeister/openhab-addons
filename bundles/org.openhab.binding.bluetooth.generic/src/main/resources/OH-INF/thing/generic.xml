@@ -23,10 +23,4 @@
 
 	</thing-type>
 
-	<channel-type id="char-unknown">
-		<item-type>String</item-type>
-		<label>Unknown Bluetooth Characteristic</label>
-		<description>The raw value of unknown characteristics are represented with hexadecimal</description>
-	</channel-type>
-
 </thing:thing-descriptions>
