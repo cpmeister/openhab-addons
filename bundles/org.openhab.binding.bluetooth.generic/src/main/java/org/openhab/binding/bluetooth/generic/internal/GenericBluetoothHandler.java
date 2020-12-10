@@ -88,7 +88,11 @@ public class GenericBluetoothHandler extends ConnectedBluetoothHandler {
                     handlerToChannels.forEach((charHandler, channelUids) -> {
                         if (charHandler.hasProperty(BluetoothCharacteristic.PROPERTY_NOTIFY)) {
                             boolean shouldNotify = channelUids.stream().map(thing::getChannel).anyMatch(channel -> {
-                                return Boolean.TRUE.equals(channel.getConfiguration().get("notify"));
+                                if (channel != null) {
+                                    return Boolean.TRUE.equals(channel.getConfiguration()
+                                            .get(GenericBindingConstants.CHANNEL_CONFIG_NOTIFY));
+                                }
+                                return false;
                             });
                             if (shouldNotify) {
                                 device.enableNotifications(charHandler.characteristic);
